@@ -71,10 +71,8 @@ html,body{margin:0;height:100%;overflow:hidden;background:var(--bg);color:var(--
 .act.up{background:linear-gradient(#b190ff,var(--up));font-size:clamp(11px,3.2vh,16px)}
 #cine{position:fixed;inset:0;z-index:6;display:none;pointer-events:auto}
 #cine .cb{position:absolute;left:0;right:0;height:0;background:#000;transition:height .8s ease}
-#genjV{position:fixed;inset:0;z-index:6;display:none;pointer-events:none;background:radial-gradient(circle,#3a0a1a,#0a0210 72%);opacity:0;transition:opacity .5s;flex-direction:column;align-items:center;justify-content:center;text-align:center;color:#ff6a6a;font-weight:900;text-shadow:0 0 12px #ff2a3a}
+#genjV{position:fixed;left:0;right:0;top:14px;z-index:6;display:none;pointer-events:none;justify-content:center;text-align:center;color:#ff6a6a;font-weight:900;text-shadow:-2px 0 #000,2px 0 #000,0 -2px #000,0 2px #000;opacity:0;transition:opacity .5s}
 #genjV.on{opacity:1}
-#genjV .mm{font-size:clamp(30px,10vh,64px);animation:gjshake 2.4s infinite}
-@keyframes gjshake{0%,100%{transform:translate(0,0) rotate(0)}25%{transform:translate(-6px,4px) rotate(-3deg)}50%{transform:translate(6px,-4px) rotate(3deg)}75%{transform:translate(-4px,-4px) rotate(2deg)}}
 #cine.on .cb{height:13vh}#cine .top{top:0}#cine .bot{bottom:0}
 #cineTxt{position:absolute;left:0;right:0;bottom:15.5vh;text-align:center;padding:0 12px;font-weight:900;font-size:clamp(14px,4.6vh,28px);filter:drop-shadow(0 2px 3px #000);opacity:0;transition:opacity .6s}
 #cine.on #cineTxt{opacity:1}
@@ -146,7 +144,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:var(--bg);color:var(--
 <canvas id="c"></canvas>
 
 <div id="cine"><div class="cb top"></div><div class="cb bot"></div><div id="cineTxt"></div></div>
-<div id="genjV"><div class="mm">👹🌑👹</div><div id="genjTxt" style="margin-top:14px;font-size:clamp(14px,4vh,22px)">🧿 Terkena Genjutsu… dunia ilusi penuh monster iblis</div></div>
+<div id="genjV"><div id="genjTxt" style="font-size:clamp(13px,3.6vh,18px)">🧿 GENJUTSU · terjebak di dunia iblis…</div></div>
 <div id="evTop"></div><div id="evCorner"></div>
 <div id="hud">
   <button id="home" aria-label="Kembali ke NEXORIA">🏠</button>
@@ -1313,12 +1311,12 @@ const qId=new THREE.Quaternion(),qLie=new THREE.Quaternion().setFromEuler(new TH
 /* ===== katalog avatar (sama dengan index.html): Set A & Set B gratis, sisanya EKSKLUSIF collab Naruto ===== */
 const SKINS=[0xf2c9a0,0xe0ac82,0xc68642,0x8d5524,0xffe0cf,0xb98a6a];
 const AVC={
- h:{a:{st:'short',c:0x3b2a1a},b:{st:'spiky',c:0x39f4ff},n1:{st:'spiky',c:0xffd54a},n2:{st:'spiky',c:0xc8ccd4},n3:{st:'long',c:0xc0392b}},
- f:{a:{},b:{x:'glow'},n1:{x:'whisk'},n2:{x:'mask'},n3:{x:'red'}},
- t:{a:{c:'auto'},b:{c:0x8b5cf6,x:'stripe'},n1:{c:0xff8a3a},n2:{c:0x15151c,x:'vest'},n3:{c:0x5a1414,x:'cloak'}},
- c:{a:{x:'glass'},b:{x:'phone'},n1:{x:'band'},n2:{x:'scarf'},n3:{x:'sword'}},
- p:{a:{c:0x34405c},b:{c:0x1a1a2e,x:'stripe'},n1:{c:0xff6a1a},n2:{c:0x1c2038,x:'wrap'},n3:{c:0x5a1a1a}},
- s:{a:{c:0x222222},b:{c:0x39f4ff},n1:{c:0x151520,x:'sandal'},n2:{c:0xb02020},n3:{c:0xffd54a}}
+ h:{a:{st:'short',c:0x3b2a1a},b:{st:'spiky',c:0x39f4ff},n1:{st:'spiky',c:0xffd54a},n2:{st:'spiky',c:0xc8ccd4},n3:{st:'long',c:0xc0392b},hnar:{st:'spiky',c:0xffd54a},hsas:{st:'spiky',c:0x1a1a22}},
+ f:{a:{},b:{x:'glow'},n1:{x:'whisk'},n2:{x:'mask'},n3:{x:'red'},hnar:{x:'whisk',eye:0x3d8bff},hsas:{x:'sharingan'}},
+ t:{a:{c:'auto'},b:{c:0x8b5cf6,x:'stripe'},n1:{c:0xff8a3a},n2:{c:0x15151c,x:'vest'},n3:{c:0x5a1414,x:'cloak'},hnar:{c:0xff6a1a,x:'naruto'},hsas:{c:0x8f939c,x:'sasuke'}},
+ c:{a:{x:'glass'},b:{x:'phone'},n1:{x:'band'},n2:{x:'scarf'},n3:{x:'sword'},hnar:{x:'band'},hsas:{x:'rope'}},
+ p:{a:{c:0x34405c},b:{c:0x1a1a2e,x:'stripe'},n1:{c:0xff6a1a},n2:{c:0x1c2038,x:'wrap'},n3:{c:0x5a1a1a},hnar:{c:0xff6a1a},hsas:{c:0x1c2038}},
+ s:{a:{c:0x222222},b:{c:0x39f4ff},n1:{c:0x151520,x:'sandal'},n2:{c:0xb02020},n3:{c:0xffd54a},hnar:{c:0x151520,x:'sandal'},hsas:{c:0x151520,x:'sandal'}}
 };
 const DEF_LOOK='0.a.a.a.a.a.a';
 let MYLOOK=DEF_LOOK;
@@ -1330,10 +1328,13 @@ function dressAvatar(av,lk,shirtCol){
   const skin=M(SKINS[+P[0]]||SKINS[0]),hr=it('h',1),fc=it('f',2),tp=it('t',3),ac=it('c',4),pn=it('p',5),sh=it('s',6);
   const shC=tp.c==='auto'?shirtCol:tp.c,SH=M(shC),{model,head}=av;
   av.lookStr=P.join('.');
+  const eyeCol=fc.eye?BM(fc.eye):null;
   add(mk(model,G.box,SH,0,1.15,0,.56,.7,.3));
   if(tp.x==='stripe')add(mk(model,G.box,BM(0x39f4ff),0,1.15,.155,.12,.7,.02));
   if(tp.x==='vest')add(mk(model,G.box,M(0x8e8a99),0,1.12,.02,.6,.55,.34));
   if(tp.x==='cloak')add(mk(model,G.box,SH,0,.82,-.02,.62,.9,.34));
+  if(tp.x==='naruto'){add(mk(model,G.box,M(0x111318),0,1.4,0,.58,.24,.32));add(mk(model,G.tor,M(0xd42a1a),0,1.28,.16,.09,.09,.09));}
+  if(tp.x==='sasuke'){add(mk(model,G.box,M(0x232733),0,1.4,0,.58,.24,.33));add(mk(model,G.box,M(0x232733),0,1.15,0,.62,.3,.4));}
   av.arms.forEach(a=>{add(mk(a,G.box,SH,0,-.2,0,.16,.4,.16));add(mk(a,G.box,skin,0,-.5,0,.14,.22,.14));});
   add(mk(head,G.sph,skin,0,0,0,.24));
   const HC=M(hr.c);
@@ -1343,8 +1344,13 @@ function dressAvatar(av,lk,shirtCol){
   if(fc.x==='mask'){
     const W=M(0xf4f4f4);add(mk(head,G.sph,W,0,-.01,.09,.25,.27,.19));
     [-1,1].forEach(sd=>{add(mk(head,G.cone4,W,sd*.12,.27,.05,.07,.18,.05));add(mk(head,G.box,M(0xd42a2a),sd*.12,0,.28,.03,.14,.02));});
+  }else if(fc.x==='sharingan'){
+    [-1,1].forEach(sd=>{
+      add(mk(head,G.sph,BM(0xff1a1a),sd*.09,.02,.2,.045));
+      for(let k=0;k<3;k++){const an=k/3*TAU;add(mk(head,G.sph,BM(0x140006),sd*.09+Math.cos(an)*.025,.02+Math.sin(an)*.025,.235,.012));}
+    });
   }else{
-    const ec=fc.x==='glow'?BM(0x39f4ff):fc.x==='red'?BM(0xff2020):M(0x111111),er=fc.x==='glow'?.045:.035;
+    const ec=eyeCol||(fc.x==='glow'?BM(0x39f4ff):fc.x==='red'?BM(0xff2020):M(0x111111)),er=fc.x==='glow'?.045:.035;
     add(mk(head,G.sph,ec,-.09,.02,.2,er));add(mk(head,G.sph,ec,.09,.02,.2,er));
     if(fc.x==='whisk')[-1,1].forEach(sd=>{for(let k=0;k<3;k++)add(mk(head,G.box,M(0x2a1a10),sd*.2,-.06+(k-1)*.05,.2,.12,.012,.01));});
   }
@@ -1353,6 +1359,7 @@ function dressAvatar(av,lk,shirtCol){
   if(ac.x==='band'){add(mk(head,G.tor,M(0x1a3a8a),0,.1,0,.255,.255,.255)).rotation.x=Math.PI/2;add(mk(head,G.box,M(0xc8ccd4),0,.1,.25,.14,.07,.02));}
   if(ac.x==='scarf'){add(mk(model,G.tor,M(0xd42a2a),0,1.5,0,.2,.2,.2)).rotation.x=Math.PI/2;add(mk(model,G.box,M(0xd42a2a),.12,1.2,-.18,.1,.45,.03));}
   if(ac.x==='sword'){const sw=add(mk(model,G.box,M(0x15151a),.1,1.15,-.2,.05,.95,.05));sw.rotation.z=.6;}
+  if(ac.x==='rope'){add(mk(model,G.tor,M(0x7a4dcc),0,.98,0,.34,.34,.22)).rotation.x=Math.PI/2;}
   av.legs.forEach((l,i)=>{
     const sd=i?1:-1;
     add(mk(l,G.box,M(pn.c),0,-.38,0,.2,.76,.22));
@@ -2366,6 +2373,47 @@ const isStealing=()=>player.state==='steal'||nests.some(N=>N.stolenId||N.claimin
 
 /* ===== pentung 🦯 ===== */
 let swingCd=0,swingCount=0;
+
+/* tekstur Sharinggan (dilukis di canvas): dipakai untuk efek mata di kaki & atas kepala saat swing */
+let sharinTexC=null;
+function sharinTex(){
+  if(sharinTexC)return sharinTexC;
+  const cv=document.createElement('canvas');cv.width=cv.height=256;const x=cv.getContext('2d'),c=128;
+  x.clearRect(0,0,256,256);
+  const g=x.createRadialGradient(c,c,10,c,c,120);g.addColorStop(0,'#ff3b3b');g.addColorStop(1,'#7a0808');
+  x.fillStyle=g;x.beginPath();x.arc(c,c,120,0,TAU);x.fill();
+  x.fillStyle='#0a0a0a';x.beginPath();x.arc(c,c,26,0,TAU);x.fill();
+  x.strokeStyle='#1a0000';x.lineWidth=6;x.beginPath();x.arc(c,c,74,0,TAU);x.stroke();
+  x.fillStyle='#0a0a0a';
+  for(let k=0;k<3;k++){
+    const an=k/3*TAU-Math.PI/2,ox=c+Math.cos(an)*74,oy=c+Math.sin(an)*74;
+    x.save();x.translate(ox,oy);x.rotate(an+Math.PI/2);
+    x.beginPath();x.moveTo(0,-22);x.quadraticCurveTo(16,-6,10,10);x.quadraticCurveTo(2,20,-8,14);x.quadraticCurveTo(2,6,0,-22);x.fill();
+    x.beginPath();x.arc(0,14,7,0,TAU);x.fill();
+    x.restore();
+  }
+  x.strokeStyle='#000';x.lineWidth=10;x.beginPath();x.arc(c,c,120,0,TAU);x.stroke();
+  const t=new THREE.CanvasTexture(cv);t.needsUpdate=true;return sharinTexC=t;
+}
+let sharinFx=[];
+function spawnSharinganFx(x,z){
+  const tx=sharinTex();
+  const foot=new THREE.Mesh(new THREE.PlaneGeometry(2.6,2.6),new THREE.MeshBasicMaterial({map:tx,transparent:true,opacity:.95,depthWrite:false}));
+  foot.rotation.x=-Math.PI/2;foot.position.set(x,.06,z);scene.add(foot);
+  const head=new THREE.Sprite(new THREE.SpriteMaterial({map:tx,transparent:true,opacity:.95,depthWrite:false}));
+  head.scale.set(1.5,1.5,1);head.position.set(x,3.55,z);scene.add(head);
+  sharinFx.push({foot,head,t:0,dur:1.15});
+}
+function updateSharinFx(dt){
+  for(let i=sharinFx.length-1;i>=0;i--){
+    const o=sharinFx[i];o.t+=dt;const k=clamp(o.t/o.dur,0,1),e=1-Math.pow(1-k,3);
+    o.foot.rotation.z-=dt*7;o.head.material.rotation-=dt*7;
+    const sc=lerp(.3,2.6,e);o.foot.scale.set(sc,sc,1);o.head.scale.set(lerp(.4,1.7,e),lerp(.4,1.7,e),1);
+    const op=k<.7?.95:.95*(1-(k-.7)/.3);o.foot.material.opacity=op;o.head.material.opacity=op;
+    if(o.t>=o.dur){scene.remove(o.foot);scene.remove(o.head);sharinFx.splice(i,1);}
+  }
+}
+
 function swing(){
   const pl=player;
   if(pl.state!=='normal'||swingCd>0)return;
@@ -2374,9 +2422,8 @@ function swing(){
   if(p.z>=GATEZ)return;                    /* hanya bekerja di area pencurian */
   if(B.boom)spawnBoom(p.x,1.1,p.z);
   if(B.hole)spawnHole(p.x,p.z);              /* Blackhole: lubang hitam menyedot target dalam jarak 12 */         /* ledakan bom: efek boom di titik pemain */
-  if(B.genjutsu){   /* animasi: mata Sharinggan besar muncul & berputar 3 tomoe di atas nama */
-    popFx('👁️',p.x,3.4,p.z,'#ff2a2a');
-    setTimeout(()=>{if(!paused)popFx('🌀',p.x,3.4,p.z,'#8a1414');},260);
+  if(B.genjutsu){   /* animasi: mata Sharinggan besar berputar (3 tomoe) muncul di bawah kaki & di atas kepala */
+    spawnSharinganFx(p.x,p.z);
   }
   const list=[];
   for(const k in remotes){
@@ -2429,7 +2476,7 @@ function renderBook(){
 /* ===== waktu (jam server bersama) ===== */
 let toastT=0;
 function toast(m,ms){const e=$('toast');e.textContent=m;e.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>e.classList.remove('show'),ms||2600);}
-const cDay=new THREE.Color(0x87ceeb),cNight=new THREE.Color(0x070b22),cAbuse=new THREE.Color(0x2b1a5e),tmpC=new THREE.Color();
+const cDay=new THREE.Color(0x87ceeb),cNight=new THREE.Color(0x070b22),cAbuse=new THREE.Color(0x2b1a5e),cHell=new THREE.Color(0x1a0208),tmpC=new THREE.Color();
 let stars,moon;
 function stageSky(){
   const sp=new Float32Array(700*3);
@@ -2452,9 +2499,37 @@ function buildAdmSky(){
   skyDome.renderOrder=-2;skyDome.visible=false;skyDome.frustumCulled=false;scene.add(skyDome);
 }
 function applyNight(nf){
-  tmpC.copy(cDay).lerp(cNight,nf);if(skyDome&&skyDome.material.opacity>.01)tmpC.lerp(cAbuse,skyDome.material.opacity*.8);scene.background.copy(tmpC);scene.fog.color.copy(tmpC);
-  hemi.intensity=lerp(.95,.34,nf);sun.intensity=lerp(.85,.14,nf);sun.color.setHex(nf>.5?0x9db4ff:0xfff2cc);
-  stars.material.opacity=nf;moon.material.opacity=nf;moon.visible=nf>.02;
+  tmpC.copy(cDay).lerp(cNight,nf);if(skyDome&&skyDome.material.opacity>.01)tmpC.lerp(cAbuse,skyDome.material.opacity*.8);
+  if(genjAmt>.001)tmpC.lerp(cHell,genjAmt);
+  scene.background.copy(tmpC);scene.fog.color.copy(tmpC);
+  scene.fog.near=lerp(45,3,genjAmt);scene.fog.far=lerp(215,24,genjAmt);
+  hemi.intensity=lerp(lerp(.95,.34,nf),.12,genjAmt);sun.intensity=lerp(lerp(.85,.14,nf),.05,genjAmt);sun.color.setHex(nf>.5?0x9db4ff:0xfff2cc);
+  stars.material.opacity=Math.max(nf,genjAmt*.6);moon.material.opacity=nf;moon.visible=nf>.02;
+}
+/* ===== dunia Genjutsu 3D: kabut merah gelap + siluet monster iblis di sekitar korban ===== */
+let genjAmt=0,genjMobs=null;
+function spawnGenjMobs(){
+  if(genjMobs)return;
+  genjMobs=new THREE.Group();const p=player.root.position;
+  const EY=BM(0xff2a2a),BD=M(0x1a0510);
+  for(let k=0;k<8;k++){
+    const an=k/8*TAU+rnd(-.2,.2),d=rnd(3.6,7.5),gx=p.x+Math.cos(an)*d,gz=p.z+Math.sin(an)*d,h=rnd(1.4,2.8);
+    const m=grp(genjMobs,gx,0,gz);m.rotation.y=rnd(0,TAU);
+    mk(m,G.cone,BD,0,h*.5,0,rnd(.35,.65),h,rnd(.35,.65));
+    for(let e=0;e<2;e++)mk(m,G.sph,EY,(e?1:-1)*.16,h*.82,.28,.05);
+    m.userData.spin=rnd(-.5,.5);m.userData.ph=rnd(0,TAU);
+    genjMobs.children.push(m);
+  }
+  scene.add(genjMobs);
+}
+function clearGenjMobs(){if(genjMobs){scene.remove(genjMobs);genjMobs=null;}}
+function tickGenjWorld(dt,t){
+  genjAmt+=((player.state==='genjutsu'?1:0)-genjAmt)*Math.min(1,dt*(player.state==='genjutsu'?2.4:1.6));
+  if(player.state==='genjutsu'){
+    spawnGenjMobs();
+    const sh=genjAmt*.09;camera.position.x+=Math.sin(t*23)*sh*dt*6;camera.position.y+=Math.cos(t*19)*sh*dt*6;
+    if(genjMobs)genjMobs.children.forEach((m,i)=>{m.rotation.y+=dt*(m.userData.spin||.2);m.position.y=Math.sin(t*1.4+(m.userData.ph||0))*.15;});
+  }else if(genjAmt<.02&&genjMobs)clearGenjMobs();
 }
 function startNight(){
   isNight=true;gateTarget=1;
@@ -2846,7 +2921,7 @@ async function connectFlow(){
   if(!acc.ok)throw new Error('Gagal memeriksa akun ('+acc.why+').');
   if(!acc.val){try{localStorage.removeItem('nexoria_user');}catch(e){}goHome();return new Promise(()=>{});}
   if(!await claimSession())throw new Error('Akun ini sedang bermain di perangkat lain. Tutup game di sana, tunggu ±20 detik, lalu coba lagi.');
-  watchSession();watchKick();watchGlobalSpawn();watchAnnounce();watchAbuse();watchKonoha();watchMyAvatar();watchAWild();watchUpdateEvent();
+  watchSession();watchKick();watchGlobalSpawn();watchAnnounce();watchAbuse();watchKonoha();watchMyAvatar();watchAWild();watchUpdateEvent();watchNSE();
   $('ltxt').textContent='Masuk ke server…';
   if(!await claimSlot(room,mySlot))throw new Error('Semua server penuh. Coba lagi nanti.');
   setupPresence();
@@ -3384,7 +3459,7 @@ function frame(now){
     lavaMats.forEach((m,i)=>m.color.setHSL(.06+.02*Math.sin(t*3+i),1,.5));
     fires.forEach((f,i)=>{f.scale.y=2.2*(1+.25*Math.sin(t*9+i*2));});
     for(let i=fxs.length-1;i>=0;i--){const f=fxs[i];f.t+=dt;f.s.position.y+=dt*1.6;f.s.material.opacity=Math.max(0,1-f.t/1.3);if(f.t>1.3){killSprite(f.s);fxs.splice(i,1);}}
-    updateBolts(dt);updateTrails(dt);updateBooms(dt);updateHoles(dt);
+    updateBolts(dt);updateTrails(dt);updateBooms(dt);updateHoles(dt);updateSharinFx(dt);tickGenjWorld(dt,t);
     if(khodam){khodamCd-=dt;if(khodamCd<=0){khodamCd=rnd(1,2.2);const kp=player.root.position;spawnBolt(kp.x+rnd(-1,1),kp.z+rnd(-1,1),7,0xfff44d);}}
     nests.forEach(N=>{if(N.active&&N.present&&SP[N.reg][N.sp].t===12){N.boltCd=(N.boltCd===undefined?0:N.boltCd)-dt;if(N.boltCd<=0){N.boltCd=rnd(1.2,2.8);spawnBolt(N.ex,N.ez,(N.top||2)+3,0x7ef9ff);}}
       if(N.active&&N.mut===3){N.mBoltCd=(N.mBoltCd===undefined?0:N.mBoltCd)-dt;if(N.mBoltCd<=0){N.mBoltCd=rnd(1,2.4);spawnBolt(N.px,N.pz,(N.top||2)+3,0xff2222);}}

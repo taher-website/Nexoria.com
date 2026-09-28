@@ -381,7 +381,7 @@ function setUserUI(){
 }
 function showApp(){
   $('splash').hidden=true;$('app').hidden=false;
-  setUserUI();renderGames($('search').value);watchCoins();
+  setUserUI();renderGames($('search').value);watchCoins();watchHero();
   let rec='curitelur';try{rec=localStorage.getItem(LS_RECENT)||'curitelur';}catch(e){}
   const g=GAMES.find(x=>x.id===rec)||GAMES[1];
   $('heroPlay').textContent='▶ MAIN '+g.name.toUpperCase();
@@ -465,7 +465,7 @@ async function submitName(){
     USER=finalName;
     try{localStorage.setItem(LS_USER,USER);}catch(e){}
     status('Selamat datang, '+USER+'!','ok');
-    showApp();
+    showApp();tickLoginStreak();
   }catch(e){
     err.textContent=(e&&e.message==='timeout')?'Server tidak merespons. Coba lagi.':'Gagal terhubung ke server (cek koneksi atau aturan database).';
     btn.disabled=false;btn.textContent='MASUK';
@@ -492,6 +492,40 @@ $('uname').addEventListener('keydown',e=>{if(e.key==='Enter')submitName();});
 })();
 
 /* ---------- 💵 koin & avatar ---------- */
+
+/* ---------- 🍥 Event Skin Naruto (30 hari) + misi login 7 hari berturut-turut ---------- */
+const NSE_PATH='nexoria/curitelur/narutoSkinEvent';
+let skinEv=null,heroOn=false,streakInfo={n:0,last:''},heroWatch=false;
+function todayUTC(off){const d=new Date(Date.now()-(off||0)*86400000);return d.toISOString().slice(0,10);}
+function watchHero(){
+  const d=getDB();if(!d||!USER||heroWatch)return;heroWatch=true;
+  const key=USER.toLowerCase();
+  d.ref(NSE_PATH).on('value',sn=>{skinEv=sn.val()||null;if($('avM'))renderAv();});
+  d.ref('nexoria/users/'+key+'/heroUnlocked').on('value',sn=>{heroOn=!!sn.val();if($('avM'))renderAv();});
+  d.ref('nexoria/users/'+key+'/streak').on('value',sn=>{streakInfo=sn.val()||{n:0,last:''};if($('avM'))renderAv();});
+}
+function skinEventActive(){return !!(skinEv&&skinEv.start&&Date.now()<+skinEv.start+30*86400000);}
+function tickLoginStreak(){
+  const d=getDB();if(!d||!USER)return;
+  watchHero();
+  const ref=d.ref('nexoria/users/'+USER.toLowerCase()+'/streak'),today=todayUTC(0),yst=todayUTC(1);
+  ref.transaction(cur=>{
+    if(!skinEventActive())return cur;   /* misi hanya berjalan selama event Naruto aktif */
+    cur=cur||{n:0,last:'',got:0};
+    if(cur.last===today)return cur;
+    const n=cur.last===yst?(cur.n||0)+1:1;
+    return {n,last:today,got:cur.got||0};
+  }).then(r=>{
+    if(!r.committed)return;
+    const v=r.snapshot.val();
+    if(v&&v.n>=7&&!v.got){
+      d.ref('nexoria/users/'+USER.toLowerCase()+'/streak/got').set(1).catch(()=>{});
+      d.ref('nexoria/users/'+USER.toLowerCase()+'/heroUnlocked').set(1).catch(()=>{});
+      status('🎉 Misi 7 hari selesai! Kostum Naruto & Sasuke terbuka untuk selamanya!','ok');
+    }
+  }).catch(()=>{});
+}
+
 const fmtC=n=>{n=Math.floor(+n||0);if(n<1000)return String(n);const u=['','K','M','B','T'];let i=0,v=n;while(v>=1000&&i<4){v/=1000;i++;}return (v>=100?v.toFixed(0):v.toFixed(1)).replace(/\.0$/,'')+u[i];};
 let coinRef=null,KON=false,konRef=null;
 function watchCoins(){
@@ -504,12 +538,12 @@ function watchCoins(){
 const AV_CAT=[['sk','Kulit'],['h','Rambut'],['f','Wajah'],['t','Baju'],['c','Aksesoris'],['p','Celana'],['s','Sepatu']];
 const SKINS=['#f2c9a0','#e0ac82','#c68642','#8d5524','#ffe0cf','#b98a6a'];
 const AVI={
- h:{a:{n:'Pendek Klasik',g:'A',st:'short',c:'#3b2a1a'},b:{n:'Duri Neon',g:'B',st:'spiky',c:'#39f4ff'},n1:{n:'Duri Kuning',g:'N',st:'spiky',c:'#ffd54a'},n2:{n:'Duri Perak',g:'N',st:'spiky',c:'#c8ccd4'},n3:{n:'Panjang Merah',g:'N',st:'long',c:'#c0392b'}},
- f:{a:{n:'Wajah Biasa',g:'A'},b:{n:'Mata Neon',g:'B',x:'glow'},n1:{n:'Kumis Kucing',g:'N',x:'whisk'},n2:{n:'Topeng Rubah',g:'N',x:'mask'},n3:{n:'Mata Merah',g:'N',x:'red'}},
- t:{a:{n:'Kaos Klasik',g:'A',c:'#3d8bff'},b:{n:'Jaket Neon',g:'B',c:'#8b5cf6',x:'stripe'},n1:{n:'Baju Oranye Genin',g:'N',c:'#ff8a3a'},n2:{n:'Rompi Abu ANBU',g:'N',c:'#15151c',x:'vest'},n3:{n:'Jubah Merah Gelap',g:'N',c:'#5a1414',x:'cloak'}},
- c:{a:{n:'Kacamata',g:'A',x:'glass'},b:{n:'Headphone Neon',g:'B',x:'phone'},n1:{n:'Ikat Kepala Konoha',g:'N',x:'band'},n2:{n:'Syal Merah',g:'N',x:'scarf'},n3:{n:'Pedang Punggung',g:'N',x:'sword'}},
- p:{a:{n:'Celana Biru',g:'A',c:'#34405c'},b:{n:'Celana Neon',g:'B',c:'#1a1a2e',x:'stripe'},n1:{n:'Celana Ninja Oranye',g:'N',c:'#ff6a1a'},n2:{n:'Celana Pita ANBU',g:'N',c:'#1c2038',x:'wrap'},n3:{n:'Celana Merah Gelap',g:'N',c:'#5a1a1a'}},
- s:{a:{n:'Sepatu Hitam',g:'A',c:'#222222'},b:{n:'Sepatu Neon',g:'B',c:'#39f4ff'},n1:{n:'Sandal Ninja',g:'N',c:'#151520',x:'sandal'},n2:{n:'Sepatu Merah',g:'N',c:'#b02020'},n3:{n:'Sepatu Emas',g:'N',c:'#ffd54a'}}
+ h:{a:{n:'Pendek Klasik',g:'A',st:'short',c:'#3b2a1a'},b:{n:'Duri Neon',g:'B',st:'spiky',c:'#39f4ff'},n1:{n:'Duri Kuning',g:'N',st:'spiky',c:'#ffd54a'},n2:{n:'Duri Perak',g:'N',st:'spiky',c:'#c8ccd4'},n3:{n:'Panjang Merah',g:'N',st:'long',c:'#c0392b'},hnar:{n:'Rambut Naruto',g:'H',st:'spiky',c:'#ffd54a'},hsas:{n:'Rambut Sasuke',g:'H',st:'spiky',c:'#1a1a22'}},
+ f:{a:{n:'Wajah Biasa',g:'A'},b:{n:'Mata Neon',g:'B',x:'glow'},n1:{n:'Kumis Kucing',g:'N',x:'whisk'},n2:{n:'Topeng Rubah',g:'N',x:'mask'},n3:{n:'Mata Merah',g:'N',x:'red'},hnar:{n:'Wajah Naruto',g:'H',x:'whisk'},hsas:{n:'Sharingan Sasuke',g:'H',x:'sharingan'}},
+ t:{a:{n:'Kaos Klasik',g:'A',c:'#3d8bff'},b:{n:'Jaket Neon',g:'B',c:'#8b5cf6',x:'stripe'},n1:{n:'Baju Oranye Genin',g:'N',c:'#ff8a3a'},n2:{n:'Rompi Abu ANBU',g:'N',c:'#15151c',x:'vest'},n3:{n:'Jubah Merah Gelap',g:'N',c:'#5a1414',x:'cloak'},hnar:{n:'Jaket Naruto',g:'H',c:'#ff6a1a',x:'naruto'},hsas:{n:'Baju Sasuke',g:'H',c:'#8f939c',x:'sasuke'}},
+ c:{a:{n:'Kacamata',g:'A',x:'glass'},b:{n:'Headphone Neon',g:'B',x:'phone'},n1:{n:'Ikat Kepala Konoha',g:'N',x:'band'},n2:{n:'Syal Merah',g:'N',x:'scarf'},n3:{n:'Pedang Punggung',g:'N',x:'sword'},hnar:{n:'Ikat Kepala Naruto',g:'H',x:'band'},hsas:{n:'Tali Ungu Sasuke',g:'H',x:'rope'}},
+ p:{a:{n:'Celana Biru',g:'A',c:'#34405c'},b:{n:'Celana Neon',g:'B',c:'#1a1a2e',x:'stripe'},n1:{n:'Celana Ninja Oranye',g:'N',c:'#ff6a1a'},n2:{n:'Celana Pita ANBU',g:'N',c:'#1c2038',x:'wrap'},n3:{n:'Celana Merah Gelap',g:'N',c:'#5a1a1a'},hnar:{n:'Celana Naruto',g:'H',c:'#ff6a1a'},hsas:{n:'Celana Sasuke',g:'H',c:'#1c2038'}},
+ s:{a:{n:'Sepatu Hitam',g:'A',c:'#222222'},b:{n:'Sepatu Neon',g:'B',c:'#39f4ff'},n1:{n:'Sandal Ninja',g:'N',c:'#151520',x:'sandal'},n2:{n:'Sepatu Merah',g:'N',c:'#b02020'},n3:{n:'Sepatu Emas',g:'N',c:'#ffd54a'},hnar:{n:'Sandal Naruto',g:'H',c:'#151520',x:'sandal'},hsas:{n:'Sandal Sasuke',g:'H',c:'#151520',x:'sandal'}}
 };
 const LOOK_RE=/^\d\.[a-z0-9]+(\.[a-z0-9]+){5}$/,DEF_LOOK='0.a.a.a.a.a.a';
 const lookKey=()=>'nx_av_'+USER.toLowerCase();
@@ -533,6 +567,8 @@ function svgAvatar(lk){
   [[16,0],[88,1]].forEach(([x])=>{o+='<rect x="'+x+'" y="64" width="16" height="36" fill="'+t.c+'"/><rect x="'+(x+1)+'" y="100" width="14" height="20" fill="'+sk+'"/>';});
   if(c.x==='scarf')o+='<rect x="34" y="58" width="52" height="9" rx="4" fill="#d42a2a"/><rect x="72" y="62" width="9" height="34" fill="#d42a2a"/>';
   if(h.st==='long')o+='<rect x="34" y="24" width="52" height="60" rx="10" fill="'+h.c+'"/>';
+  if(t.x==='naruto')o+='<rect x="30" y="60" width="60" height="20" fill="#111318"/><circle cx="60" cy="70" r="6" fill="#d42a1a"/>';
+  if(t.x==='sasuke')o+='<rect x="30" y="60" width="60" height="46" fill="#232733"/>';
   o+='<circle cx="60" cy="40" r="25" fill="'+sk+'"/>';
   if(h.st==='spiky')o+='<polygon points="34,34 38,6 48,22 56,2 62,20 72,4 78,22 88,8 86,34" fill="'+h.c+'"/>';
   else o+='<path d="M34 38 Q36 12 60 12 Q84 12 86 38 Q60 26 34 38Z" fill="'+h.c+'"/>';
@@ -546,6 +582,8 @@ function svgAvatar(lk){
   if(c.x==='glass')o+='<rect x="42" y="37" width="16" height="11" fill="none" stroke="#111" stroke-width="2.2"/><rect x="62" y="37" width="16" height="11" fill="none" stroke="#111" stroke-width="2.2"/><path d="M58 41 H62" stroke="#111" stroke-width="2"/>';
   if(c.x==='phone')o+='<path d="M36 40 Q36 8 60 8 Q84 8 84 40" fill="none" stroke="#222" stroke-width="4"/><circle cx="35" cy="42" r="7" fill="#39f4ff"/><circle cx="85" cy="42" r="7" fill="#39f4ff"/>';
   if(c.x==='band')o+='<rect x="34" y="24" width="52" height="8" fill="#1a3a8a"/><rect x="50" y="22" width="20" height="12" rx="2" fill="#c8ccd4"/>';
+  if(c.x==='rope')o+='<rect x="32" y="112" width="56" height="10" fill="#7a4dcc"/>';
+  if(f.x==='sharingan')o+='<circle cx="51" cy="42" r="4.5" fill="#ff1a1a"/><circle cx="69" cy="42" r="4.5" fill="#ff1a1a"/><circle cx="51" cy="42" r="1.4" fill="#140006"/><circle cx="69" cy="42" r="1.4" fill="#140006"/>';
   return o+'</svg>';
 }
 let avSel={sk:0,h:'a',f:'a',t:'a',c:'a',p:'a',s:'a'},avTab='h';
@@ -556,20 +594,31 @@ function openAvatar(){
   const m=document.createElement('div');m.id='avM';
   m.innerHTML='<div class="av-card"><h3>🎨 Avatar · '+esc(USER)+'</h3><div class="av-top"><div class="av-prev" id="avPrev"></div><div class="av-side"><div class="av-tabs" id="avTabs"></div><div id="avOpts"></div></div></div>'
    +'<div class="av-sets"><button id="avSetA">Pakai Set A (Klasik)</button><button id="avSetB">Pakai Set B (Neon)</button></div>'
+   +'<div class="av-sets" id="avHeroRow"></div>'
    +'<div class="av-foot"><button class="btn" id="avSave">SIMPAN</button><button class="btn ghost" id="avClose">Tutup</button></div>'
-   +'<p style="margin:10px 0 0;color:var(--mute);font-size:12px">Set A & Set B gratis. Item 🍥 eksklusif Collab Naruto: terbuka setelah wilayah Konoha muncul di game Curi Telur.</p></div>';
+   +'<p style="margin:10px 0 0;color:var(--mute);font-size:12px">Set A & Set B gratis. Item 🍥 eksklusif Collab Naruto: terbuka setelah wilayah Konoha muncul di game Curi Telur.</p>'
+   +'<p id="avHeroNote" style="margin:6px 0 0;color:var(--mute);font-size:12px"></p></div>';
   document.body.appendChild(m);
   m.addEventListener('pointerdown',e=>{if(e.target===m)closeAvatar();});
   $('avClose').onclick=closeAvatar;
   $('avSetA').onclick=()=>{avSel={sk:avSel.sk,h:'a',f:'a',t:'a',c:'a',p:'a',s:'a'};renderAv();};
   $('avSetB').onclick=()=>{avSel={sk:avSel.sk,h:'b',f:'b',t:'b',c:'b',p:'b',s:'b'};renderAv();};
   $('avSave').onclick=saveAvatar;
+  $('avHeroRow').innerHTML='<button id="avSetNar">🍥 Pakai Naruto</button><button id="avSetSas">🌀 Pakai Sasuke</button>';
+  $('avSetNar').onclick=()=>{if(!heroOn){status('Selesaikan misi login 7 hari saat Event Naruto aktif dulu','err');return;}avSel={sk:avSel.sk,h:'hnar',f:'hnar',t:'hnar',c:'hnar',p:'hnar',s:'hnar'};renderAv();};
+  $('avSetSas').onclick=()=>{if(!heroOn){status('Selesaikan misi login 7 hari saat Event Naruto aktif dulu','err');return;}avSel={sk:avSel.sk,h:'hsas',f:'hsas',t:'hsas',c:'hsas',p:'hsas',s:'hsas'};renderAv();};
   renderAv();
 }
 function closeAvatar(){const m=$('avM');if(m)m.remove();}
 function renderAv(){
   if(!$('avM'))return;
   $('avPrev').innerHTML=svgAvatar(selToLook());
+  if($('avHeroNote')){
+    const evOn=skinEventActive();
+    let note=evOn?'🎏 Event Naruto aktif · misi login: '+(streakInfo.n||0)+'/7 hari berturut-turut':'🎏 Event Naruto sedang tidak berlangsung';
+    if(heroOn)note+=' · Kostum Naruto & Sasuke sudah TERBUKA untuk akunmu';
+    $('avHeroNote').textContent=note;
+  }
   $('avTabs').innerHTML=AV_CAT.map(([k,n])=>'<button data-k="'+k+'" class="'+(k===avTab?'on':'')+'">'+n+'</button>').join('');
   $('avTabs').querySelectorAll('button').forEach(b=>b.onclick=()=>{avTab=b.dataset.k;renderAv();});
   const o=$('avOpts');
@@ -579,7 +628,7 @@ function renderAv(){
   }else{
     const L=AVI[avTab];
     o.innerHTML='<div class="av-opts">'+Object.keys(L).map(id=>{
-      const it=L[id],lock=it.g==='N'&&!KON,tag=it.g==='A'?'Set A':it.g==='B'?'Set B':(lock?'🔒 Eksklusif Naruto':'🍥 Naruto');
+      const it=L[id],lock=(it.g==='N'&&!KON)||(it.g==='H'&&!heroOn),tag=it.g==='A'?'Set A':it.g==='B'?'Set B':it.g==='H'?(lock?'🔒 Misi Login 7 Hari':'🍥 Naruto Limited'):(lock?'🔒 Eksklusif Naruto':'🍥 Naruto');
       return '<button data-id="'+id+'" class="'+(avSel[avTab]===id?'on':'')+'"'+(lock?' disabled':'')+'><span>'+esc(it.n)+'</span><i>'+tag+'</i></button>';
     }).join('')+'</div>';
     o.querySelectorAll('button').forEach(b=>b.onclick=()=>{avSel[avTab]=b.dataset.id;renderAv();});
@@ -587,7 +636,7 @@ function renderAv(){
 }
 function saveAvatar(){
   const l=selToLook();
-  for(const k of ['h','f','t','c','p','s'])if(AVI[k][avSel[k]].g==='N'&&!KON){status('Item Naruto masih terkunci','err');return;}
+  for(const k of ['h','f','t','c','p','s']){const g=AVI[k][avSel[k]].g;if(g==='N'&&!KON){status('Item Naruto masih terkunci','err');return;}if(g==='H'&&!heroOn){status('Kostum Naruto/Sasuke masih terkunci','err');return;}}
   try{localStorage.setItem(lookKey(),l);}catch(e){}
   const d=getDB();
   if(d)d.ref('nexoria/users/'+USER.toLowerCase()+'/avatar').set(l).then(()=>status('Avatar tersimpan!','ok')).catch(()=>status('Tersimpan di perangkat (server menolak)','err'));
@@ -612,7 +661,7 @@ $('heroAvatar').addEventListener('click',openAvatar);
         }else{
           const v=s.val()||{};
           if(v.name&&v.name!==USER){USER=v.name;try{localStorage.setItem(LS_USER,USER);}catch(e){}setUserUI();}
-          d.ref('nexoria/users/'+USER.toLowerCase()+'/lastLogin').set(Date.now());
+          d.ref('nexoria/users/'+USER.toLowerCase()+'/lastLogin').set(Date.now());tickLoginStreak();
         }
       }).catch(()=>{});
     }
