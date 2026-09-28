@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>NEXORIA</title>
+<meta name="theme-color" content="#050308">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;800;900&family=Sora:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#050308;--void:#02010a;--card:#0f0c1e;--cardhi:#151230;--line:#8b7bff2b;--line2:#ffffff14;
+  --ink:#f3f1ff;--mute:#9a93c2;--mute2:#6d6796;
+  --cy:#39f4ff;--mg:#ff2fa6;--vi:#8b5cf6;--gold:#ffcf6b;--ok:#33f2a0;--bad:#ff4d6a;
+  --font-d:'Orbitron',sans-serif;--font-b:'Sora',system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#050308}}
+:root[data-theme="dark"]{--bg:#050308}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-family:var(--font-b)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{position:relative;overflow-x:hidden;background:var(--bg)}
+button{font-family:inherit}
+[hidden]{display:none!important}
+:focus-visible{outline:2px solid var(--cy);outline-offset:2px}
+#stars{position:fixed;inset:0;z-index:-1;background:var(--bg)}
+
+/* ---------- Blackhole visual ---------- */
+.bh{position:absolute;pointer-events:none}
+.bh::before{content:'';position:absolute;inset:-45%;border-radius:50%;
+  background:conic-gradient(from 0deg,transparent 0deg,var(--cy) 35deg,transparent 90deg,var(--mg) 170deg,transparent 230deg,var(--vi) 300deg,transparent 360deg);
+  filter:blur(22px);opacity:.8;animation:spin 22s linear infinite}
+.bh::after{content:'';position:absolute;inset:16%;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,#1c1236 0%,#050308 55%,#000 100%);
+  box-shadow:0 0 70px 14px #000,inset 0 0 46px #000}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.bh::before{animation:none}}
+
+/* ---------- Layar username ---------- */
+#splash{position:fixed;inset:0;z-index:40;display:flex;align-items:center;justify-content:center;padding:20px;overflow:auto;background:var(--void)}
+#splash .bh{width:420px;height:420px;top:-140px;right:-140px}
+.sp-card{position:relative;z-index:1;width:min(92vw,420px);text-align:center;padding:34px 24px 26px;border-radius:24px;
+  background:linear-gradient(180deg,var(--cardhi),var(--card));border:1px solid var(--line);box-shadow:0 30px 90px #000c,0 0 0 1px #ffffff08 inset}
+.logo{font-family:var(--font-d);font-weight:900;font-size:clamp(32px,10vw,46px);letter-spacing:.12em;margin:0;line-height:1;
+  background:linear-gradient(90deg,var(--cy),var(--vi) 55%,var(--mg));-webkit-background-clip:text;background-clip:text;color:transparent}
+.logo-sub{margin:12px 0 26px;color:var(--mute);font-size:14px;line-height:1.5}
+.field{display:flex;flex-direction:column;gap:8px;text-align:left}
+.field label{font-size:12px;font-weight:700;letter-spacing:.06em;color:var(--mute)}
+.field input{height:52px;border-radius:14px;border:1.5px solid var(--line);background:var(--void);color:var(--ink);padding:0 16px;font:inherit;font-size:17px;font-weight:600;outline:none;transition:border-color .15s,box-shadow .15s}
+.field input:focus{border-color:var(--cy);box-shadow:0 0 0 4px #39f4ff22}
+.hint{font-size:12px;color:var(--mute2);margin:2px 0 0}
+.err{min-height:18px;margin:10px 0 0;font-size:13px;font-weight:700;color:var(--bad)}
+.btn{width:100%;height:52px;margin-top:8px;border:0;border-radius:14px;font-size:16px;font-weight:800;letter-spacing:.02em;color:#04101c;
+  background:linear-gradient(90deg,var(--cy),var(--vi));cursor:pointer;box-shadow:0 10px 28px #39f4ff33;transition:transform .12s,box-shadow .12s}
+.btn:hover{box-shadow:0 12px 34px #39f4ff4d}
+.btn:active{transform:translateY(1px) scale(.99)}
+.btn:disabled{opacity:.5;cursor:wait;box-shadow:none}
+.btn.ghost{background:#ffffff10;color:var(--ink);box-shadow:none;border:1px solid var(--line)}
+.btn.small{width:auto;padding:0 18px;height:44px;font-size:14px}
+
+/* ---------- Bilah atas ---------- */
+header{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:12px;padding:10px 14px;padding-top:max(10px,env(safe-area-inset-top));
+  background:#050308cc;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--line2)}
+#menuBtn{width:42px;height:42px;flex:none;border-radius:12px;border:1px solid var(--line);background:#ffffff0a;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:5px;cursor:pointer;padding:0}
+#menuBtn span{display:block;width:20px;height:2px;border-radius:2px;background:var(--ink)}
+.brand{font-family:var(--font-d);font-weight:900;font-size:19px;letter-spacing:.14em;
+  background:linear-gradient(90deg,var(--cy),var(--vi) 55%,var(--mg));-webkit-background-clip:text;background-clip:text;color:transparent}
+.chip{margin-left:auto;display:flex;align-items:center;gap:8px;padding:5px 12px 5px 5px;border-radius:30px;background:#ffffff0a;border:1px solid var(--line);font-weight:700;font-size:13px;max-width:44vw}
+.chip b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ava{flex:none;width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--font-d);font-weight:900;font-size:14px;color:#04101c;background:linear-gradient(135deg,var(--cy),var(--mg))}
+
+/* ---------- Drawer ---------- */
+#scrim{position:fixed;inset:0;z-index:30;background:#000b;opacity:0;pointer-events:none;transition:opacity .2s}
+#scrim.on{opacity:1;pointer-events:auto}
+#drawer{position:fixed;top:0;bottom:0;left:0;z-index:31;width:min(80vw,290px);display:flex;flex-direction:column;
+  background:linear-gradient(180deg,var(--cardhi),#08061a);border-right:1px solid var(--line);transform:translateX(-102%);transition:transform .24s cubic-bezier(.2,.8,.2,1);
+  padding:max(18px,env(safe-area-inset-top)) 14px 18px}
+#drawer.on{transform:none}
+.d-head{display:flex;align-items:center;gap:12px;padding:8px 6px 18px;border-bottom:1px solid var(--line2);margin-bottom:10px}
+.d-head .ava{width:44px;height:44px;font-size:20px}
+.d-head b{display:block;font-size:16px}
+.d-head small{color:var(--mute)}
+.nav{display:flex;flex-direction:column;gap:4px}
+.nav button{display:flex;align-items:center;gap:12px;height:46px;padding:0 12px;border:0;border-radius:12px;background:transparent;color:var(--ink);font-size:15px;font-weight:600;text-align:left;cursor:pointer;transition:background .15s}
+.nav button:hover,.nav button.on{background:#ffffff10}
+.nav button.on{color:var(--cy)}
+.nav .sp{flex:1}
+.nav button.out{color:var(--bad);margin-top:auto}
+.d-foot{margin-top:auto}
+
+/* ---------- Beranda ---------- */
+main{max-width:1100px;margin:0 auto;padding:16px 14px 40px;position:relative}
+.hero{position:relative;overflow:hidden;border-radius:22px;padding:26px 22px;background:linear-gradient(135deg,#150a30,#0a1a3a 55%,#071e28);border:1px solid var(--line);display:flex;flex-direction:column;gap:6px;min-height:180px}
+.hero .bh{width:260px;height:260px;top:-90px;right:-90px}
+.hero small{position:relative;z-index:1;color:var(--cy);font-weight:700;letter-spacing:.06em;font-size:12px}
+.hero h1{position:relative;z-index:1;margin:0;font-family:var(--font-d);font-weight:800;font-size:clamp(20px,5vw,30px);line-height:1.2}
+.hero p{position:relative;z-index:1;margin:0;color:#c7cdf5;max-width:42ch;font-size:14px;line-height:1.5}
+.hero .btn{position:relative;z-index:1;width:auto;align-self:flex-start;padding:0 22px;margin-top:10px}
+
+.sec{display:flex;align-items:center;gap:10px;margin:28px 0 14px;flex-wrap:wrap}
+.sec h2{margin:0;font-family:var(--font-d);font-weight:800;font-size:18px;letter-spacing:.02em}
+.sec .sp{flex:1}
+.seg{display:flex;gap:4px;padding:4px;border-radius:12px;background:#ffffff08;border:1px solid var(--line2)}
+.seg button{border:0;background:transparent;color:var(--mute);font-weight:700;font-size:13px;padding:7px 13px;border-radius:9px;cursor:pointer;transition:background .15s,color .15s}
+.seg button.on{background:linear-gradient(90deg,var(--cy),var(--vi));color:#04101c}
+.search{height:40px;width:min(48vw,240px);border-radius:12px;border:1px solid var(--line);background:#ffffff08;color:var(--ink);padding:0 14px;font:inherit;font-size:14px;outline:none;transition:border-color .15s}
+.search:focus{border-color:var(--cy)}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px}
+.card{position:relative;display:flex;flex-direction:column;border-radius:18px;background:var(--card);border:1px solid var(--line2);overflow:hidden;cursor:pointer;text-align:left;color:inherit;padding:0;
+  transition:transform .18s,border-color .18s,box-shadow .18s}
+.card:hover,.card:focus-visible{transform:translateY(-4px);border-color:#39f4ff66;box-shadow:0 14px 34px #00000066,0 0 0 1px #39f4ff22}
+.card:active{transform:scale(.98)}
+.thumb{position:relative;aspect-ratio:16/10;background:var(--void);overflow:hidden}
+.thumb img,.thumb svg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+.badge{position:absolute;left:10px;top:10px;z-index:1;padding:4px 10px;border-radius:20px;background:#000a;backdrop-filter:blur(4px);font-size:11px;font-weight:800;letter-spacing:.03em;border:1px solid #ffffff22}
+.badge.recent{left:auto;right:44px;background:linear-gradient(90deg,var(--mg),var(--vi));border:0;color:#fff}
+.fav{position:absolute;right:8px;top:8px;z-index:2;width:30px;height:30px;border-radius:50%;border:1px solid #ffffff22;background:#000a;backdrop-filter:blur(4px);
+  display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--mute);font-size:15px;line-height:1;transition:color .15s,transform .15s}
+.fav:hover{transform:scale(1.08)}
+.fav.on{color:var(--gold)}
+.meta{padding:13px 14px 15px;display:flex;flex-direction:column;gap:4px}
+.meta b{font-size:16px;font-weight:700}
+.meta span{color:var(--mute);font-size:12.5px;line-height:1.4}
+.meta .play{margin-top:9px;height:38px;border:0;border-radius:11px;background:linear-gradient(90deg,var(--ok),#1fd18a);color:#04140c;font-weight:800;font-size:14px;cursor:pointer}
+.empty{color:var(--mute);padding:30px 4px;text-align:center;font-size:14px}
+footer{color:var(--mute2);font-size:12px;text-align:center;padding:14px 0 30px}
+
+/* ---------- Modal ---------- */
+#modal{position:fixed;inset:0;z-index:50;background:#000c;backdrop-filter:blur(2px);display:flex;align-items:center;justify-content:center;padding:20px}
+.m-card{width:min(92vw,380px);border-radius:20px;background:linear-gradient(180deg,var(--cardhi),var(--card));border:1px solid var(--line);padding:24px 22px;text-align:center}
+.m-card h3{margin:0 0 10px;font-family:var(--font-d);font-size:18px;font-weight:800}
+.m-card p{margin:0 0 16px;color:var(--mute);font-size:14px;line-height:1.5}
+.m-card .stats{display:flex;gap:8px;margin-bottom:16px}
+.m-card .stat{flex:1;border-radius:12px;background:#ffffff08;border:1px solid var(--line2);padding:10px 6px}
+.m-card .stat b{display:block;font-size:19px;color:var(--cy)}
+.m-card .stat span{font-size:11px;color:var(--mute)}
+.m-card .row{display:flex;gap:10px}
+.m-card .btn{margin-top:0}
+.status{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);z-index:60;display:flex;align-items:center;gap:8px;padding:10px 18px;border-radius:14px;
+  background:#0d0b1de6;border:1px solid var(--line);font-weight:700;font-size:13px;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;box-shadow:0 10px 30px #0008}
+.status.on{opacity:1;transform:translateX(-50%) translateY(-2px)}
+.status.err{border-color:#ff4d6a55}
+.status.ok{border-color:#33f2a055}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<canvas id="stars" aria-hidden="true"></canvas>
+<audio id="bgm" src="music.mp3" loop preload="auto"></audio>
+<button id="sndBtn" type="button" aria-label="Suara musik" title="Musik" style="position:fixed;right:12px;bottom:12px;z-index:90;width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:#0f0c1ecc;color:var(--ink);font-size:20px;cursor:pointer;backdrop-filter:blur(6px)">🔊</button>
+
+<!-- LAYAR AWAL: MASUKKAN USERNAME -->
+<section id="splash" hidden>
+  <div class="bh" aria-hidden="true"></div>
+  <div class="sp-card">
+    <h1 class="logo">NEXORIA</h1>
+    <p class="logo-sub">Platform game mabar. Buat username dan langsung main.</p>
+    <div class="field">
+      <label for="uname">Username</label>
+      <input id="uname" type="text" maxlength="16" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="contoh: Budi_123">
+      <p class="hint">3–16 karakter: huruf, angka, atau garis bawah (_).</p>
+    </div>
+    <div class="err" id="err" role="alert"></div>
+    <button class="btn" id="goBtn">MASUK</button>
+  </div>
+</section>
+
+<!-- APLIKASI (BERANDA) -->
+<div id="app" hidden>
+  <header>
+    <button id="menuBtn" aria-label="Buka menu navigasi"><span></span><span></span><span></span></button>
+    <div class="brand">NEXORIA</div>
+    <div class="chip"><div class="ava" id="avaTop">N</div><b id="nameTop"></b></div>
+  </header>
+
+  <div id="scrim"></div>
+  <aside id="drawer" aria-label="Navigasi">
+    <div class="d-head"><div class="ava" id="avaSide">N</div><div><b id="nameSide"></b><small>Akun terdaftar</small></div></div>
+    <div class="nav">
+      <button id="navHome" class="on">🏠 Beranda</button>
+      <button id="navGames">🎮Semua Game</button>
+      <button id="navProfile">👤 Profil</button>
+    </div>
+    <div class="d-foot"><div class="nav"><button class="out" id="navLogout">⛔ Logout</button></div></div>
+  </aside>
+
+  <main id="home">
+    <section class="hero">
+      <div class="bh" aria-hidden="true"></div>
+      <small>BERANDA</small>
+      <h1 id="hello">Halo!</h1>
+      <p>Pilih game, ajak teman, dan mulai bermain. Progres tiap game tersimpan di akunmu.</p>
+      <button class="btn" id="heroPlay"> MAIN</button>
+    </section>
+
+    <div class="sec" id="gamesTop">
+      <h2>Game</h2>
+      <div class="sp"></div>
+      <div class="seg" role="group" aria-label="Filter game">
+        <button class="on" id="filAll">Semua</button>
+        <button id="filFav">⭐ Favorit</button>
+      </div>
+      <input class="search" id="search" type="search" placeholder="Cari game…" aria-label="Cari game">
+    </div>
+    <div class="grid" id="grid"></div>
+    <div class="empty" id="none" hidden>Game tidak ditemukan.</div>
+    <footer>NEXORIA · semua game terhubung ke satu akun</footer>
+  </main>
+</div>
+
+<div id="modal" hidden><div class="m-card" id="mcard"></div></div>
+<div class="status" id="status" role="status" aria-live="polite"></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script>
+(function(){
+'use strict';
+
+/* ================================================================
+   DAFTAR GAME — "img" = nama file foto (satu folder dengan index.html): stealanegg.jpg, battleshoot.png, transformers.png.
+   Kalau "img" dikosongkan, dipakai gambar ilustrasi bawaan.
+   ================================================================ */
+const GAMES=[
+  {id:'battleshoot',name:'Battle Shoot',file:'battleshoot.html',img:'battleshoot.png',tag:'Aksi · Tembak',
+   desc:'Baku tembak 3D di layar HP. Bidik cepat, bertahan paling lama.',
+   art:{a:'#3a0d2a',b:'#ff2fa6',emoji:'🔫'}},
+  {id:'curitelur',name:'Curi Telur',file:'stealanegg.html',img:'stealanegg.jpg',tag:'Mabar 4 pemain',
+   desc:'Curi telur dari penjaga, kabur ke zona aman, tetaskan di kandangmu.',
+   art:{a:'#062a3a',b:'#39f4ff',emoji:'🥚'}},
+  {id:'naruto',name:'Naruto',file:'transformers.html',img:'transformers.png',tag:'Petualangan',
+   desc:'Jadi Robot Transformers dan kuasai kota.',
+   art:{a:'#1d0a3a',b:'#8b5cf6',emoji:'🤖'}}
+];
+
+const FB_CFG={
+  apiKey:"AIzaSyBp4P3nv9w1xYEH_9wNPxq2E-no292ugDM",
+  authDomain:"server-taher.firebaseapp.com",
+  databaseURL:"https://server-taher-default-rtdb.firebaseio.com",
+  projectId:"server-taher",
+  storageBucket:"server-taher.firebasestorage.app",
+  messagingSenderId:"79596136495",
+  appId:"1:79596136495:web:93779c3b3983376253beda",
+  measurementId:"G-K1BF1T4PM3"
+};
+
+const LS_USER='nexoria_user',LS_RECENT='nexoria_recent',LS_FAV='nexoria_favs',LS_PLAYS='nexoria_plays';
+const $=id=>document.getElementById(id);
+const valid=n=>/^[A-Za-z0-9_]{3,16}$/.test(n);
+let db=null,USER='',FILTER='all';
+
+function getDB(){
+  if(db)return db;
+  try{
+    if(typeof firebase==='undefined'||typeof firebase.database!=='function')return null;
+    if(!firebase.apps.length)firebase.initializeApp(FB_CFG);
+    db=firebase.database();
+  }catch(e){db=null;}
+  return db;
+}
+const withTimeout=(p,ms)=>Promise.race([p,new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),ms))]);
+let stT=0;
+function status(msg,kind){const s=$('status');s.textContent=msg;s.className='status on'+(kind?' '+kind:'');clearTimeout(stT);stT=setTimeout(()=>s.classList.remove('on'),2600);}
+
+/* ---------- penyimpanan lokal kecil ---------- */
+function readJSON(k,fb){try{return JSON.parse(localStorage.getItem(k))||fb;}catch(e){return fb;}}
+function writeJSON(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
+function getFavs(){return readJSON(LS_FAV,[]);}
+function toggleFav(id){
+  let f=getFavs();
+  f=f.includes(id)?f.filter(x=>x!==id):[...f,id];
+  writeJSON(LS_FAV,f);return f;
+}
+function bumpPlays(id){const p=readJSON(LS_PLAYS,{});p[id]=(p[id]||0)+1;writeJSON(LS_PLAYS,p);return p;}
+function totalPlays(){const p=readJSON(LS_PLAYS,{});return Object.values(p).reduce((a,b)=>a+b,0);}
+
+/* ---------- starfield latar ---------- */
+function drawStars(){
+  const c=$('stars'),ctx=c.getContext('2d'),dpr=Math.min(devicePixelRatio||1,2);
+  c.width=innerWidth*dpr;c.height=innerHeight*dpr;c.style.width=innerWidth+'px';c.style.height=innerHeight+'px';
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.fillStyle='#050308';ctx.fillRect(0,0,innerWidth,innerHeight);
+  const n=Math.round((innerWidth*innerHeight)/9000);
+  for(let i=0;i<n;i++){
+    const x=Math.random()*innerWidth,y=Math.random()*innerHeight,r=Math.random()*1.3+.2,a=Math.random()*.7+.15;
+    ctx.fillStyle='rgba(230,232,255,'+a.toFixed(2)+')';
+    ctx.beginPath();ctx.arc(x,y,r,0,7);ctx.fill();
+  }
+}
+drawStars();let rT=0;addEventListener('resize',()=>{clearTimeout(rT);rT=setTimeout(drawStars,200);});
+
+/* ---------- ilustrasi bawaan ---------- */
+function artSVG(g){
+  const a=g.art;
+  return '<svg viewBox="0 0 320 200" preserveAspectRatio="xMidYMid slice" aria-hidden="true">'
+   +'<defs><linearGradient id="g_'+g.id+'" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="'+a.a+'"/><stop offset="1" stop-color="'+a.b+'"/></linearGradient></defs>'
+   +'<rect width="320" height="200" fill="url(#g_'+g.id+')"/>'
+   +'<circle cx="270" cy="30" r="70" fill="#ffffff14"/><circle cx="40" cy="190" r="90" fill="#00000030"/>'
+   +'<path d="M0 150 Q80 110 160 150 T320 140 V200 H0Z" fill="#00000038"/>'
+   +'<text x="160" y="118" font-size="84" text-anchor="middle">'+a.emoji+'</text></svg>';
+}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+
+/* ---------- daftar game ---------- */
+function renderGames(filter){
+  const q=(filter||'').trim().toLowerCase();
+  let recent='';try{recent=localStorage.getItem(LS_RECENT)||'';}catch(e){}
+  const favs=getFavs();
+  let list=GAMES.filter(g=>!q||g.name.toLowerCase().includes(q)||g.tag.toLowerCase().includes(q));
+  if(FILTER==='fav')list=list.filter(g=>favs.includes(g.id));
+  const grid=$('grid');
+  grid.innerHTML=list.map(g=>{
+    const isFav=favs.includes(g.id),isRecent=g.id===recent;
+    return '<button class="card" data-id="'+g.id+'"><div class="thumb">'
+    +(g.img?'<img src="'+esc(g.img)+'" alt="'+esc(g.name)+'" loading="lazy" data-fallback="'+g.id+'">':artSVG(g))
+    +'<span class="badge">'+esc(g.tag)+'</span>'
+    +(isRecent?'<span class="badge recent">Terakhir</span>':'')
+    +'<span class="fav'+(isFav?' on':'')+'" data-favid="'+g.id+'" role="button" aria-label="Tandai favorit" title="Favorit">'+(isFav?'★':'☆')+'</span>'
+    +'</div>'
+    +'<div class="meta"><b>'+esc(g.name)+'</b><span>'+esc(g.desc)+'</span><div class="play">▶ Main</div></div></button>';
+  }).join('');
+  $('none').hidden=list.length>0;
+  $('none').textContent=(FILTER==='fav'&&favs.length===0)?'Belum ada game favorit. Tap ☆ pada kartu untuk menambah.':'Game tidak ditemukan.';
+  grid.querySelectorAll('img[data-fallback]').forEach(im=>{
+    im.addEventListener('error',()=>{
+      const g=GAMES.find(x=>x.id===im.dataset.fallback);if(!g)return;
+      const box=im.parentNode;im.remove();box.insertAdjacentHTML('afterbegin',artSVG(g));
+    });
+  });
+  grid.querySelectorAll('.fav').forEach(b=>{
+    b.addEventListener('click',e=>{
+      e.stopPropagation();
+      const favsNow=toggleFav(b.dataset.favid);
+      b.classList.toggle('on',favsNow.includes(b.dataset.favid));
+      b.textContent=favsNow.includes(b.dataset.favid)?'★':'☆';
+      if(FILTER==='fav')renderGames($('search').value);
+    });
+  });
+  grid.querySelectorAll('.card').forEach(c=>c.addEventListener('click',()=>launch(c.dataset.id)));
+}
+function launch(id){
+  const g=GAMES.find(x=>x.id===id);if(!g||!USER)return;
+  try{localStorage.setItem(LS_RECENT,id);}catch(e){}
+  bumpPlays(id);
+  location.href=g.file+'?u='+encodeURIComponent(USER);
+}
+
+/* ---------- tampilan ---------- */
+function setUserUI(){
+  const ini=(USER[0]||'N').toUpperCase();
+  ['avaTop','avaSide'].forEach(i=>$(i).textContent=ini);
+  $('nameTop').textContent=USER;$('nameSide').textContent=USER;
+  $('hello').textContent='Halo, '+USER+'!';
+}
+function showApp(){
+  $('splash').hidden=true;$('app').hidden=false;
+  setUserUI();renderGames($('search').value);
+  let rec='curitelur';try{rec=localStorage.getItem(LS_RECENT)||'curitelur';}catch(e){}
+  const g=GAMES.find(x=>x.id===rec)||GAMES[1];
+  $('heroPlay').textContent='▶ MAIN '+g.name.toUpperCase();
+  $('heroPlay').dataset.id=g.id;
+  closeDrawer();window.scrollTo(0,0);
+}
+function showSplash(){
+  $('app').hidden=true;$('splash').hidden=false;
+  $('uname').value='';$('err').textContent='';$('goBtn').disabled=false;$('goBtn').textContent='MASUK';
+  setTimeout(()=>{try{$('uname').focus();}catch(e){}},80);
+}
+
+/* ---------- drawer navigasi ---------- */
+function openDrawer(){$('drawer').classList.add('on');$('scrim').classList.add('on');}
+function closeDrawer(){$('drawer').classList.remove('on');$('scrim').classList.remove('on');}
+$('menuBtn').addEventListener('click',()=>{$('drawer').classList.contains('on')?closeDrawer():openDrawer();});
+$('scrim').addEventListener('click',closeDrawer);
+$('navHome').addEventListener('click',()=>{closeDrawer();window.scrollTo({top:0,behavior:'smooth'});});
+$('navGames').addEventListener('click',()=>{closeDrawer();$('gamesTop').scrollIntoView({behavior:'smooth',block:'start'});});
+$('navProfile').addEventListener('click',()=>{closeDrawer();showProfile();});
+$('navLogout').addEventListener('click',()=>{
+  closeDrawer();
+  try{localStorage.removeItem(LS_USER);}catch(e){}
+  USER='';showSplash();
+});
+$('heroPlay').addEventListener('click',()=>launch($('heroPlay').dataset.id||'curitelur'));
+$('search').addEventListener('input',e=>renderGames(e.target.value));
+$('filAll').addEventListener('click',()=>{FILTER='all';$('filAll').classList.add('on');$('filFav').classList.remove('on');renderGames($('search').value);});
+$('filFav').addEventListener('click',()=>{FILTER='fav';$('filFav').classList.add('on');$('filAll').classList.remove('on');renderGames($('search').value);});
+
+/* ---------- modal ---------- */
+function modal(html,onReady){
+  $('mcard').innerHTML=html;$('modal').hidden=false;
+  if(onReady)onReady($('mcard'));
+}
+function closeModal(){$('modal').hidden=true;$('mcard').innerHTML='';}
+$('modal').addEventListener('pointerdown',e=>{if(e.target===$('modal'))closeModal();});
+function askConfirm(title,text,yes,no){
+  return new Promise(res=>{
+    modal('<h3>'+esc(title)+'</h3><p>'+esc(text)+'</p><div class="row"><button class="btn ghost" id="mNo">'+esc(no)+'</button><button class="btn" id="mYes">'+esc(yes)+'</button></div>',c=>{
+      c.querySelector('#mYes').onclick=()=>{closeModal();res(true);};
+      c.querySelector('#mNo').onclick=()=>{closeModal();res(false);};
+    });
+  });
+}
+async function showProfile(){
+  const plays=totalPlays(),favs=getFavs().length;
+  modal('<h3>👤 '+esc(USER)+'</h3><p id="pinfo">Memuat data akun…</p>'
+    +'<div class="stats"><div class="stat"><b>'+plays+'</b><span>Kali Main</span></div><div class="stat"><b>'+favs+'</b><span>Favorit</span></div></div>'
+    +'<button class="btn ghost" id="pOk">Tutup</button>',c=>{c.querySelector('#pOk').onclick=closeModal;});
+  const d=getDB();
+  if(!d){$('pinfo').textContent='Tidak terhubung ke server.';return;}
+  try{
+    const s=await withTimeout(d.ref('nexoria/users/'+USER.toLowerCase()).once('value'),8000);
+    const v=s.val()||{};
+    const dt=v.createdAt?new Date(v.createdAt).toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'}):'-';
+    const el=$('pinfo');if(el)el.textContent='Terdaftar sejak '+dt+'.';
+  }catch(e){const el=$('pinfo');if(el)el.textContent='Gagal memuat data akun.';}
+}
+
+/* ---------- daftar / masuk ---------- */
+async function submitName(){
+  const name=$('uname').value.trim(),btn=$('goBtn'),err=$('err');
+  err.textContent='';
+  if(!valid(name)){err.textContent='Username harus 3–16 karakter: huruf, angka, atau _';return;}
+  const d=getDB();
+  if(!d){err.textContent='Tidak bisa terhubung ke server. Periksa internet lalu coba lagi.';return;}
+  btn.disabled=true;btn.textContent='MEMERIKSA…';
+  try{
+    const key=name.toLowerCase(),ref=d.ref('nexoria/users/'+key);
+    const snap=await withTimeout(ref.once('value'),10000);
+    let finalName=name;
+    if(snap.exists()){
+      const v=snap.val()||{};finalName=v.name||name;
+      const ok=await askConfirm('Username sudah terdaftar','"'+finalName+'" sudah ada di NEXORIA. Masuk ke akun ini?','Masuk','Batal');
+      if(!ok){btn.disabled=false;btn.textContent='MASUK';return;}
+      await withTimeout(ref.update({lastLogin:Date.now()}),10000);
+    }else{
+      await withTimeout(ref.set({name:name,createdAt:Date.now(),lastLogin:Date.now()}),10000);
+    }
+    USER=finalName;
+    try{localStorage.setItem(LS_USER,USER);}catch(e){}
+    status('Selamat datang, '+USER+'!','ok');
+    showApp();
+  }catch(e){
+    err.textContent=(e&&e.message==='timeout')?'Server tidak merespons. Coba lagi.':'Gagal terhubung ke server (cek koneksi atau aturan database).';
+    btn.disabled=false;btn.textContent='MASUK';
+  }
+}
+$('goBtn').addEventListener('click',submitName);
+$('uname').addEventListener('keydown',e=>{if(e.key==='Enter')submitName();});
+
+/* ---------- musik latar: music.mp3 (mulai setelah sentuhan pertama, browser melarang autoplay) ---------- */
+(function bgm(){
+  const a=$('bgm'),b=$('sndBtn');if(!a||!b)return;
+  let muted=false;try{muted=localStorage.getItem('nx_mute')==='1';}catch(e){}
+  a.volume=.5;
+  const ui=()=>{b.textContent=muted?'🔇':'🔊';};ui();
+  const start=()=>{if(muted)return;a.play().then(()=>{['pointerdown','keydown','touchstart'].forEach(ev=>document.removeEventListener(ev,start,true));}).catch(()=>{});};
+  ['pointerdown','keydown','touchstart'].forEach(ev=>document.addEventListener(ev,start,true));
+  start();
+  b.addEventListener('click',e=>{
+    e.stopPropagation();muted=!muted;try{localStorage.setItem('nx_mute',muted?'1':'0');}catch(x){}
+    if(muted)a.pause();else a.play().catch(()=>{});
+    ui();
+  });
+  document.addEventListener('visibilitychange',()=>{if(document.hidden)a.pause();else if(!muted)a.play().catch(()=>{});});
+})();
+
+/* ---------- mulai: akun terdaftar langsung ke beranda ---------- */
+(function init(){
+  let saved='';
+  try{saved=(localStorage.getItem(LS_USER)||'').trim();}catch(e){}
+  if(valid(saved)){
+    USER=saved;showApp();
+    const d=getDB();
+    if(d){
+      withTimeout(d.ref('nexoria/users/'+USER.toLowerCase()).once('value'),10000).then(s=>{
+        if(!s.exists()){
+          try{localStorage.removeItem(LS_USER);}catch(e){}
+          USER='';showSplash();status('Akun tidak ditemukan, silakan daftar ulang','err');
+        }else{
+          const v=s.val()||{};
+          if(v.name&&v.name!==USER){USER=v.name;try{localStorage.setItem(LS_USER,USER);}catch(e){}setUserUI();}
+          d.ref('nexoria/users/'+USER.toLowerCase()+'/lastLogin').set(Date.now());
+        }
+      }).catch(()=>{});
+    }
+  }else showSplash();
+})();
+})();
+</script>
+</body>
+</html>
