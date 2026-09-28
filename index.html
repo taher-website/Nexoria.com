@@ -144,6 +144,29 @@ footer{color:var(--mute2);font-size:12px;text-align:center;padding:14px 0 30px}
 .status.err{border-color:#ff4d6a55}
 .status.ok{border-color:#33f2a055}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+.hr{margin-left:auto;display:flex;align-items:center;gap:8px;min-width:0}
+.hr .chip{margin-left:0}
+.coinchip{padding:5px 12px;color:var(--gold);border-color:#ffcf6b44}
+#avM{position:fixed;inset:0;z-index:60;background:#000d;display:flex;align-items:center;justify-content:center;padding:12px}
+#avM .av-card{width:min(96vw,560px);max-height:94vh;overflow:auto;border-radius:20px;background:linear-gradient(180deg,var(--cardhi),var(--card));border:1px solid var(--line);padding:16px}
+#avM h3{margin:0 0 10px;font-family:var(--font-d);font-size:17px;font-weight:800}
+.av-top{display:flex;gap:14px;align-items:flex-start}
+.av-prev{flex:none;width:130px;border-radius:14px;background:#ffffff08;border:1px solid var(--line2);padding:6px}
+.av-prev svg{width:100%;height:auto;display:block}
+.av-side{flex:1;min-width:0}
+.av-tabs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.av-tabs button,.av-opts button,.av-sets button{font:inherit;font-size:12px;font-weight:700;color:var(--ink);background:#ffffff0d;border:1px solid var(--line2);border-radius:10px;padding:7px 10px;cursor:pointer}
+.av-tabs button.on,.av-opts button.on{border-color:var(--cy);background:#39f4ff1f}
+.av-opts{display:flex;flex-direction:column;gap:6px}
+.av-opts button{display:flex;justify-content:space-between;align-items:center;gap:8px;text-align:left}
+.av-opts button[disabled]{opacity:.45;cursor:not-allowed}
+.av-opts i{font-style:normal;font-size:10px;color:var(--mute)}
+.av-sw{display:flex;flex-wrap:wrap;gap:8px}
+.av-sw button{width:38px;height:38px;border-radius:50%;border:2px solid var(--line2);cursor:pointer;padding:0}
+.av-sw button.on{border-color:var(--cy);box-shadow:0 0 0 2px #39f4ff55}
+.av-sets{display:flex;gap:6px;margin:12px 0 8px}
+.av-foot{display:flex;gap:8px;margin-top:10px}
 </style>
 </head>
 <body>
@@ -172,7 +195,7 @@ footer{color:var(--mute2);font-size:12px;text-align:center;padding:14px 0 30px}
   <header>
     <button id="menuBtn" aria-label="Buka menu navigasi"><span></span><span></span><span></span></button>
     <div class="brand">NEXORIA</div>
-    <div class="chip"><div class="ava" id="avaTop">N</div><b id="nameTop"></b></div>
+    <div class="hr"><div class="chip coinchip" title="Koin: +1 tiap 2 detik saat bermain"><span>💵</span><b id="coinV">0</b></div><div class="chip"><div class="ava" id="avaTop">N</div><b id="nameTop"></b></div></div>
   </header>
 
   <div id="scrim"></div>
@@ -181,6 +204,7 @@ footer{color:var(--mute2);font-size:12px;text-align:center;padding:14px 0 30px}
     <div class="nav">
       <button id="navHome" class="on">🏠 Beranda</button>
       <button id="navGames">🎮Semua Game</button>
+      <button id="navAvatar">🎨 Avatar</button>
       <button id="navProfile">👤 Profil</button>
     </div>
     <div class="d-foot"><div class="nav"><button class="out" id="navLogout">⛔ Logout</button></div></div>
@@ -193,6 +217,7 @@ footer{color:var(--mute2);font-size:12px;text-align:center;padding:14px 0 30px}
       <h1 id="hello">Halo!</h1>
       <p>Pilih game, ajak teman, dan mulai bermain. Progres tiap game tersimpan di akunmu.</p>
       <button class="btn" id="heroPlay"> MAIN</button>
+      <button class="btn ghost" id="heroAvatar" style="margin-top:10px">🎨 Kostumisasi Avatar</button>
     </section>
 
     <div class="sec" id="gamesTop">
@@ -227,7 +252,7 @@ const GAMES=[
   {id:'battleshoot',name:'Battle Shoot',file:'battleshoot.html',img:'battleshoot.png',tag:'Aksi · Tembak',
    desc:'Baku tembak 3D di layar HP. Bidik cepat, bertahan paling lama.',
    art:{a:'#3a0d2a',b:'#ff2fa6',emoji:'🔫'}},
-  {id:'curitelur',name:'Curi Telur',file:'stealanegg.html',img:'stealanegg.png',tag:'Mabar 4 pemain',
+  {id:'curitelur',name:'Curi Telur',file:'stealanegg.html',img:'stealanegg.jpg',tag:'Mabar 4 pemain',
    desc:'Curi telur dari penjaga, kabur ke zona aman, tetaskan di kandangmu.',
    art:{a:'#062a3a',b:'#39f4ff',emoji:'🥚'}},
   {id:'naruto',name:'Naruto',file:'transformers.html',img:'transformers.png',tag:'Petualangan',
@@ -356,7 +381,7 @@ function setUserUI(){
 }
 function showApp(){
   $('splash').hidden=true;$('app').hidden=false;
-  setUserUI();renderGames($('search').value);
+  setUserUI();renderGames($('search').value);watchCoins();
   let rec='curitelur';try{rec=localStorage.getItem(LS_RECENT)||'curitelur';}catch(e){}
   const g=GAMES.find(x=>x.id===rec)||GAMES[1];
   $('heroPlay').textContent='▶ MAIN '+g.name.toUpperCase();
@@ -465,6 +490,112 @@ $('uname').addEventListener('keydown',e=>{if(e.key==='Enter')submitName();});
   });
   document.addEventListener('visibilitychange',()=>{if(document.hidden)a.pause();else if(!muted)a.play().catch(()=>{});});
 })();
+
+/* ---------- 💵 koin & avatar ---------- */
+const fmtC=n=>{n=Math.floor(+n||0);if(n<1000)return String(n);const u=['','K','M','B','T'];let i=0,v=n;while(v>=1000&&i<4){v/=1000;i++;}return (v>=100?v.toFixed(0):v.toFixed(1)).replace(/\.0$/,'')+u[i];};
+let coinRef=null,KON=false,konRef=null;
+function watchCoins(){
+  const d=getDB();if(!d||!USER)return;
+  if(coinRef)coinRef.off();
+  coinRef=d.ref('nexoria/users/'+USER.toLowerCase()+'/coins');
+  coinRef.on('value',sn=>{$('coinV').textContent=fmtC(sn.val());});
+  if(!konRef){konRef=d.ref('nexoria/curitelur/konoha');konRef.on('value',sn=>{const v=sn.val();KON=!!(v&&+v.on);if($('avM'))renderAv();});}
+}
+const AV_CAT=[['sk','Kulit'],['h','Rambut'],['f','Wajah'],['t','Baju'],['c','Aksesoris'],['p','Celana'],['s','Sepatu']];
+const SKINS=['#f2c9a0','#e0ac82','#c68642','#8d5524','#ffe0cf','#b98a6a'];
+const AVI={
+ h:{a:{n:'Pendek Klasik',g:'A',st:'short',c:'#3b2a1a'},b:{n:'Duri Neon',g:'B',st:'spiky',c:'#39f4ff'},n1:{n:'Duri Kuning',g:'N',st:'spiky',c:'#ffd54a'},n2:{n:'Duri Perak',g:'N',st:'spiky',c:'#c8ccd4'},n3:{n:'Panjang Merah',g:'N',st:'long',c:'#c0392b'}},
+ f:{a:{n:'Wajah Biasa',g:'A'},b:{n:'Mata Neon',g:'B',x:'glow'},n1:{n:'Kumis Kucing',g:'N',x:'whisk'},n2:{n:'Topeng Rubah',g:'N',x:'mask'},n3:{n:'Mata Merah',g:'N',x:'red'}},
+ t:{a:{n:'Kaos Klasik',g:'A',c:'#3d8bff'},b:{n:'Jaket Neon',g:'B',c:'#8b5cf6',x:'stripe'},n1:{n:'Baju Oranye Genin',g:'N',c:'#ff8a3a'},n2:{n:'Rompi Abu ANBU',g:'N',c:'#15151c',x:'vest'},n3:{n:'Jubah Merah Gelap',g:'N',c:'#5a1414',x:'cloak'}},
+ c:{a:{n:'Kacamata',g:'A',x:'glass'},b:{n:'Headphone Neon',g:'B',x:'phone'},n1:{n:'Ikat Kepala Konoha',g:'N',x:'band'},n2:{n:'Syal Merah',g:'N',x:'scarf'},n3:{n:'Pedang Punggung',g:'N',x:'sword'}},
+ p:{a:{n:'Celana Biru',g:'A',c:'#34405c'},b:{n:'Celana Neon',g:'B',c:'#1a1a2e',x:'stripe'},n1:{n:'Celana Ninja Oranye',g:'N',c:'#ff6a1a'},n2:{n:'Celana Pita ANBU',g:'N',c:'#1c2038',x:'wrap'},n3:{n:'Celana Merah Gelap',g:'N',c:'#5a1a1a'}},
+ s:{a:{n:'Sepatu Hitam',g:'A',c:'#222222'},b:{n:'Sepatu Neon',g:'B',c:'#39f4ff'},n1:{n:'Sandal Ninja',g:'N',c:'#151520',x:'sandal'},n2:{n:'Sepatu Merah',g:'N',c:'#b02020'},n3:{n:'Sepatu Emas',g:'N',c:'#ffd54a'}}
+};
+const LOOK_RE=/^\d\.[a-z0-9]+(\.[a-z0-9]+){5}$/,DEF_LOOK='0.a.a.a.a.a.a';
+const lookKey=()=>'nx_av_'+USER.toLowerCase();
+function getLook(){let l='';try{l=localStorage.getItem(lookKey())||'';}catch(e){}return LOOK_RE.test(l)?l:DEF_LOOK;}
+function svgAvatar(lk){
+  const P=lk.split('.'),g=(k,i)=>AVI[k][P[i]]||AVI[k].a,sk=SKINS[+P[0]]||SKINS[0];
+  const h=g('h',1),f=g('f',2),t=g('t',3),c=g('c',4),p=g('p',5),s=g('s',6);
+  let o='<svg viewBox="0 0 120 210" xmlns="http://www.w3.org/2000/svg">';
+  if(c.x==='sword')o+='<rect x="76" y="50" width="5" height="90" rx="2" fill="#15151a" transform="rotate(25 78 95)"/>';
+  [[38,0],[62,1]].forEach(([x,i])=>{
+    o+='<rect x="'+x+'" y="120" width="20" height="68" fill="'+p.c+'"/>';
+    if(p.x==='stripe')o+='<rect x="'+(i?x+17:x)+'" y="120" width="3" height="68" fill="#39f4ff"/>';
+    if(p.x==='wrap')o+='<rect x="'+(x-1)+'" y="166" width="22" height="14" fill="#f4f4f4"/>';
+    if(s.x==='sandal')o+='<rect x="'+(x-1)+'" y="190" width="22" height="8" fill="'+s.c+'"/><rect x="'+(x+2)+'" y="184" width="16" height="6" fill="'+sk+'"/>';
+    else o+='<rect x="'+(x-2)+'" y="188" width="24" height="12" rx="3" fill="'+s.c+'"/>';
+  });
+  o+='<rect x="32" y="62" width="56" height="60" fill="'+t.c+'"/>';
+  if(t.x==='cloak')o+='<rect x="30" y="118" width="60" height="46" fill="'+t.c+'"/>';
+  if(t.x==='stripe')o+='<rect x="57" y="62" width="6" height="60" fill="#39f4ff"/>';
+  if(t.x==='vest')o+='<rect x="34" y="66" width="52" height="46" fill="#8e8a99"/>';
+  [[16,0],[88,1]].forEach(([x])=>{o+='<rect x="'+x+'" y="64" width="16" height="36" fill="'+t.c+'"/><rect x="'+(x+1)+'" y="100" width="14" height="20" fill="'+sk+'"/>';});
+  if(c.x==='scarf')o+='<rect x="34" y="58" width="52" height="9" rx="4" fill="#d42a2a"/><rect x="72" y="62" width="9" height="34" fill="#d42a2a"/>';
+  if(h.st==='long')o+='<rect x="34" y="24" width="52" height="60" rx="10" fill="'+h.c+'"/>';
+  o+='<circle cx="60" cy="40" r="25" fill="'+sk+'"/>';
+  if(h.st==='spiky')o+='<polygon points="34,34 38,6 48,22 56,2 62,20 72,4 78,22 88,8 86,34" fill="'+h.c+'"/>';
+  else o+='<path d="M34 38 Q36 12 60 12 Q84 12 86 38 Q60 26 34 38Z" fill="'+h.c+'"/>';
+  if(f.x==='mask'){
+    o+='<polygon points="38,22 40,4 52,18" fill="#f4f4f4"/><polygon points="82,22 80,4 68,18" fill="#f4f4f4"/><ellipse cx="60" cy="42" rx="22" ry="24" fill="#f4f4f4"/><path d="M42 40 L50 50 M78 40 L70 50" stroke="#d42a2a" stroke-width="3"/><path d="M52 52 Q60 58 68 52" stroke="#999" stroke-width="2" fill="none"/>';
+  }else{
+    const ec=f.x==='glow'?'#39f4ff':f.x==='red'?'#ff2020':'#111';
+    o+='<circle cx="51" cy="42" r="3.4" fill="'+ec+'"/><circle cx="69" cy="42" r="3.4" fill="'+ec+'"/>';
+    if(f.x==='whisk')o+='<path d="M34 46 H46 M34 51 H46 M74 46 H86 M74 51 H86 M35 41 H45 M75 41 H85" stroke="#2a1a10" stroke-width="1.6"/>';
+  }
+  if(c.x==='glass')o+='<rect x="42" y="37" width="16" height="11" fill="none" stroke="#111" stroke-width="2.2"/><rect x="62" y="37" width="16" height="11" fill="none" stroke="#111" stroke-width="2.2"/><path d="M58 41 H62" stroke="#111" stroke-width="2"/>';
+  if(c.x==='phone')o+='<path d="M36 40 Q36 8 60 8 Q84 8 84 40" fill="none" stroke="#222" stroke-width="4"/><circle cx="35" cy="42" r="7" fill="#39f4ff"/><circle cx="85" cy="42" r="7" fill="#39f4ff"/>';
+  if(c.x==='band')o+='<rect x="34" y="24" width="52" height="8" fill="#1a3a8a"/><rect x="50" y="22" width="20" height="12" rx="2" fill="#c8ccd4"/>';
+  return o+'</svg>';
+}
+let avSel={sk:0,h:'a',f:'a',t:'a',c:'a',p:'a',s:'a'},avTab='h';
+function lookToSel(l){const P=l.split('.');avSel={sk:+P[0]||0,h:P[1],f:P[2],t:P[3],c:P[4],p:P[5],s:P[6]};}
+const selToLook=()=>[avSel.sk,avSel.h,avSel.f,avSel.t,avSel.c,avSel.p,avSel.s].join('.');
+function openAvatar(){
+  if(!USER)return;lookToSel(getLook());avTab='h';
+  const m=document.createElement('div');m.id='avM';
+  m.innerHTML='<div class="av-card"><h3>🎨 Avatar · '+esc(USER)+'</h3><div class="av-top"><div class="av-prev" id="avPrev"></div><div class="av-side"><div class="av-tabs" id="avTabs"></div><div id="avOpts"></div></div></div>'
+   +'<div class="av-sets"><button id="avSetA">Pakai Set A (Klasik)</button><button id="avSetB">Pakai Set B (Neon)</button></div>'
+   +'<div class="av-foot"><button class="btn" id="avSave">SIMPAN</button><button class="btn ghost" id="avClose">Tutup</button></div>'
+   +'<p style="margin:10px 0 0;color:var(--mute);font-size:12px">Set A & Set B gratis. Item 🍥 eksklusif Collab Naruto: terbuka setelah wilayah Konoha muncul di game Curi Telur.</p></div>';
+  document.body.appendChild(m);
+  m.addEventListener('pointerdown',e=>{if(e.target===m)closeAvatar();});
+  $('avClose').onclick=closeAvatar;
+  $('avSetA').onclick=()=>{avSel={sk:avSel.sk,h:'a',f:'a',t:'a',c:'a',p:'a',s:'a'};renderAv();};
+  $('avSetB').onclick=()=>{avSel={sk:avSel.sk,h:'b',f:'b',t:'b',c:'b',p:'b',s:'b'};renderAv();};
+  $('avSave').onclick=saveAvatar;
+  renderAv();
+}
+function closeAvatar(){const m=$('avM');if(m)m.remove();}
+function renderAv(){
+  if(!$('avM'))return;
+  $('avPrev').innerHTML=svgAvatar(selToLook());
+  $('avTabs').innerHTML=AV_CAT.map(([k,n])=>'<button data-k="'+k+'" class="'+(k===avTab?'on':'')+'">'+n+'</button>').join('');
+  $('avTabs').querySelectorAll('button').forEach(b=>b.onclick=()=>{avTab=b.dataset.k;renderAv();});
+  const o=$('avOpts');
+  if(avTab==='sk'){
+    o.innerHTML='<div class="av-sw">'+SKINS.map((c,i)=>'<button data-i="'+i+'" class="'+(avSel.sk===i?'on':'')+'" style="background:'+c+'" aria-label="Warna kulit '+(i+1)+'"></button>').join('')+'</div>';
+    o.querySelectorAll('button').forEach(b=>b.onclick=()=>{avSel.sk=+b.dataset.i;renderAv();});
+  }else{
+    const L=AVI[avTab];
+    o.innerHTML='<div class="av-opts">'+Object.keys(L).map(id=>{
+      const it=L[id],lock=it.g==='N'&&!KON,tag=it.g==='A'?'Set A':it.g==='B'?'Set B':(lock?'🔒 Eksklusif Naruto':'🍥 Naruto');
+      return '<button data-id="'+id+'" class="'+(avSel[avTab]===id?'on':'')+'"'+(lock?' disabled':'')+'><span>'+esc(it.n)+'</span><i>'+tag+'</i></button>';
+    }).join('')+'</div>';
+    o.querySelectorAll('button').forEach(b=>b.onclick=()=>{avSel[avTab]=b.dataset.id;renderAv();});
+  }
+}
+function saveAvatar(){
+  const l=selToLook();
+  for(const k of ['h','f','t','c','p','s'])if(AVI[k][avSel[k]].g==='N'&&!KON){status('Item Naruto masih terkunci','err');return;}
+  try{localStorage.setItem(lookKey(),l);}catch(e){}
+  const d=getDB();
+  if(d)d.ref('nexoria/users/'+USER.toLowerCase()+'/avatar').set(l).then(()=>status('Avatar tersimpan!','ok')).catch(()=>status('Tersimpan di perangkat (server menolak)','err'));
+  else status('Avatar tersimpan di perangkat','ok');
+  closeAvatar();
+}
+$('navAvatar').addEventListener('click',()=>{closeDrawer();openAvatar();});
+$('heroAvatar').addEventListener('click',openAvatar);
 
 /* ---------- mulai: akun terdaftar langsung ke beranda ---------- */
 (function init(){

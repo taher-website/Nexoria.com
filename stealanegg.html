@@ -15,7 +15,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:var(--bg);color:var(--
 #hud>*{pointer-events:auto}
 #clock,#region,#cloud,#plist,#banner,#stealnote{pointer-events:none}
 #clock,#region,#cloud{position:absolute;top:8px;padding:4px 12px;border-radius:14px;background:var(--panel);border:2px solid var(--edge);font-weight:800;font-size:clamp(11px,3vh,16px);white-space:nowrap}
-#clock{top:auto;left:auto;right:max(10px,env(safe-area-inset-right));bottom:clamp(90px,24vh,120px)}
+#clock{top:auto;left:auto;right:max(10px,env(safe-area-inset-right));bottom:8px}
 #home{position:absolute;top:6px;left:max(8px,env(safe-area-inset-left));width:clamp(34px,10vh,44px);height:clamp(30px,9vh,38px);border-radius:12px;border:2px solid var(--edge);background:var(--panel);color:#fff;font-size:clamp(14px,4vh,20px);font-weight:900}
 #region{left:calc(max(8px,env(safe-area-inset-left)) + clamp(40px,11vh,50px))}
 #region.warn{border-color:#ff5a5a;color:#ffb0a0}
@@ -59,7 +59,9 @@ html,body{margin:0;height:100%;overflow:hidden;background:var(--bg);color:var(--
 .an.big{filter:drop-shadow(0 0 6px var(--gold));font-size:clamp(28px,9vh,42px)}
 .egg.titan{width:74%;box-shadow:0 0 14px 4px #ff4dd2,0 0 8px 2px #4dd2ff,inset -4px -6px 8px #0003}
 .an.titan{filter:drop-shadow(0 0 8px #ff4dd2) drop-shadow(0 0 4px #4dd2ff);font-size:clamp(30px,10vh,46px)}
-#acts{position:absolute;right:max(14px,env(safe-area-inset-right));bottom:12px;display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+#bTread{position:absolute;right:max(14px,env(safe-area-inset-right));top:50%;transform:translateY(-50%);min-width:clamp(120px,32vh,160px);height:clamp(54px,16vh,70px);font-size:clamp(16px,4.6vh,22px)}
+.pensign{position:absolute;left:0;top:0;display:none;z-index:5;padding:4px 10px;border-radius:6px;border:2px solid #4a2c12;background:linear-gradient(#d19a5a,#9a6a34);color:#fff3d6;font:900 clamp(10px,2.8vh,13px) inherit;font-family:inherit;text-shadow:0 1px 0 #3a200c;box-shadow:0 3px 0 #4a2c12,0 5px 8px #0006;transform:translate(-50%,-50%);white-space:nowrap;cursor:pointer}
+#acts{position:absolute;right:max(14px,env(safe-area-inset-right));bottom:46px;display:flex;flex-direction:column;align-items:flex-end;gap:8px}
 .act{display:none;min-width:clamp(96px,26vh,130px);padding:0 16px;height:clamp(44px,13vh,58px);border-radius:30px;border:3px solid #fff;color:#fff;font-weight:900;font-size:clamp(14px,4vh,20px);text-shadow:0 2px 2px #0006;box-shadow:0 5px 0 #0006,0 8px 14px #0006;font-family:inherit}
 .act:active{transform:translateY(3px);box-shadow:0 2px 0 #0006}
 .act.steal{position:absolute;left:68%;top:52%;transform:translate(-50%,-50%);min-width:clamp(120px,32vh,170px);background:linear-gradient(#ff8a4a,var(--steal));height:clamp(58px,17vh,76px);font-size:clamp(18px,5.5vh,26px)}
@@ -169,10 +171,10 @@ html,body{margin:0;height:100%;overflow:hidden;background:var(--bg);color:var(--
     <div id="slots"></div>
   </div>
   <button class="act steal" id="bSteal">Mencuri</button>
+  <button class="act tread" id="bTread"> Naik</button>
+  <button class="pensign" id="bPen">Upgrade</button>
   <div id="acts">
-    <button class="act up" id="bPen">⬆ Kandang</button>
     <button class="act up" id="bUp">⬆ Upgrade</button>
-    <button class="act tread" id="bTread"> Naik</button>
     <button class="act shop" id="bShop"> Toko</button>
     <button class="act shop" id="bLane" style="background:linear-gradient(#fff9c4,#fff44d);color:#3a2d00">⚡ Jalur</button>
     <button class="act shop" id="bTrade" style="background:linear-gradient(#8fd9ff,#3fa9f5)">🤝 Perdagangan</button>
@@ -259,6 +261,15 @@ html,body{margin:0;height:100%;overflow:hidden;background:var(--bg);color:var(--
   <label class="swRow"><b>Anti Serang</b><input type="checkbox" id="swAnti"><span class="sw"></span></label>
   <label class="swRow"><b>Serangan Induk</b><input type="checkbox" id="swGuard"><span class="sw"></span></label>
   <label class="swRow"><b>Hide Tombol Admin</b><input type="checkbox" id="swAdmBtn"><span class="sw"></span></label>
+  <div class="sub" style="margin-top:14px">🥚 Telur Liar (bebas taruh)</div>
+  <div style="display:flex;flex-direction:column;gap:8px;margin:6px 0 10px">
+    <select id="awSp" class="aField"></select>
+    <select id="awMut" class="aField"><option value="0">Normal</option><option value="1">Besar</option><option value="2">TITAN</option><option value="3">Monster</option></select>
+    <div style="display:flex;gap:8px"><input id="awX" class="aField" type="number" step="any" placeholder="X (-14..14)" style="flex:1;min-width:0"><input id="awZ" class="aField" type="number" step="any" placeholder="Z" style="flex:1;min-width:0"></div>
+    <button id="awHere" style="height:38px;border:0;border-radius:10px;background:#333;color:#fff;font-weight:900;font-family:inherit;font-size:13px">📍 Pakai posisiku</button>
+    <button id="awGo" style="height:42px;border:0;border-radius:10px;background:linear-gradient(#ff66cc,#ffb84d);color:#1a0a1a;font-weight:900;font-family:inherit;font-size:14px">🥚 Taruh Telur Liar</button>
+    <button id="awClear" style="height:38px;border:0;border-radius:10px;background:#333;color:#fff;font-weight:900;font-family:inherit;font-size:13px">🗑 Hapus semua telur liar admin</button>
+  </div>
   <div class="sub" style="margin-top:14px">🦊 Update Event (X Naruto)</div>
   <div style="display:flex;flex-direction:column;gap:8px;margin:6px 0 10px">
     <input id="evStartIn" class="aField" type="datetime-local">
@@ -332,16 +343,19 @@ try{const a=JSON.parse(localStorage.getItem(SET_KEY)||'{}');hideMyPets=a.hm===1;
 const saveSet=()=>{try{localStorage.setItem(SET_KEY,JSON.stringify({hm:hideMyPets?1:0,ho:hideOtherPets?1:0}));}catch(e){}};
 
 /* ===== format angka ===== */
-const UN=['','K','M','B','T','Qa','Qi','Sp','Sx','Dc','Dx','Max'];
-const MAXV=999999e33;
+const UN=['','K','M','B','T','Qa','Qi','Sp','Sx','Dc','Dx','Ud','Dd','Td','Qd','Qn','Sd','St','Od','Nd','Vg','Uv','Dv','Tv','Max'];
+const MAXV=999999e72;
+const PETM=.55;   /* penghasilan semua pet dikurangi 45% */
+const incOf=it=>(+it.inc||0)*PETM;
 function fmt(n){
   if(!isFinite(n)||n<0)n=0;
   if(n<1000)return String(Math.floor(n));
   let i=0,v=n;
-  while(v>=1000&&i<11){v/=1000;i++;}
-  if(i===11)v=Math.min(v,999999);
+  const LI=UN.length-1;
+  while(v>=1000&&i<LI){v/=1000;i++;}
+  if(i===LI)v=Math.min(v,999999);
   let s=v.toFixed(v>=100?0:v>=10?1:2);
-  if(parseFloat(s)>=1000&&i<11){v/=1000;i++;s=v.toFixed(2);}
+  if(parseFloat(s)>=1000&&i<LI){v/=1000;i++;s=v.toFixed(2);}
   if(s.indexOf('.')>=0)s=s.replace(/0+$/,'').replace(/\.$/,'');
   return s+UN[i];
 }
@@ -442,7 +456,7 @@ const gdOf=(r,i,k)=>{const b=SP[r][i];return{n:b.n,kind:b.kind,S:b.S*k,col:b.col
 const gdAt=(R,k)=>Array.isArray(R.gd)?(R.gd[k]||R.gd[0]):R.gd;
 const GUARDS=[gdOf(0,2,1.35),gdOf(1,3,1.1),gdOf(2,2,1.25),gdOf(3,2,1.2),gdOf(4,4,1),gdOf(5,2,1.2),gdOf(6,0,1),
  {n:'Banteng Kosmik',kind:3,S:1.9,col:{a:0x24184e,b:0xb58cff,c:0x7ef9ff},opt:{bulk:1.5,leg:.7,bigHorn:1,twoHead:1,spots:1,ears:1,hump:1},fx:16},
- [gdOf(8,5,1.3),gdOf(8,4,1.3),gdOf(8,2,1.5)]
+ [gdOf(8,5,1.3),gdOf(8,3,1.15),gdOf(8,2,1.5)]
 ];
 const REG=[
  {n:'Danau',em:'🌳',req:100,gf:.72,big:10,gb:'#5db55d',gc:['#4a9f4a','#78d078','#3f8f3f'],wall:0x3d7a3d,depth:20,nests:[[-9,-24],[8,-30],[-5,-37]]},
@@ -1296,14 +1310,63 @@ function makeEgg(reg,sp,mut){
 const qId=new THREE.Quaternion(),qLie=new THREE.Quaternion().setFromEuler(new THREE.Euler(-Math.PI/2,0,0));
 
 /* ===== avatar pemain (dipakai pemain lokal & pemain lain) ===== */
-function buildAvatar(shirtCol,name){
+/* ===== katalog avatar (sama dengan index.html): Set A & Set B gratis, sisanya EKSKLUSIF collab Naruto ===== */
+const SKINS=[0xf2c9a0,0xe0ac82,0xc68642,0x8d5524,0xffe0cf,0xb98a6a];
+const AVC={
+ h:{a:{st:'short',c:0x3b2a1a},b:{st:'spiky',c:0x39f4ff},n1:{st:'spiky',c:0xffd54a},n2:{st:'spiky',c:0xc8ccd4},n3:{st:'long',c:0xc0392b}},
+ f:{a:{},b:{x:'glow'},n1:{x:'whisk'},n2:{x:'mask'},n3:{x:'red'}},
+ t:{a:{c:'auto'},b:{c:0x8b5cf6,x:'stripe'},n1:{c:0xff8a3a},n2:{c:0x15151c,x:'vest'},n3:{c:0x5a1414,x:'cloak'}},
+ c:{a:{x:'glass'},b:{x:'phone'},n1:{x:'band'},n2:{x:'scarf'},n3:{x:'sword'}},
+ p:{a:{c:0x34405c},b:{c:0x1a1a2e,x:'stripe'},n1:{c:0xff6a1a},n2:{c:0x1c2038,x:'wrap'},n3:{c:0x5a1a1a}},
+ s:{a:{c:0x222222},b:{c:0x39f4ff},n1:{c:0x151520,x:'sandal'},n2:{c:0xb02020},n3:{c:0xffd54a}}
+};
+const DEF_LOOK='0.a.a.a.a.a.a';
+let MYLOOK=DEF_LOOK;
+try{const l=localStorage.getItem('nx_av_'+KEY);if(l&&/^\d\.[a-z0-9]+(\.[a-z0-9]+){5}$/.test(l))MYLOOK=l;}catch(e){}
+function dressAvatar(av,lk,shirtCol){
+  if(av.dressed)av.dressed.forEach(m=>{if(m.parent)m.parent.remove(m);});
+  const D=av.dressed=[],add=m=>{D.push(m);return m;};
+  const P=String(lk||DEF_LOOK).split('.'),it=(k,i)=>AVC[k][P[i]]||AVC[k].a;
+  const skin=M(SKINS[+P[0]]||SKINS[0]),hr=it('h',1),fc=it('f',2),tp=it('t',3),ac=it('c',4),pn=it('p',5),sh=it('s',6);
+  const shC=tp.c==='auto'?shirtCol:tp.c,SH=M(shC),{model,head}=av;
+  av.lookStr=P.join('.');
+  add(mk(model,G.box,SH,0,1.15,0,.56,.7,.3));
+  if(tp.x==='stripe')add(mk(model,G.box,BM(0x39f4ff),0,1.15,.155,.12,.7,.02));
+  if(tp.x==='vest')add(mk(model,G.box,M(0x8e8a99),0,1.12,.02,.6,.55,.34));
+  if(tp.x==='cloak')add(mk(model,G.box,SH,0,.82,-.02,.62,.9,.34));
+  av.arms.forEach(a=>{add(mk(a,G.box,SH,0,-.2,0,.16,.4,.16));add(mk(a,G.box,skin,0,-.5,0,.14,.22,.14));});
+  add(mk(head,G.sph,skin,0,0,0,.24));
+  const HC=M(hr.c);
+  add(mk(head,G.sph,HC,0,.08,-.03,.25,.2,.26));
+  if(hr.st==='spiky')for(let k=0;k<7;k++){const an=k/7*TAU,h=add(mk(head,G.cone,HC,Math.cos(an)*.13,.26,Math.sin(an)*.13,.08,.24,.08));h.rotation.z=-Math.cos(an)*.6;h.rotation.x=Math.sin(an)*.6;}
+  if(hr.st==='long')add(mk(head,G.box,HC,0,-.14,-.17,.42,.5,.12));
+  if(fc.x==='mask'){
+    const W=M(0xf4f4f4);add(mk(head,G.sph,W,0,-.01,.09,.25,.27,.19));
+    [-1,1].forEach(sd=>{add(mk(head,G.cone4,W,sd*.12,.27,.05,.07,.18,.05));add(mk(head,G.box,M(0xd42a2a),sd*.12,0,.28,.03,.14,.02));});
+  }else{
+    const ec=fc.x==='glow'?BM(0x39f4ff):fc.x==='red'?BM(0xff2020):M(0x111111),er=fc.x==='glow'?.045:.035;
+    add(mk(head,G.sph,ec,-.09,.02,.2,er));add(mk(head,G.sph,ec,.09,.02,.2,er));
+    if(fc.x==='whisk')[-1,1].forEach(sd=>{for(let k=0;k<3;k++)add(mk(head,G.box,M(0x2a1a10),sd*.2,-.06+(k-1)*.05,.2,.12,.012,.01));});
+  }
+  if(ac.x==='glass'){add(mk(head,G.box,M(0x111111),-.09,.03,.235,.11,.08,.02));add(mk(head,G.box,M(0x111111),.09,.03,.235,.11,.08,.02));add(mk(head,G.box,M(0x111111),0,.04,.235,.06,.015,.02));}
+  if(ac.x==='phone'){[-1,1].forEach(sd=>add(mk(head,G.sph,BM(0x39f4ff),sd*.25,0,0,.09)));add(mk(head,G.box,M(0x222222),0,.26,0,.5,.03,.05));}
+  if(ac.x==='band'){add(mk(head,G.tor,M(0x1a3a8a),0,.1,0,.255,.255,.255)).rotation.x=Math.PI/2;add(mk(head,G.box,M(0xc8ccd4),0,.1,.25,.14,.07,.02));}
+  if(ac.x==='scarf'){add(mk(model,G.tor,M(0xd42a2a),0,1.5,0,.2,.2,.2)).rotation.x=Math.PI/2;add(mk(model,G.box,M(0xd42a2a),.12,1.2,-.18,.1,.45,.03));}
+  if(ac.x==='sword'){const sw=add(mk(model,G.box,M(0x15151a),.1,1.15,-.2,.05,.95,.05));sw.rotation.z=.6;}
+  av.legs.forEach((l,i)=>{
+    const sd=i?1:-1;
+    add(mk(l,G.box,M(pn.c),0,-.38,0,.2,.76,.22));
+    if(pn.x==='stripe')add(mk(l,G.box,BM(0x39f4ff),sd*.105,-.38,0,.02,.76,.1));
+    if(pn.x==='wrap')add(mk(l,G.box,M(0xf4f4f4),0,-.62,0,.23,.16,.25));
+    if(sh.x==='sandal'){add(mk(l,G.box,M(sh.c),0,-.78,.05,.22,.06,.34));add(mk(l,G.box,skin,0,-.72,.1,.16,.06,.14));}
+    else add(mk(l,G.box,M(sh.c),0,-.76,.05,.22,.1,.34));
+  });
+}
+function buildAvatar(shirtCol,name,look){
   const root=new THREE.Group(),model=grp(root,0,0,0);
-  const skin=M(0xf2c9a0),shirt=M(shirtCol),pants=M(0x34405c),shoe=M(0x222222),hair=M(0x3b2a1a);
-  mk(model,G.box,shirt,0,1.15,0,.56,.7,.3);
-  const head=grp(model,0,1.72,0);mk(head,G.sph,skin,0,0,0,.24);mk(head,G.sph,hair,0,.08,-.03,.25,.2,.26);
-  mk(head,G.sph,M(0x111111),-.09,.02,.2,.035);mk(head,G.sph,M(0x111111),.09,.02,.2,.035);
-  const arms=[-1,1].map(s=>{const a=grp(model,s*.38,1.42,0);mk(a,G.box,shirt,0,-.2,0,.16,.4,.16);mk(a,G.box,skin,0,-.5,0,.14,.22,.14);return a;});
-  const legs=[-1,1].map(s=>{const l=grp(model,s*.14,.8,0);mk(l,G.box,pants,0,-.38,0,.2,.76,.22);mk(l,G.box,shoe,0,-.76,.05,.22,.1,.34);return l;});
+  const head=grp(model,0,1.72,0);
+  const arms=[-1,1].map(s=>grp(model,s*.38,1.42,0));
+  const legs=[-1,1].map(s=>grp(model,s*.14,.8,0));
   const hand=grp(arms[1],0,-.62,.05);
   const tag=textSprite(name,{w:512,h:128,fs:76,sw:3.4,color:'#fff'});tag.position.set(0,2.55,0);root.add(tag);
   let crown=null;
@@ -1313,7 +1376,9 @@ function buildAvatar(shirtCol,name){
   const hl=new THREE.Mesh(G.cyl,new THREE.MeshBasicMaterial({color:0xff2a2a,transparent:true,opacity:.38,depthWrite:false}));
   hl.position.set(0,1.05,0);hl.scale.set(.62,2.15,.62);hl.visible=false;root.add(hl);
   scene.add(root);
-  return{root,model,head,arms,legs,hand,held:null,heldKey:'',tag,crown,hl,swing:0,state:'normal',runAmt:0,phase:0,stealT:0,lieT:0,modelY:0,yaw:0};
+  const av={root,model,head,arms,legs,hand,held:null,heldKey:'',tag,crown,hl,swing:0,state:'normal',runAmt:0,phase:0,stealT:0,lieT:0,modelY:0,yaw:0,dressed:[],lookStr:''};
+  dressAvatar(av,look,shirtCol);
+  return av;
 }
 function setHeldKey(av,key){
   key=key||'';if(av.heldKey===key)return;
@@ -1374,7 +1439,7 @@ function posePlayer(A,t){
 }
 function buildLocal(){
   if(player.root)return;
-  Object.assign(player,buildAvatar(COLC[mySlot],NAME));
+  Object.assign(player,buildAvatar(COLC[mySlot],NAME,MYLOOK));
   player.vel=new THREE.Vector3();
   player.root.position.set(COLX[mySlot],0,-11);player.yaw=Math.PI;
   setTreadOwner(tms[mySlot],NAME);
@@ -1757,14 +1822,14 @@ function iconHTML(it){
 function detailOf(it){
   if(it.kind==='baton')return 'Ketuk layar untuk memukul · '+batDesc(batLv);
   if(it.kind==='egg')return '⏳ '+fmtHT(hatchTime(it))+' · 🏷️ '+fmt(eggValue(it));
-  return '⚖️ '+fmtKg(it.kg)+' · 💵 '+fmt(it.inc)+'/s · 🏷️ '+fmt(it.price);
+  return '⚖️ '+fmtKg(it.kg)+' · 💵 '+fmt(incOf(it))+'/s · 🏷️ '+fmt(it.price);
 }
 /* info slot card: muncul sekilas 3 detik saat memegang item (pentung: nama saja) */
 let tipT=0,tipSig='';
 function tipText(it){
   if(it.kind==='baton')return itemName(it);
   if(it.kind==='egg')return itemName(it)+' · ⏳ '+fmtHT(hatchTime(it))+' · 🏷️ '+fmt(eggValue(it));
-  return itemName(it)+' · 💵 '+fmt(it.inc)+'/s · 🏷️ '+fmt(it.price);
+  return itemName(it)+' · 💵 '+fmt(incOf(it))+'/s · 🏷️ '+fmt(it.price);
 }
 function showTip(){
   const it=slots[sel],tp=$('tip');clearTimeout(tipT);
@@ -1850,6 +1915,7 @@ function adminKick(key,name){
   db.ref('nexoria/curitelur/kicks/'+key).set({ts:sNow(),by:NAME}).catch(()=>toast('⚠️ Gagal kick'));
 }
 function fillAdminRegionSelect(){
+  fillAwSelect();
   const sel=$('spReg');if(!sel||sel.dataset.filled)return;
   sel.innerHTML=REG.map((r,i)=>'<option value="'+i+'">'+r.em+' '+esc(r.n)+'</option>').join('');
   sel.dataset.filled='1';fillAdminSpeciesSelect();
@@ -1982,11 +2048,11 @@ $('bSet').addEventListener('click',()=>toggleModal('setM'));
 /* ===== 🛖 daftar hewan di kandang: ambil cepat satu per satu ===== */
 let petArr=[];
 function renderPets(){
-  petArr=pen.filter(e=>e.item.kind==='animal').sort((a,b)=>b.item.inc-a.item.inc);
+  petArr=pen.filter(e=>e.item.kind==='animal').sort((a,b)=>incOf(b.item)-incOf(a.item));
   $('petsCap').textContent=petArr.length+' hewan';$('petsMsg').textContent='';
   const el=$('petsBody');
   if(!petArr.length){el.innerHTML='<p class="hint">Belum ada hewan di kandang.</p>';return;}
-  el.innerHTML=petArr.map((e,i)=>{const it=e.item;return '<div class="petRow"><b>'+esc(itemName(it))+'</b><span class="pm">💵 '+fmt(it.inc)+'/s</span><span class="pm">⚖️ '+fmtKg(it.kg)+'</span><button class="petTake" data-i="'+i+'">Ambil</button></div>';}).join('');
+  el.innerHTML=petArr.map((e,i)=>{const it=e.item;return '<div class="petRow"><b>'+esc(itemName(it))+'</b><span class="pm">💵 '+fmt(incOf(it))+'/s</span><span class="pm">⚖️ '+fmtKg(it.kg)+'</span><button class="petTake" data-i="'+i+'">Ambil</button></div>';}).join('');
   el.querySelectorAll('.petTake').forEach(b=>b.addEventListener('click',()=>takePet(+b.dataset.i)));
 }
 function takePet(i){
@@ -2094,10 +2160,10 @@ function addPen(item,ox,oz,t){
     e.holder=grp(scene,x,0,z);
     if(pen.length>=FULLDET){         /* kandang ramai: hewan versi ringan (siluet tetap sama) supaya tetap lancar */
       e.lite=true;e.c={runT:0};e.holder.add(buildLite(s,mu));
-      e.label=cachedLabel('💵 '+fmt(item.inc)+'/s',mu?'#ffe066':'#9dffb0',3);e.label.position.y=1.7*(S/.6);
+      e.label=cachedLabel('💵 '+fmt(incOf(item))+'/s',mu?'#ffe066':'#9dffb0',3);e.label.position.y=1.7*(S/.6);
     }else{
       e.c=buildCreature(s.kind,S,s.col,s.opt);e.c.sleep=0;e.c.sleepT=0;e.holder.add(e.c.root);
-      e.label=cachedLabel('💵 '+fmt(item.inc)+'/s',mu?'#ffe066':'#9dffb0',3.2);e.label.position.y=e.c.top*S+.6;
+      e.label=cachedLabel('💵 '+fmt(incOf(item))+'/s',mu?'#ffe066':'#9dffb0',3.2);e.label.position.y=e.c.top*S+.6;
     }
     e.holder.add(e.label);
     const ft=fxTierOf(s.t,mu,s);if(ft)e.fx=makeFx(e.holder,ft,S*.9);
@@ -2142,7 +2208,7 @@ function pickAnimalAt(x,z){
     return true;
   }
   lastPick={e:best,t:now};
-  toast('🐾 '+itemName(it)+' · ⚖️ '+fmtKg(it.kg)+' · 💵 '+fmt(it.inc)+'/s — ketuk 2× cepat untuk mengambil',2400);
+  toast('🐾 '+itemName(it)+' · ⚖️ '+fmtKg(it.kg)+' · 💵 '+fmt(incOf(it))+'/s — ketuk 2× cepat untuk mengambil',2400);
   return true;
 }
 function wander(e,dt,box){
@@ -2153,7 +2219,7 @@ function wander(e,dt,box){
   const m=Math.min(d,1.1*dt);e.px+=dx/d*m;e.pz+=dz/d*m;e.yaw+=wrap(Math.atan2(dx,dz)-e.yaw)*Math.min(1,dt*6);c.runT=.6;
 }
 function updatePen(dt,t){
-  if(incDirty){totalInc=0;pen.forEach(e=>{if(e.item.kind==='animal')totalInc+=e.item.inc;});incDirty=false;}
+  if(incDirty){totalInc=0;pen.forEach(e=>{if(e.item.kind==='animal')totalInc+=incOf(e.item);});incDirty=false;}
   money=Math.min(MAXV,money+totalInc*dt);
   const mult=isNight?2:1,pp=player.root.position;
   for(let i=pen.length-1;i>=0;i--){
@@ -2186,7 +2252,7 @@ function hatch(e){
   popFx('🐣',x,2.6,z,'#ffe066');
   discover(an.reg,an.sp);
   const tag=mu?' · '+MUTN[mu]+' '+fmtKg(an.kg):'';
-  if(addItem(an))toast('🐣 Menetas! '+s.n+' ('+TIERS[s.t].n+')'+tag+' · 💵 '+fmt(an.inc)+'/s',mu===2?4200:2600);
+  if(addItem(an))toast('🐣 Menetas! '+s.n+' ('+TIERS[s.t].n+')'+tag+' · 💵 '+fmt(incOf(an))+'/s',mu===2?4200:2600);
   else{addPen(an,ox,oz);toast('🐣 '+s.n+' menetas & langsung dikandangkan');}
 }
 
@@ -2228,6 +2294,7 @@ function upgradeTread(){
 let nearN=null;
 function doSteal(){
   const pl=player;
+  if(pl.state==='normal'&&nearAW){takeAWild(nearAW);return;}
   if(pl.state!=='normal'||isNight||!nearN||!(nearN.present||nearN.wildDrop))return;
   if(!hasRoom()){toast('🎒 Tas penuh! Taruh atau jual item dulu');return;}
   pl.state='steal';pl.stealT=0;pl.stealDone=false;pl.stealN=nearN;
@@ -2442,6 +2509,58 @@ $('evGo')&&$('evGo').addEventListener('click',()=>{
   if(db&&connected)db.ref('nexoria/curitelur/updateEvent').set({start:startMs,dur:hrs,combo,by:NAME}).catch(()=>{});
   toast('🎉 Event dijadwalkan!',2500);
 });
+
+/* ===== Telur Liar Admin: admin menaruh telur (Ilahi..GOOD) di posisi bebas; siapa saja bisa mengambil ===== */
+const AW_PATH='nexoria/curitelur/awild';
+let awData={},awObjs={},awWatch=false,nearAW=null;
+const awList=()=>{const a=[];SP.forEach((L,ri)=>L.forEach((s,si)=>{if(s.t>=9)a.push({ri,si,s});}));return a.sort((x,y)=>x.s.t-y.s.t||x.ri-y.ri);};
+function fillAwSelect(){
+  const el=$('awSp');if(!el||el.dataset.filled)return;
+  el.innerHTML=awList().map(o=>'<option value="'+o.ri+':'+o.si+'">'+o.s.ic+' '+esc(o.s.n)+' — '+esc(TIERS[o.s.t].n)+' ('+esc(REG[o.ri].n)+')</option>').join('');
+  el.dataset.filled='1';
+}
+const regNameAt=z=>{for(const R of REG)if(z<=R.bnd0&&z>R.bnd1)return R.n;return 'Area Aman';};
+function watchAWild(){
+  if(awWatch||!db)return;awWatch=true;
+  db.ref(AW_PATH).on('value',sn=>{
+    const v=sn.val()||{};
+    Object.keys(awObjs).forEach(k=>{if(!v[k]){const o=awObjs[k];scene.remove(o.g);delete awObjs[k];}});
+    Object.keys(v).forEach(k=>{
+      const a=v[k];if(awObjs[k]||!SP[a.reg]||!SP[a.reg][a.sp])return;
+      const g=new THREE.Group(),e=makeEgg(+a.reg,+a.sp,+a.mut||0);e.scale.setScalar(eggScale(+a.mut||0));e.position.set(0,.05,0);g.add(e);
+      mk(g,G.cyl,wildBeamMat,0,16,0,.8,32,.8);
+      const lb=cachedLabel('🌈 TELUR LIAR','#ffffff',4.2);lb.position.set(0,3.2,0);g.add(lb);
+      g.position.set(+a.x,0,+a.z);scene.add(g);awObjs[k]={g,a};
+      if(loaded&&sNow()-(+a.ts||0)<20000){
+        const s=SP[a.reg][a.sp];
+        bannerQ.push({msg:'<span class="t'+s.t+'">'+TIERS[s.t].n.toUpperCase()+'</span> '+esc(s.n)+' MUNCUL LIAR DI '+regNameAt(+a.z).toUpperCase()+'!'});runBanner();
+      }
+    });
+    awData=v;
+  });
+}
+function nearestAW(){
+  const p=player.root.position;let best=null,bd=3.4;
+  for(const k in awObjs){const a=awObjs[k].a,d=Math.hypot(+a.x-p.x,+a.z-p.z);if(d<bd){bd=d;best={key:k,a};}}
+  return best;
+}
+function takeAWild(x){
+  if(!db||!connected||!hasRoom()){toast('🎒 Tas penuh! Taruh atau jual item dulu');return;}
+  db.ref(AW_PATH+'/'+x.key).transaction(cur=>cur?null:undefined).then(r=>{
+    if(!r.committed){toast('⚡ Telur liar itu sudah diambil orang lain!');return;}
+    const it=newEgg(+x.a.reg,+x.a.sp,+x.a.mut||0,null);
+    if(addItem(it)){popFx('🥚',player.root.position.x,2.2,player.root.position.z,'#fff2a0');toast('🥚 Telur liar didapat: '+itemName(it),2600);saveSoon();}
+  }).catch(()=>{});
+}
+$('awHere')&&$('awHere').addEventListener('click',()=>{const p=player.root&&player.root.position;if(!p)return;$('awX').value=p.x.toFixed(1);$('awZ').value=p.z.toFixed(1);});
+$('awGo')&&$('awGo').addEventListener('click',()=>{
+  const v=($('awSp').value||'').split(':'),reg=+v[0],sp=+v[1],mut=+$('awMut').value||0;
+  if(!db||!SP[reg]||!SP[reg][sp]||SP[reg][sp].t<9){toast('⚠️ Telur liar hanya Ilahi sampai GOOD');return;}
+  const x=clamp(+$('awX').value||0,-14,14),z=clamp(+$('awZ').value||0,worldEnd()+1.5,18);
+  db.ref(AW_PATH).push({reg,sp,mut,x:+x.toFixed(2),z:+z.toFixed(2),ts:sNow(),by:NAME}).catch(()=>toast('⚠️ Gagal menaruh telur'));
+  toast('🥚 Telur liar ditaruh di '+regNameAt(z)+' ('+x.toFixed(1)+', '+z.toFixed(1)+')',2600);
+});
+$('awClear')&&$('awClear').addEventListener('click',()=>{if(db)db.ref(AW_PATH).remove().catch(()=>{});});
 $('evCine')&&$('evCine').addEventListener('click',()=>{unlockKonoha(true);toast('🎬 Cutscene Konoha dimunculkan!',2500);});
 $('evStop')&&$('evStop').addEventListener('click',()=>{
   if(db&&connected)db.ref('nexoria/curitelur/updateEvent').remove().catch(()=>{});
@@ -2492,6 +2611,15 @@ function cineCam(dt){
   camera.lookAt(c.look);
 }
 /* ===== reveal Konoha: player "jatuh dari langit", bingung, lihat Kurama ekor 9, lalu kembali. Dipicu lewat Firebase (otomatis saat event mulai, atau tombol admin kapan saja) ===== */
+let avWatch=false;
+function watchMyAvatar(){
+  if(avWatch||!db||!KEY)return;avWatch=true;
+  db.ref('nexoria/users/'+KEY+'/avatar').on('value',sn=>{
+    const v=sn&&sn.val();if(typeof v!=='string'||!/^\d\.[a-z0-9]+(\.[a-z0-9]+){5}$/.test(v)||v===MYLOOK)return;
+    MYLOOK=v;try{localStorage.setItem('nx_av_'+KEY,v);}catch(e){}
+    if(player.root)dressAvatar(player,MYLOOK,COLC[mySlot]);
+  });
+}
 let lastNarutoTs=0;
 function playNarutoReveal(){
   if(cine||!started||!loaded)return false;
@@ -2670,11 +2798,11 @@ function applyState(s){
     if(p.plot!==undefined)oz+=[-.8,5.4,11.6][clamp(p.plot|0,0,2)]-pm.z;      /* format lama (3 plot) */
     ox=clamp(ox,-PEN_W+.8,PEN_W-.8);oz=clamp(oz,PEN_Z[0]-pm.z+.8,PEN_Z[1]-pm.z-.8);
     const it=p.item;
-    if(it.kind==='animal'){earn+=(+it.inc||0)*el;addPen(it,ox,oz);}
+    if(it.kind==='animal'){earn+=incOf(it)*el;addPen(it,ox,oz);}
     else{
       const b0=(p.t===undefined||p.t===null)?hatchTime(it):p.t,rem=b0-el;
       if(rem>0)addPen(it,ox,oz,rem);
-      else{const an=makeAnimal(it);earn+=an.inc*(-rem);hatched++;discover(an.reg,an.sp,true);addPen(an,ox,oz);}
+      else{const an=makeAnimal(it);earn+=incOf(an)*(-rem);hatched++;discover(an.reg,an.sp,true);addPen(an,ox,oz);}
     }
   });
   /* pastikan id item unik agar tidak saling menimpa */
@@ -2718,7 +2846,7 @@ async function connectFlow(){
   if(!acc.ok)throw new Error('Gagal memeriksa akun ('+acc.why+').');
   if(!acc.val){try{localStorage.removeItem('nexoria_user');}catch(e){}goHome();return new Promise(()=>{});}
   if(!await claimSession())throw new Error('Akun ini sedang bermain di perangkat lain. Tutup game di sana, tunggu ±20 detik, lalu coba lagi.');
-  watchSession();watchKick();watchGlobalSpawn();watchAnnounce();watchAbuse();watchKonoha();watchUpdateEvent();
+  watchSession();watchKick();watchGlobalSpawn();watchAnnounce();watchAbuse();watchKonoha();watchMyAvatar();watchAWild();watchUpdateEvent();
   $('ltxt').textContent='Masuk ke server…';
   if(!await claimSlot(room,mySlot))throw new Error('Semua server penuh. Coba lagi nanti.');
   setupPresence();
@@ -2813,14 +2941,14 @@ function sendState(dt){
   if(!db||!connected||paused||!player.root)return;
   sendT+=dt;if(sendT<.1)return;sendT=0;
   const p=player.root.position;
-  const o={x:+p.x.toFixed(2),y:+p.y.toFixed(2),z:+p.z.toFixed(2),w:+player.yaw.toFixed(2),s:player.state,r:Math.round(player.runAmt*100),h:player.heldKey||'',t:tl,k:swingCount,n:NAME,ht:hideTitle?1:0,kh:khodam?1:0,im:(IS_CREATOR&&!hitOn)?1:0,hb:sNow()};
+  const o={x:+p.x.toFixed(2),y:+p.y.toFixed(2),z:+p.z.toFixed(2),w:+player.yaw.toFixed(2),s:player.state,r:Math.round(player.runAmt*100),h:player.heldKey||'',t:tl,k:swingCount,n:NAME,av:MYLOOK,ht:hideTitle?1:0,kh:khodam?1:0,im:(IS_CREATOR&&!hitOn)?1:0,hb:sNow()};
   const L=lastSent,now=performance.now();
-  if(L&&Math.abs(L.x-o.x)<.03&&Math.abs(L.z-o.z)<.03&&Math.abs(L.y-o.y)<.03&&Math.abs(L.w-o.w)<.03&&L.s===o.s&&L.r===o.r&&L.h===o.h&&L.t===o.t&&L.k===o.k&&L.ht===o.ht&&L.kh===o.kh&&L.im===o.im&&now-lastSentAt<2000)return;
+  if(L&&Math.abs(L.x-o.x)<.03&&Math.abs(L.z-o.z)<.03&&Math.abs(L.y-o.y)<.03&&Math.abs(L.w-o.w)<.03&&L.s===o.s&&L.r===o.r&&L.h===o.h&&L.av===o.av&&L.t===o.t&&L.k===o.k&&L.ht===o.ht&&L.kh===o.kh&&L.im===o.im&&now-lastSentAt<2000)return;
   lastSent=o;lastSentAt=now;
   db.ref(RP()+'p/'+mySlot).set(o);
 }
 function makeRemote(i,d){
-  const av=buildAvatar(COLC[i],String(d.n||'?').slice(0,16));
+  const av=buildAvatar(COLC[i],String(d.n||'?').slice(0,16),d.av);
   av.root.position.set(+d.x||0,+d.y||0,+d.z||0);av.yaw=+d.w||0;
   const R={av,d,k:+d.k||0};remotes[i]=R;setTreadOwner(tms[i],String(d.n||'?').slice(0,16));return R;
 }
@@ -2838,6 +2966,7 @@ function onPlayers(sn){
     if(!d||!isFinite(d.x)||!isFinite(d.z)||sNow()-(d.hb||0)>20000){removeRemote(i);continue;}
     let R=remotes[i];if(!R)R=makeRemote(i,d);
     R.d=d;
+    if(d.av&&d.av!==R.av.lookStr)dressAvatar(R.av,d.av,COLC[i]);
     if(R.av.crown)R.av.crown.visible=!(+d.ht);
   }
   updatePList();
@@ -3187,8 +3316,10 @@ function updateHUD(dt){
   $('bTrade').style.display=tradeTarget>=0?'block':'none';
   if($('tradeM').style.display==='flex')renderTrade();
   nearN=(pl.state==='normal'&&!isNight)?nearestNest():null;
-  $('bSteal').style.display=nearN?'block':'none';
-  if(nearN)$('bSteal').textContent=nearN.wildDrop?'🥚 Ambil':'🥚 Curi';
+  nearAW=pl.state==='normal'?nearestAW():null;
+  $('bSteal').style.display=(nearN||nearAW)?'block':'none';
+  if(nearAW)$('bSteal').textContent='🥚 Ambil';
+  else if(nearN)$('bSteal').textContent=nearN.wildDrop?'🥚 Ambil':'🥚 Curi';
   const nt=nearTread()&&(pl.state==='normal'||pl.state==='tread');
   $('bTread').style.display=nt?'block':'none';
   $('bTread').textContent=pl.state==='tread'?'🛑 Turun':'🏃 Naik';
@@ -3198,8 +3329,26 @@ function updateHUD(dt){
   $('bShop').style.display=(pl.state==='normal'&&nearShop())?'block':'none';
   $('bLane').style.display=(pl.state==='normal'&&nearLaneShop())?'block':'none';
   const np=pl.state==='normal'&&inBox(pl.root.position.x,pl.root.position.z,penBox(mySlot),3)&&penLv<PENCAP.length-1;
-  $('bPen').style.display=np?'block':'none';
-  if(np)$('bPen').textContent='⬆ Kandang '+PENCAP[penLv]+'→'+PENCAP[penLv+1]+' 💵'+fmt(PENCOST[penLv+1]);
+  if(np)$('bPen').textContent='⬆ Upgrade '+fmt(PENCOST[penLv+1]);
+  updatePenSign(np);
+}
+/* papan kayu kecil di kandang: tulisannya diproyeksikan ke layar dan bisa diketuk */
+let penSignG=null;
+function updatePenSign(show){
+  const b=$('bPen');
+  if(!penSignG&&player.root){
+    penSignG=new THREE.Group();
+    mk(penSignG,G.cyl,M(0x6b4423),0,.8,0,.09,1.6,.09);
+    mk(penSignG,G.box,M(0xb98045),0,1.7,0,1.5,.55,.1);
+    mk(penSignG,G.box,M(0x6b4423),0,1.7,-.04,1.6,.65,.06);
+    scene.add(penSignG);
+  }
+  if(penSignG)penSignG.position.set(COLX[mySlot]+2.6,0,PEN_Z[0]+.4);
+  if(!show||!penSignG||penLv>=PENCAP.length-1){b.style.display='none';return;}
+  const v=new THREE.Vector3(penSignG.position.x,1.7,penSignG.position.z).project(camera);
+  if(v.z>1||v.z<-1){b.style.display='none';return;}
+  b.style.display='block';
+  b.style.left=((v.x+1)/2*innerWidth)+'px';b.style.top=((1-v.y)/2*innerHeight)+'px';
 }
 
 /* ===== loop utama ===== */
@@ -3250,6 +3399,24 @@ function frame(now){
   renderer.render(scene,camera);
 }
 
+
+/* ===== 💵 Koin Nexoria: +1 tiap 2 detik selama benar-benar aktif main (tidak ada yang AFK); tampil di beranda ===== */
+(function(){
+  let lastAct=Date.now(),pend=0,lastFlush=Date.now();
+  const act=()=>{lastAct=Date.now();};
+  ['pointerdown','pointermove','touchstart','touchmove','keydown','wheel'].forEach(e=>addEventListener(e,act,{passive:true}));
+  function flush(){
+    if(pend<=0||!db||!connected||!KEY)return;
+    const n=pend;pend=0;lastFlush=Date.now();
+    try{db.ref('nexoria/users/'+KEY+'/coins').set(firebase.database.ServerValue.increment(n)).catch(()=>{pend+=n;});}catch(e){pend+=n;}
+  }
+  setInterval(()=>{
+    if(started&&loaded&&!paused&&!kicked&&!document.hidden&&Date.now()-lastAct<8000)pend++;
+    if(pend>=5||(pend>0&&Date.now()-lastFlush>12000))flush();
+  },2000);
+  addEventListener('pagehide',flush);
+  document.addEventListener('visibilitychange',()=>{if(document.hidden)flush();});
+})();
 /* ===== fullscreen & lanskap ===== */
 const isFS=()=>!!(document.fullscreenElement||document.webkitFullscreenElement);
 function lockLand(){try{const o=screen.orientation;if(o&&o.lock)o.lock('landscape').catch(()=>{});}catch(e){}}
