@@ -259,6 +259,12 @@ html,body{margin:0;height:100%;overflow:hidden;background:var(--bg);color:var(--
   <label class="swRow"><b>Anti Serang</b><input type="checkbox" id="swAnti"><span class="sw"></span></label>
   <label class="swRow"><b>Serangan Induk</b><input type="checkbox" id="swGuard"><span class="sw"></span></label>
   <label class="swRow"><b>Hide Tombol Admin</b><input type="checkbox" id="swAdmBtn"><span class="sw"></span></label>
+  <div class="sub" style="margin-top:14px">🍥 Event Skin Naruto & Sasuke (30 hari)</div>
+  <div style="display:flex;flex-direction:column;gap:8px;margin:6px 0 10px">
+    <div id="nseStat" style="font-size:12px;color:#bbb">Memuat status…</div>
+    <button id="nseGo" style="height:42px;border:0;border-radius:10px;background:linear-gradient(#ff8a4a,#39f4ff);color:#0a0a14;font-weight:900;font-family:inherit;font-size:14px">🍥 Mulai Event (30 hari)</button>
+    <button id="nseStop" style="height:38px;border:0;border-radius:10px;background:#333;color:#fff;font-weight:900;font-family:inherit;font-size:13px">✖ Hentikan Event</button>
+  </div>
   <div class="sub" style="margin-top:14px">🥚 Telur Liar (bebas taruh)</div>
   <div style="display:flex;flex-direction:column;gap:8px;margin:6px 0 10px">
     <select id="awSp" class="aField"></select>
@@ -1922,7 +1928,7 @@ function adminKick(key,name){
   db.ref('nexoria/curitelur/kicks/'+key).set({ts:sNow(),by:NAME}).catch(()=>toast('⚠️ Gagal kick'));
 }
 function fillAdminRegionSelect(){
-  fillAwSelect();
+  fillAwSelect();renderNSE();
   const sel=$('spReg');if(!sel||sel.dataset.filled)return;
   sel.innerHTML=REG.map((r,i)=>'<option value="'+i+'">'+r.em+' '+esc(r.n)+'</option>').join('');
   sel.dataset.filled='1';fillAdminSpeciesSelect();
@@ -2627,6 +2633,28 @@ function takeAWild(x){
     if(addItem(it)){popFx('🥚',player.root.position.x,2.2,player.root.position.z,'#fff2a0');toast('🥚 Telur liar didapat: '+itemName(it),2600);saveSoon();}
   }).catch(()=>{});
 }
+
+/* ===== Event Skin Naruto & Sasuke: 30 hari, unlock permanen lewat misi 7 hari login berturut-turut (dihitung di index.html/platform) ===== */
+const NSE_PATH='nexoria/curitelur/narutoSkinEvent';
+let nseData=null,nseWatch=false;
+function watchNSE(){
+  if(nseWatch||!db)return;nseWatch=true;
+  db.ref(NSE_PATH).on('value',sn=>{nseData=sn.val()||null;renderNSE();});
+}
+function renderNSE(){
+  const el=$('nseStat');if(!el)return;
+  if(!nseData||!nseData.start){el.textContent='Status: TIDAK AKTIF';return;}
+  const end=+nseData.start+30*86400000,left=end-sNow();
+  el.textContent=left>0?('Status: AKTIF · berakhir dalam '+Math.ceil(left/86400000)+' hari lagi'):'Status: sudah lewat 30 hari (nonaktifkan manual)';
+}
+$('nseGo')&&$('nseGo').addEventListener('click',()=>{
+  if(db&&connected)db.ref(NSE_PATH).set({start:sNow(),by:NAME}).catch(()=>{});
+  toast('🍥 Event Skin Naruto & Sasuke dimulai (30 hari)!',3000);
+});
+$('nseStop')&&$('nseStop').addEventListener('click',()=>{
+  if(db)db.ref(NSE_PATH).remove().catch(()=>{});
+  toast('Event Skin Naruto dihentikan',2200);
+});
 $('awHere')&&$('awHere').addEventListener('click',()=>{const p=player.root&&player.root.position;if(!p)return;$('awX').value=p.x.toFixed(1);$('awZ').value=p.z.toFixed(1);});
 $('awGo')&&$('awGo').addEventListener('click',()=>{
   const v=($('awSp').value||'').split(':'),reg=+v[0],sp=+v[1],mut=+$('awMut').value||0;
