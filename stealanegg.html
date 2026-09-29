@@ -448,8 +448,8 @@ const SP=[
  ],
  [ /* Konoha — Collab X Naruto: index wilayah terakhir. Hadiah lengkap: senjata Sharinggan */
   {n:'Genin Ninja',ic:'🥷',t:5,w:45,lo:5e33,hi:2e34,kg:[45,65],kind:8,S:1.05,col:{a:0xff8a3a,b:0xff6a1a,c:0xff7a2a},opt:{hair:0xffd54a,band:0x1a3a8a}},
-  {n:'Anbu Bertopeng',ic:'🎭',t:7,w:25,lo:2e34,hi:8e34,kg:[50,70],kind:8,S:1.1,col:{a:0x15151c,b:0x8e8a99,c:0x1c2038},opt:{mask:1,vest:1,sword:1,hair:0xc8ccd4}},
-  {n:'Sannin Katak',ic:'🐸',t:7,w:15,lo:8e34,hi:3e35,kg:[60,90],kind:9,S:1.3,col:{a:0xc8642a,b:0x1b2038,c:0xf2c230},opt:{}},
+  {n:'Anbu Bertopeng',ic:'🎭',t:7,w:25,lo:2e34,hi:8e34,kg:[50,70],kind:8,S:1.1,col:{a:0x15151c,b:0x8e8a99,c:0x1c2038},opt:{mask:1,vest:1,sword:1,hair:0xc8ccd4},pct:.3},
+  {n:'Sannin Katak',ic:'🐸',t:7,w:15,lo:8e34,hi:3e35,kg:[60,90],kind:9,S:1.3,col:{a:0xc8642a,b:0x1b2038,c:0xf2c230},opt:{},pct:.3},
   {n:'Susanoo Roh',ic:'👻',t:10,w:8,lo:3e35,hi:1e36,kg:[300,600],kind:8,S:1.6,col:{a:0x7a4dff,b:0xd6b8ff},opt:{susanoo:1}},
   {n:'Hachibi Ekor Delapan',ic:'🐙',t:11,w:3,lo:1e36,hi:4e36,kg:[8000,15000],kind:10,S:1.2,col:{a:0x8a3a44,b:0x4a1c28,c:0xe8dcd0},opt:{},fx:17},
   {n:'Kurama Ekor Sembilan',ic:'🦊',t:12,w:2,lo:4e36,hi:1e37,kg:[9000,18000],kind:3,S:1.95,col:{a:0xff8a2a,b:0x2a1a10,c:0xff4d1a},opt:{ears:1,bushy:1,tails9:1,leg:.65},good:1,fx:18}
@@ -459,7 +459,7 @@ const SP=[
 const gdOf=(r,i,k)=>{const b=SP[r][i];return{n:b.n,kind:b.kind,S:b.S*k,col:b.col,opt:b.opt};};
 const gdAt=(R,k)=>Array.isArray(R.gd)?(R.gd[k]||R.gd[0]):R.gd;
 const GUARDS=[gdOf(0,2,1.35),gdOf(1,3,1.1),gdOf(2,2,1.25),gdOf(3,2,1.2),gdOf(4,4,1),gdOf(5,2,1.2),gdOf(6,0,1),
- {n:'Banteng Kosmik',kind:3,S:1.9,col:{a:0x24184e,b:0xb58cff,c:0x7ef9ff},opt:{bulk:1.5,leg:.7,bigHorn:1,twoHead:1,spots:1,ears:1,hump:1},fx:16},
+ {n:'Serigala Kosmik',kind:3,S:1.9,col:{a:0x241a4e,b:0xe8dbff,c:0x9a6bff},opt:{bulk:1.3,leg:.8,ears:1,bushy:1,tails9:1,cosmic:1,red:1},fx:16},
  [gdOf(8,5,1.3),gdOf(8,3,1.15),gdOf(8,2,1.5)]
 ];
 const REG=[
@@ -488,6 +488,7 @@ const worldEnd=()=>konohaOn||KON_I<0?WORLD_END:REGB[KON_I];
 const TREAD=[
  {n:'Biasa',r:1,p:0,c:0x8a8f98},{n:'Tidak Biasa',r:2,p:1e3,c:0x4fc36a},{n:'Langkah',r:5,p:1e5,c:0x3fa9f5},
  {n:'Epik',r:10,p:5e8,c:0xb44cf0},{n:'Legendaris',r:15,p:1e9,c:0xffa826},{n:'Mitik',r:100,p:5e10,c:0xff4f6d},
+ {n:'Jiwa Roh',r:300,p:1.5e11,c:0x9a4dff},
  {n:'Rahasia',r:1e4,p:5e11,c:0x20e0d0},{n:'Kosmik',r:5e4,p:5e12,c:0x6c63ff},{n:'Abadi',r:1e5,p:5e13,c:0xf2f2f2},{n:'Ilahi',r:1e6,p:5e14,c:0xffe066},
  {n:'Prismatic',r:2e7,p:2.5e16,c:0xff66cc},{n:'OG',r:2e8,p:5e17,c:0xff3b1a},
  {n:'GOOD',r:1e10,p:5e18,c:0xfff44d},
@@ -770,7 +771,7 @@ const crystal=(x,z,s)=>mk(scene,G.cone4,M(0x7a4dff,{emissive:0x3a1a99}),x,1.2*s,
 const fires=[],lavaMats=[];
 function stageWorld(){
   const out=new THREE.Mesh(G.plane,new THREE.MeshLambertMaterial({color:0x35563a}));out.rotation.x=-Math.PI/2;out.scale.set(700,700,1);out.position.y=-.06;scene.add(out);
-  addGround(0,0,40,40,'#67bf67',['#57ab57','#82d682','#4f9f4f'],[10,10]);
+  addGround(0,5,56,50,'#67bf67',['#57ab57','#82d682','#4f9f4f'],[14,13]);
   REG.forEach(R=>addGround(0,R.cz,30,R.depth,R.gb,R.gc,[7,Math.round(R.depth/4)],.01));
   const red=BM(0xff2020);
   REGB.forEach((z,i)=>{const zz=z+(i===0?-.5:i===REGB.length-1?.2:0);mk(scene,G.box,red,0,.07,zz,30,.1,.4);mk(scene,G.cyl,red,-15,.8,zz,.1,1.6,.1);mk(scene,G.cyl,red,15,.8,zz,.1,1.6,.1);});
@@ -853,10 +854,21 @@ function applyTreadVis(T,lv){
   T.screen.color.setHex(col);
   while(T.deco.children.length)T.deco.remove(T.deco.children[0]);
   while(T.orbit.children.length)T.orbit.remove(T.orbit.children[0]);
-  if(lv===10||lv===11||lv===13||lv===14){   /* Prismatic, OG, Monster & Petir: ringkas & satu warna (1 cincin + rel samping + cahaya tipis), tanpa piringan campuran */
+  if(lv===11||lv===12||lv===14||lv===15){   /* Prismatic, OG, Monster & Petir: ringkas & satu warna (1 cincin + rel samping + cahaya tipis), tanpa piringan campuran */
     [-.8,.8].forEach(s=>mk(T.deco,G.box,BM(col),s,.33,0,.05,.05,2.7));
     const r1=mk(T.deco,G.tor,BM(col),0,2.5,0,.8,.8,.8);r1.rotation.x=Math.PI/2;
     mk(T.deco,G.cyl,new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:.16,depthWrite:false}),0,2.2,0,1.5,4.4,1.5);
+    T.zeus=false;
+    setText(T.tierS,'+'+fmt(R.r)+'/d',hex(col));
+    return;
+  }
+  if(lv===6){   /* Jiwa Roh: api ungu + tengkorak roh + rune spiral, mirip referensi */
+    for(let k=0;k<10;k++){const a=k/10*TAU,rad=1.05;mk(T.deco,G.cone,BM(k%2?0x9a4dff:0xc9a0ff),Math.cos(a)*rad,.5+(k%2)*.15,Math.sin(a)*rad*1.7,.08,.5+(k%2)*.2,.08).rotation.x=Math.PI;}
+    const r1=mk(T.deco,G.tor,BM(0xc9a0ff),0,2.5,0,.75,.75,.75);r1.rotation.x=Math.PI/2;
+    const r2=mk(T.deco,G.tor,BM(0x9a4dff),0,2.5,0,.5,.5,.5);r2.rotation.x=Math.PI/2;
+    const sk=grp(T.deco,.85,2.2,-.4);mk(sk,G.sph,M(0xe8e0f5),0,0,0,.22);
+    [-1,1].forEach(sd=>mk(sk,G.sph,BM(0x9a4dff),sd*.08,.02,.18,.045));
+    mk(T.orbit,G.sph,BM(0xc9a0ff),0,3.4,0,.22);
     T.zeus=false;
     setText(T.tierS,'+'+fmt(R.r)+'/d',hex(col));
     return;
@@ -877,14 +889,14 @@ function applyTreadVis(T,lv){
 }
 function stageSafe(){
   const wood=M(0x8b5a2b),wood2=M(0xa8743a);
-  mk(scene,G.box,wood,0,.6,20,40,1.2,.4);mk(scene,G.box,wood,-20,.6,0,.4,1.2,40);mk(scene,G.box,wood,20,.6,0,.4,1.2,40);
+  mk(scene,G.box,wood,0,.6,30,56,1.2,.4);mk(scene,G.box,wood,-28,.6,5,.4,1.2,50);mk(scene,G.box,wood,28,.6,5,.4,1.2,50);
   mk(scene,G.box,wood,-13,.8,GATEZ,16,1.6,.5);mk(scene,G.box,wood,13,.8,GATEZ,16,1.6,.5);
   [-5.2,5.2].forEach(x=>mk(scene,G.box,wood2,x,2.6,GATEZ,.7,5.2,.7));
   mk(scene,G.box,wood2,0,5.2,GATEZ,11.2,.6,.7);
   const zs=textSprite('🛡️ ZONA AMAN',{w:768,h:192,fs:96,sw:7.5,color:'#aef6ff'});zs.position.set(0,8.6,GATEZ);scene.add(zs);
   gateDoor=mk(scene,G.box,M(0x5c3b1c),0,.03,GATEZ,10,3.6*.02,.35);
   const cy=BM(0x40e0ff);
-  mk(scene,G.box,cy,0,.06,19.6,39.5,.08,.25);mk(scene,G.box,cy,-19.6,.06,0,.25,.08,39.5);mk(scene,G.box,cy,19.6,.06,0,.25,.08,39.5);
+  mk(scene,G.box,cy,0,.06,29.6,55.5,.08,.25);mk(scene,G.box,cy,-27.6,.06,5,.25,.08,49.5);mk(scene,G.box,cy,27.6,.06,5,.25,.08,49.5);
   /* toko (JUAL) & toko Jalur (JALUR): model 100% sama, hanya beda warna */
   function buildShop(sx,sz,C,label,lc){
     mk(scene,G.box,M(C.body),sx,.55,sz,3.6,1.1,1.2);
@@ -994,6 +1006,12 @@ function buildCreature(kind,S,col,opt){
     if(opt.horns&&!opt.bigHorn)[-1,1].forEach(s=>mk(c.head,G.cone,M(0xf1e6c8),s*.16*b,.3*b,-.02,.06*b,.3*b,.06*b));
     if(opt.bigHorn)[-1,1].forEach(s=>{mk(c.head,G.cone,M(0xe9dcc0),s*.3*b,.4*b,-.02,.11*b,.55*b,.11*b).rotation.z=-s*.8;mk(c.head,G.cone,M(0xe9dcc0),s*.56*b,.68*b,-.02,.08*b,.42*b,.08*b).rotation.z=-s*.2;});   /* tanduk banteng besar */
     if(opt.hump)mk(body,G.sph,A,0,.4*b,.5*b,.5*b,.4*b,.45*b);
+    if(opt.cosmic){
+      mk(body,G.sph,BM(0xb98bff),0,.62*b,.55*b,.16*b);
+      c.ring=mk(body,G.tor,BM(0xb98bff),0,.85*b,0,1.05*b,1.05*b,1.05*b);c.ring.rotation.x=Math.PI/2.3;
+      c.ring2=mk(body,G.tor,BM(0x6a3fd9),0,.85*b,0,.8*b,.8*b,.8*b);c.ring2.rotation.x=Math.PI/2.6;
+      for(let k=0;k<3;k++){const a=k/3*TAU,orb=grp(body,Math.cos(a)*1.2*b,1.05*b+k*.22,Math.sin(a)*1.2*b);mk(orb,G.sph,k%2?BM(0xb98bff):BM(0xffffff),0,0,0,.11);}
+    }
     if(opt.hat){mk(c.head,G.cone4,M(0x2a5fd6),0,.6,-.05,.3,.5,.3);mk(c.head,G.box,M(0xffd54a),0,.36,-.05,.5,.08,.5);}
     if(opt.claws)[-1,1].forEach(s=>mk(body,G.sph,B,s*.5,0,1.15,.2,.14,.3));
     if(opt.batwing)[-1,1].forEach(s=>{const w=grp(body,s*.4*b,.35*b,-.2*b);const wm=mk(w,G.box,M(0x1a0a22,{side:THREE.DoubleSide}),s*.7,.25,0,1.5,.05,.9);wm.rotation.z=s*.25;c.wings.push({g:w,s});});
@@ -1317,12 +1335,12 @@ const qId=new THREE.Quaternion(),qLie=new THREE.Quaternion().setFromEuler(new TH
 /* ===== katalog avatar (sama dengan index.html): Set A & Set B gratis, sisanya EKSKLUSIF collab Naruto ===== */
 const SKINS=[0xf2c9a0,0xe0ac82,0xc68642,0x8d5524,0xffe0cf,0xb98a6a];
 const AVC={
- h:{a:{st:'short',c:0x3b2a1a},b:{st:'spiky',c:0x39f4ff},n1:{st:'spiky',c:0xffd54a},n2:{st:'spiky',c:0xc8ccd4},n3:{st:'long',c:0xc0392b},hnar:{st:'spiky',c:0xffd54a},hsas:{st:'spiky',c:0x1a1a22}},
- f:{a:{},b:{x:'glow'},n1:{x:'whisk'},n2:{x:'mask'},n3:{x:'red'},hnar:{x:'whisk',eye:0x3d8bff},hsas:{x:'sharingan'}},
- t:{a:{c:'auto'},b:{c:0x8b5cf6,x:'stripe'},n1:{c:0xff8a3a},n2:{c:0x15151c,x:'vest'},n3:{c:0x5a1414,x:'cloak'},hnar:{c:0xff6a1a,x:'naruto'},hsas:{c:0x8f939c,x:'sasuke'}},
- c:{a:{x:'glass'},b:{x:'phone'},n1:{x:'band'},n2:{x:'scarf'},n3:{x:'sword'},hnar:{x:'band'},hsas:{x:'rope'}},
- p:{a:{c:0x34405c},b:{c:0x1a1a2e,x:'stripe'},n1:{c:0xff6a1a},n2:{c:0x1c2038,x:'wrap'},n3:{c:0x5a1a1a},hnar:{c:0xff6a1a},hsas:{c:0x1c2038}},
- s:{a:{c:0x222222},b:{c:0x39f4ff},n1:{c:0x151520,x:'sandal'},n2:{c:0xb02020},n3:{c:0xffd54a},hnar:{c:0x151520,x:'sandal'},hsas:{c:0x151520,x:'sandal'}}
+ h:{a:{st:'short',c:0x3b2a1a},b:{st:'spiky',c:0x39f4ff},n1:{st:'spiky',c:0xffd54a},n2:{st:'spiky',c:0xc8ccd4},n3:{st:'long',c:0xc0392b},hnar:{st:'spiky',c:0xffd54a},hsas:{st:'spiky',c:0x1a1a22},g:{st:'short',c:0x1a1a22}},
+ f:{a:{},b:{x:'glow'},n1:{x:'whisk'},n2:{x:'mask'},n3:{x:'red'},hnar:{x:'whisk',eye:0x3d8bff},hsas:{x:'sharingan'},g:{x:'glow',eye:0x9a4dff}},
+ t:{a:{c:'auto'},b:{c:0x8b5cf6,x:'stripe'},n1:{c:0xff8a3a},n2:{c:0x15151c,x:'vest'},n3:{c:0x5a1414,x:'cloak'},hnar:{c:0xff6a1a,x:'naruto'},hsas:{c:0x8f939c,x:'sasuke'},g:{c:0x141416,x:'ganteng'}},
+ c:{a:{x:'glass'},b:{x:'phone'},n1:{x:'band'},n2:{x:'scarf'},n3:{x:'sword'},hnar:{x:'band'},hsas:{x:'rope'},g:{x:'crown'}},
+ p:{a:{c:0x34405c},b:{c:0x1a1a2e,x:'stripe'},n1:{c:0xff6a1a},n2:{c:0x1c2038,x:'wrap'},n3:{c:0x5a1a1a},hnar:{c:0xff6a1a},hsas:{c:0x1c2038},g:{c:0x141416,x:'gpants'}},
+ s:{a:{c:0x222222},b:{c:0x39f4ff},n1:{c:0x151520,x:'sandal'},n2:{c:0xb02020},n3:{c:0xffd54a},hnar:{c:0x151520,x:'sandal'},hsas:{c:0x151520,x:'sandal'},g:{c:0x1a1a22,x:'gshoe'}}
 };
 const DEF_LOOK='0.a.a.a.a.a.a';
 let MYLOOK=DEF_LOOK;
@@ -1341,6 +1359,11 @@ function dressAvatar(av,lk,shirtCol){
   if(tp.x==='cloak')add(mk(model,G.box,SH,0,.82,-.02,.62,.9,.34));
   if(tp.x==='naruto'){add(mk(model,G.box,M(0x111318),0,1.4,0,.58,.24,.32));add(mk(model,G.tor,M(0xd42a1a),0,1.28,.16,.09,.09,.09));}
   if(tp.x==='sasuke'){add(mk(model,G.box,M(0x232733),0,1.4,0,.58,.24,.33));add(mk(model,G.box,M(0x232733),0,1.15,0,.62,.3,.4));}
+  if(tp.x==='ganteng'){
+    add(mk(model,G.box,BM(0x8a4dff),0,1.15,.155,.1,.7,.02));
+    add(mk(model,G.box,M(0x1c1c22),0,1.55,-.05,.7,.14,.42));
+    add(mk(model,G.box,M(0x1c1c22),0,.95,-.22,.48,.5,.16));
+  }
   av.arms.forEach(a=>{add(mk(a,G.box,SH,0,-.2,0,.16,.4,.16));add(mk(a,G.box,skin,0,-.5,0,.14,.22,.14));});
   add(mk(head,G.sph,skin,0,0,0,.24));
   const HC=M(hr.c);
@@ -1366,13 +1389,16 @@ function dressAvatar(av,lk,shirtCol){
   if(ac.x==='scarf'){add(mk(model,G.tor,M(0xd42a2a),0,1.5,0,.2,.2,.2)).rotation.x=Math.PI/2;add(mk(model,G.box,M(0xd42a2a),.12,1.2,-.18,.1,.45,.03));}
   if(ac.x==='sword'){const sw=add(mk(model,G.box,M(0x15151a),.1,1.15,-.2,.05,.95,.05));sw.rotation.z=.6;}
   if(ac.x==='rope'){add(mk(model,G.tor,M(0x7a4dcc),0,.98,0,.34,.34,.22)).rotation.x=Math.PI/2;}
+  if(ac.x==='crown'){add(mk(model,G.cyl,M(0x222222),0,1.28,.17,.006,.4,.006));add(mk(model,G.box,BM(0x9a4dff),0,1.08,.19,.09,.09,.02));}
   av.legs.forEach((l,i)=>{
     const sd=i?1:-1;
     add(mk(l,G.box,M(pn.c),0,-.38,0,.2,.76,.22));
     if(pn.x==='stripe')add(mk(l,G.box,BM(0x39f4ff),sd*.105,-.38,0,.02,.76,.1));
     if(pn.x==='wrap')add(mk(l,G.box,M(0xf4f4f4),0,-.62,0,.23,.16,.25));
     if(sh.x==='sandal'){add(mk(l,G.box,M(sh.c),0,-.78,.05,.22,.06,.34));add(mk(l,G.box,skin,0,-.72,.1,.16,.06,.14));}
+    else if(sh.x==='gshoe'){add(mk(l,G.box,M(sh.c),0,-.76,.05,.22,.1,.34));add(mk(l,G.box,BM(0x8a4dff),0,-.81,.05,.22,.03,.34));}
     else add(mk(l,G.box,M(sh.c),0,-.76,.05,.22,.1,.34));
+    if(pn.x==='gpants')add(mk(l,G.box,BM(0x8a4dff),sd*.115,-.5,0,.025,.5,.025));
   });
 }
 function buildAvatar(shirtCol,name,look){
@@ -1566,7 +1592,7 @@ function resetNests(){
   REG.forEach((R,ri)=>{
     if(!R.pct)return;
     const free=[];nests.forEach((N,i)=>{if(N.reg===ri)free.push(i);});
-    SP[ri].forEach((sp,si)=>{if(ri===KON_I&&!konohaOn)return;if(rng()<R.pct&&free.length){const j=Math.floor(rng()*free.length);plan[free.splice(j,1)[0]]=si;}});
+    SP[ri].forEach((sp,si)=>{if(ri===KON_I&&!konohaOn)return;const pc=sp.pct!=null?sp.pct:R.pct;if(rng()<pc&&free.length){const j=Math.floor(rng()*free.length);plan[free.splice(j,1)[0]]=si;}});
   });
   /* Admin Abuse: kadang muncul telur liar GOOD langka di titik acak wilayah mana saja (sama untuk semua pemain) */
   let wild=null;wildN=null;
@@ -3298,7 +3324,7 @@ $('home').addEventListener('click',()=>{Promise.race([saveAll(),new Promise(r=>s
 /* ===== update pemain ===== */
 function inBounds(ox,oz,nx,nz){
   let x=nx,z=nz;
-  if(oz>GATEZ){x=clamp(x,-19.4,19.4);z=Math.min(z,19.4);}
+  if(oz>GATEZ){x=clamp(x,-27.4,27.4);z=Math.min(z,29.4);}
   else{x=clamp(x,-14.4,14.4);z=Math.max(z,worldEnd()+.3);}
   if((oz>GATEZ)!==(z>GATEZ)){
     if(Math.abs(x)>4.6||gateG>.3){z=oz>GATEZ?GATEZ+.05:GATEZ-.05;}
