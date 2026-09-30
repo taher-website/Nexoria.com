@@ -92,6 +92,14 @@ html,body{margin:0;height:100%;overflow:hidden;background:var(--bg);color:var(--
 .rowb{display:flex;gap:8px;margin-top:10px}
 .rowb button{flex:1;height:38px;border:0;border-radius:10px;background:var(--up);color:#fff;font-weight:900;font-family:inherit;font-size:13px}
 .hint{font-size:11px;opacity:.75;margin:8px 0 0}
+.hudEl{touch-action:none}
+body.hudEdit .hudEl{pointer-events:auto!important;outline:2px dashed #ffe066;outline-offset:3px;cursor:move;user-select:none;-webkit-user-select:none}
+body.hudEdit .hudEl.sel{outline:3px solid #5be38f}
+body.hudEdit #acts .act,body.hudEdit #bTread,body.hudEdit #bSteal,body.hudEdit #region,body.hudEdit #joy{display:block!important}
+#hudBar{display:none;position:fixed;left:50%;top:6px;transform:translateX(-50%);z-index:9999;gap:6px;align-items:center;padding:6px 10px;border-radius:14px;background:#000d;border:2px solid #ffe066;color:#fff;font:800 12px system-ui,sans-serif;max-width:96vw}
+#hudBar button{height:30px;min-width:32px;padding:0 10px;border-radius:9px;border:2px solid #fff;background:#3a3a55;color:#fff;font:800 12px system-ui,sans-serif}
+#hudBar #hudDone{background:linear-gradient(#5be38f,#2aa860)}
+#hudBar #hudName{max-width:32vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .gfxRow{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #ffffff1f;font-size:14px}
 .gfxRow b{flex:none;font-weight:800}
 .gfxRow input[type=range]{flex:1;min-width:0}
@@ -234,12 +242,14 @@ html,body{margin:0;height:100%;overflow:hidden;background:var(--bg);color:var(--
   <div id="petsBody"></div>
 </div></div>
 
+<div id="hudBar"><b id="hudName">Geser elemen</b><button id="hudMinus">−</button><button id="hudPlus">+</button><button id="hudReset">Reset</button><button id="hudDone">Selesai</button></div>
 <div class="modal" id="setM"><div class="box">
   <div class="hd"><b>⚙️ Pengaturan</b><span></span><button class="x" id="setX">✖</button></div>
   <div class="gfxRow"><b>🎨 Grafik</b><div class="seg" id="gfxSeg"><button data-q="0">Rendah</button><button data-q="1">Sedang</button><button data-q="2">Tinggi</button></div></div>
   <div class="gfxRow"><b>🎞️ FPS</b><div class="seg" id="fpsSeg"><button data-f="20">20</button><button data-f="30">30</button><button data-f="60">60</button><button data-f="120">120</button></div></div>
   <div class="gfxRow"><b>Render <span id="rsV">100</span>%</b><input type="range" id="rsR" min="1" max="100" step="1" value="100"></div>
   <div class="gfxRow"><b>👁️ Jarak pandang <span id="dpV">100</span></b><input type="range" id="dpR" min="1" max="100" step="1" value="100"></div>
+  <button id="hudEditBtn" style="width:100%;height:40px;margin:10px 0 2px;border:0;border-radius:10px;background:linear-gradient(#b190ff,#6a3fd9);color:#fff;font-weight:900;font-family:inherit;font-size:14px">🎛️ Sesuaikan Kontrol / Custom HUD</button>
   <label class="swRow"><b>Sembunyikan pet saya</b><input type="checkbox" id="swMyPets"><span class="sw"></span></label>
   <label class="swRow"><b>Sembunyikan pet semua player</b><input type="checkbox" id="swAllPets"><span class="sw"></span></label>
 </div></div>
@@ -352,10 +362,10 @@ const saveAdm=()=>{try{localStorage.setItem(ADM_KEY,JSON.stringify({ht:hideTitle
 const guardOff=()=>IS_CREATOR&&!guardOn;
 /* pengaturan pemain: sembunyikan pet (hewan di kandang) supaya tidak lag */
 let hideMyPets=false,hideOtherPets=false;
-let gfxQ=1,renderPct=100,fpsCap=60,distPct=100;   /* fpsCap 20/30/60/120; distPct 1-100 jarak pandang */   /* grafik: 0 Rendah, 1 Sedang (standar), 2 Tinggi; render 1-100 (% resolusi) */
+let gfxQ=1,renderPct=100,fpsCap=60,distPct=100,hudCfg={};   /* hudCfg: posisi/ukuran tiap elemen HUD {id:{x,y,s}} */   /* fpsCap 20/30/60/120; distPct 1-100 jarak pandang */   /* grafik: 0 Rendah, 1 Sedang (standar), 2 Tinggi; render 1-100 (% resolusi) */
 const SET_KEY='curitelur_set_'+KEY;
-try{const a=JSON.parse(localStorage.getItem(SET_KEY)||'{}');hideMyPets=a.hm===1;hideOtherPets=a.ho===1;if(a.gq===0||a.gq===1||a.gq===2)gfxQ=a.gq;if(+a.rs>=1&&+a.rs<=100)renderPct=Math.round(+a.rs);if([20,30,60,120].indexOf(+a.fp)>=0)fpsCap=+a.fp;if(+a.dp>=1&&+a.dp<=100)distPct=Math.round(+a.dp);}catch(e){}
-const saveSet=()=>{try{localStorage.setItem(SET_KEY,JSON.stringify({hm:hideMyPets?1:0,ho:hideOtherPets?1:0,gq:gfxQ,rs:renderPct,fp:fpsCap,dp:distPct}));}catch(e){}};
+try{const a=JSON.parse(localStorage.getItem(SET_KEY)||'{}');hideMyPets=a.hm===1;hideOtherPets=a.ho===1;if(a.gq===0||a.gq===1||a.gq===2)gfxQ=a.gq;if(+a.rs>=1&&+a.rs<=100)renderPct=Math.round(+a.rs);if([20,30,60,120].indexOf(+a.fp)>=0)fpsCap=+a.fp;if(+a.dp>=1&&+a.dp<=100)distPct=Math.round(+a.dp);if(a.hud&&typeof a.hud==='object')for(const k in a.hud){const c=a.hud[k];if(c&&isFinite(+c.x)&&isFinite(+c.y))hudCfg[k]={x:Math.round(+c.x),y:Math.round(+c.y),s:Math.min(2,Math.max(.5,+c.s||1))};}}catch(e){}
+const saveSet=()=>{try{localStorage.setItem(SET_KEY,JSON.stringify({hm:hideMyPets?1:0,ho:hideOtherPets?1:0,gq:gfxQ,rs:renderPct,fp:fpsCap,dp:distPct,hud:hudCfg}));}catch(e){}};
 const distK=()=>.1+.9*(distPct-1)/99;   /* 100 = jarak standar; 1 = 10% */
 const gfxBase=()=>{const d=window.devicePixelRatio||1;return gfxQ===0?Math.min(d,1):gfxQ===2?Math.min(Math.max(d*1.4,1.6),2.6):Math.min(d,1.6);};
 
@@ -394,8 +404,8 @@ const COLX=[-21,-7,7,21],COLC=[0x3d8bff,0xff5a5a,0x35d07f,0xffc93d],TMZ=-3;   /*
 const PEN_Z=[2,26],PEN_W=5.6;   /* kandang lebih besar, mundur ke belakang & lebih renggang */
 const penBox=s=>({x0:COLX[s]-PEN_W,x1:COLX[s]+PEN_W,z0:PEN_Z[0],z1:PEN_Z[1]});
 const penMid=s=>({x:COLX[s],z:(PEN_Z[0]+PEN_Z[1])/2});
-const SHOP={x:9.5,z:-14.5};
-const LSHOP={x:14.2,z:-14.5};   // toko JALUR, di samping kanan toko utama
+const SHOP={x:9.5,z:-18.7};
+const LSHOP={x:14.2,z:-18.7};   // toko JALUR, di samping kanan toko utama
 const GATEZ=-20,DAY=180,CYC=190,BIGX=3,TITANX=10,TITAN_CHANCE=.1,MONSTERX=5,MONSTER_CHANCE=.04;   // mutasi Besar ×3, Titan (10% dari mutasi) ×10; Monster (mata merah + petir) ×5 uang, peluang 4%/sarang; Pagi = 3 menit (180d)
 
 const TIERS=[
@@ -488,11 +498,16 @@ const REG=[
  {n:'Konoha',em:'🍥',req:1e40,gf:.99,big:4,pct:.015,gb:'#3a6b3a',gc:['#2e5c2e','#4a8a4a','#255025'],wall:0xcc4a2a,depth:34,nests:[]}
 ];
 /* batas wilayah dihitung otomatis dari depth (bnd0=dekat gerbang, bnd1=jauh); cz = titik tengah */
+const REGEXT=[.10,.15,.20,.25,.30,.35,.40,.45,.50];   /* perpanjangan tiap wilayah: Danau 10%, Laut 15%, Salju 20%, dst (+5%) */
+const REGTR={'Danau':0,'Laut':1,'Salju':2,'Gurun':3,'Neraka':4,'Surga':5,'Kuil Monster':7,'Galaxy':8,'Konoha':9};   /* tingkat kelangkaan tiap wilayah (warna teks) */
+{let ob=GATEZ;REG.forEach((R,i)=>{R.ob0=ob;ob-=R.depth;R.ext=REGEXT[i]||0;R.depth=Math.round(R.depth*(1+R.ext)*10)/10;R.tr=REGTR[R.n]||0;});}
+const regCol=R=>R.tr===7?'#ffffff':hex(TIERS[R.tr].c);
+const regHTML=R=>'<span class="t'+R.tr+'">'+esc(R.n)+'</span>';
 const REGB=[GATEZ];
 REG.forEach(R=>{R.bnd0=REGB[REGB.length-1];R.bnd1=R.bnd0-R.depth;R.cz=R.bnd0-R.depth/2;REGB.push(R.bnd1);});
 /* tata letak: penjaga terbagi jadi 3 (1 penjaga per telur), tersebar di wilayah; telur ada di sisi (arah tengah) penjaganya */
 REG.forEach((R,i)=>{R.gd=GUARDS[i];
-  const gps=R.nests.length?R.nests.map(p=>[p[0],p[1]]):[[-8,R.bnd0-8.5],[7,R.bnd0-18.7],[-3,R.bnd0-28.9]];
+  const kx=1+R.ext,gps=R.nests.length?R.nests.map(p=>[p[0],+(R.bnd0-(R.ob0-p[1])*kx).toFixed(2)]):[[-8,R.bnd0-8.5*kx],[7,R.bnd0-18.7*kx],[-3,R.bnd0-28.9*kx]];
   R.gps=gps;R.egs=gps.map(p=>[p[0]+(p[0]>0?-3.6:3.6),p[1]]);R.nests=R.gps.concat(R.egs);});
 const WORLD_END=REGB[REGB.length-1];   // ujung dunia (setelah Konoha)
 const KON_I=REG.findIndex(r=>r.n==='Konoha');
@@ -797,7 +812,7 @@ function stageWorld(){
     const z0=R.bnd0;
     const wh=1.8+i*.9;   // dinding tiap wilayah makin tinggi & menantang
     mk(scene,G.box,M(R.wall),-15.4,wh/2,R.cz,.7,wh,R.depth);mk(scene,G.box,M(R.wall),15.4,wh/2,R.cz,.7,wh,R.depth);
-    const sg=textSprite(R.em+' '+R.n.toUpperCase(),{w:1024,h:256,fs:104,sw:12,color:'#fff',depth:false});
+    const sg=textSprite(R.n.toUpperCase(),{w:1024,h:256,fs:104,sw:12,color:regCol(R),depth:false});
     sg.position.set(0,6.5,z0-1.5);scene.add(sg);
   });
   mk(scene,G.box,M(0xe9d9a0),0,1.6,WORLD_END-.4,31,3.2,.8);
@@ -952,7 +967,6 @@ function stageSafe(){
     {const nx=Math.round(w/2.2);for(let i=0;i<=nx;i++){const x=b.x0+w*i/nx;mk(scene,G.box,wood,x,.55,b.z0,.2,1.1,.2);mk(scene,G.box,wood,x,.55,b.z1,.2,1.1,.2);}}
     {const nz=Math.round(d/2.2);for(let i=0;i<=nz;i++){const z=b.z0+d*i/nz;mk(scene,G.box,wood,b.x0,.55,z,.2,1.1,.2);mk(scene,G.box,wood,b.x1,.55,z,.2,1.1,.2);}}
     mk(scene,G.box,M(0xe0c060),b.x0+1.4,.35,b.z1-1.2,1.6,.7,.9);mk(scene,G.box,M(0xe0c060),b.x0+3.2,.35,b.z1-1.2,1.6,.7,.9);
-    const ks=textSprite('KANDANG',{w:640,h:160,fs:90,sw:4.4,color:'#ffe9a8'});ks.position.set(cx,3.2,b.z0);scene.add(ks);
     makeTread(s);
   }
 }
@@ -1853,7 +1867,7 @@ function runBanner(){
   const r=bannerQ.shift(),b=$('banner'),extra=r.gap?900:0;bannerBusy=true;
   if(r.msg){b.innerHTML='<div class="bn cm">'+r.msg+'</div>';b.classList.add('on');setTimeout(()=>{b.classList.remove('on');setTimeout(()=>{bannerBusy=false;runBanner();},350+extra);},3400);return;}
   const spN=SP[r.reg][r.sp].n;
-  b.innerHTML='<div class="bn cm"><span class="t'+r.t+'">'+TIERS[r.t].n.toUpperCase()+'</span> '+esc(spN)+(r.n>1?' ×'+r.n:'')+' muncul di '+REG[r.reg].n+'!</div>';
+  b.innerHTML='<div class="bn cm"><span class="t'+r.t+'">'+esc(TIERS[r.t].n.toUpperCase())+'</span> '+esc(spN.toUpperCase())+(r.n>1?' ×'+r.n:'')+' MUNCUL DI <span class="t'+REG[r.reg].tr+'">'+esc(REG[r.reg].n.toUpperCase())+'</span>!</div>';
   b.classList.add('on');
   setTimeout(()=>{b.classList.remove('on');setTimeout(()=>{bannerBusy=false;runBanner();},350+extra);},3400);
 }
@@ -1991,7 +2005,7 @@ function adminKick(key,name){
 function fillAdminRegionSelect(){
   fillAwSelect();renderNSE();
   const sel=$('spReg');if(!sel||sel.dataset.filled)return;
-  sel.innerHTML=REG.map((r,i)=>'<option value="'+i+'">'+r.em+' '+esc(r.n)+'</option>').join('');
+  sel.innerHTML=REG.map((r,i)=>'<option value="'+i+'">'+esc(r.n)+'</option>').join('');
   sel.dataset.filled='1';fillAdminSpeciesSelect();
 }
 function fillAdminSpeciesSelect(){
@@ -2123,6 +2137,35 @@ $('petsX').addEventListener('click',()=>toggleModal('petsM'));
 $('setX').addEventListener('click',()=>toggleModal('setM'));
 $('bPets').addEventListener('click',()=>toggleModal('petsM'));
 $('bSet').addEventListener('click',()=>toggleModal('setM'));
+/* ---- Custom HUD: geser & ubah ukuran semua UI (joystick, tombol, hotbar, dll) ---- */
+const HUD_ITEMS=[['joy','Joystick'],['acts','Tombol Menu'],['bTread','Naik/Turun'],['bSteal','Mencuri'],['book','Index'],['bAdmin','Admin'],['bSet','Pengaturan'],['bPets','Pet'],['home','Home'],['region','Wilayah'],['clock','Jam'],['cloud','Awan'],['plist','Daftar Pemain'],['bar','Hotbar'],['stats','Status']];
+let hudEdit=false,hudSel=null,hudDrag=null;
+const hudEl=id=>document.getElementById(id);
+const hudC=id=>hudCfg[id]||(hudCfg[id]={x:0,y:0,s:1});
+function hudApply(id){const el=hudEl(id),c=hudCfg[id];if(!el||!c)return;el.style.translate=c.x+'px '+c.y+'px';el.style.scale=c.s;if(id==='acts')el.style.transformOrigin='right bottom';}
+function hudApplyAll(){HUD_ITEMS.forEach(h=>hudApply(h[0]));}
+function hudClamp(id){const el=hudEl(id),c=hudCfg[id];if(!el||!c)return;const r=el.getBoundingClientRect();if(!r.width)return;
+  let dx=0,dy=0;if(r.left<0)dx=-r.left;else if(r.right>innerWidth)dx=innerWidth-r.right;if(r.top<0)dy=-r.top;else if(r.bottom>innerHeight)dy=innerHeight-r.bottom;
+  if(dx||dy){c.x=Math.round(c.x+dx);c.y=Math.round(c.y+dy);hudApply(id);}}
+function hudSelect(el){hudSel=el;HUD_ITEMS.forEach(h=>{const e=hudEl(h[0]);if(e)e.classList.toggle('sel',e===el);});
+  const it=el&&HUD_ITEMS.find(h=>h[0]===el.id);$('hudName').textContent=it?it[1]:'Geser elemen';}
+function hudStart(){if($('setM').style.display==='flex')toggleModal('setM');hudEdit=true;document.body.classList.add('hudEdit');
+  HUD_ITEMS.forEach(h=>{const e=hudEl(h[0]);if(e)e.classList.add('hudEl');});hudSelect(null);$('hudBar').style.display='flex';}
+function hudStop(){hudEdit=false;hudDrag=null;document.body.classList.remove('hudEdit');
+  HUD_ITEMS.forEach(h=>{const e=hudEl(h[0]);if(e)e.classList.remove('hudEl','sel');});$('hudBar').style.display='none';saveSet();}
+const inBar=e=>e.target&&e.target.closest&&e.target.closest('#hudBar');
+window.addEventListener('pointerdown',e=>{if(!hudEdit||inBar(e))return;e.stopPropagation();e.preventDefault();
+  const el=e.target.closest&&e.target.closest('.hudEl');if(!el)return;hudSelect(el);const c=hudC(el.id);hudDrag={id:el.id,px:e.clientX,py:e.clientY,x:c.x,y:c.y,pid:e.pointerId};},true);
+window.addEventListener('pointermove',e=>{if(!hudDrag||e.pointerId!==hudDrag.pid)return;e.stopPropagation();const c=hudC(hudDrag.id);
+  c.x=Math.round(hudDrag.x+e.clientX-hudDrag.px);c.y=Math.round(hudDrag.y+e.clientY-hudDrag.py);hudApply(hudDrag.id);hudClamp(hudDrag.id);},true);
+['pointerup','pointercancel'].forEach(t=>window.addEventListener(t,e=>{if(!hudEdit||inBar(e))return;e.stopPropagation();if(hudDrag){hudDrag=null;saveSet();}},true));
+window.addEventListener('click',e=>{if(hudEdit&&!inBar(e)){e.stopPropagation();e.preventDefault();}},true);
+function hudScale(d){if(!hudSel)return;const c=hudC(hudSel.id);c.s=Math.min(2,Math.max(.5,Math.round((c.s+d)*10)/10));hudApply(hudSel.id);hudClamp(hudSel.id);saveSet();}
+$('hudEditBtn').addEventListener('click',hudStart);
+$('hudMinus').addEventListener('click',()=>hudScale(-.1));$('hudPlus').addEventListener('click',()=>hudScale(.1));
+$('hudReset').addEventListener('click',()=>{HUD_ITEMS.forEach(h=>{const e=hudEl(h[0]);if(e){e.style.translate='';e.style.scale='';}});hudCfg={};saveSet();});
+$('hudDone').addEventListener('click',hudStop);
+hudApplyAll();
 function applyGfx(){renderer.setPixelRatio(Math.max(.25,gfxBase()*renderPct/100));resize();}
 function applyDist(){camera.far=Math.max(25,250*distK());camera.updateProjectionMatrix();if(skyDome)skyDome.scale.setScalar(Math.min(1,camera.far*.9/200));}
 function syncGfxUI(){document.querySelectorAll('#gfxSeg button').forEach(b=>b.classList.toggle('on',+b.dataset.q===gfxQ));$('rsR').value=renderPct;$('rsV').textContent=renderPct;document.querySelectorAll('#fpsSeg button').forEach(b=>b.classList.toggle('on',+b.dataset.f===fpsCap));$('dpR').value=distPct;$('dpV').textContent=distPct;}
@@ -2546,7 +2589,7 @@ function renderBook(){
     if(ri===KON_I&&!konohaOn)return;
     const L=SP[ri],g=L.filter((s,si)=>dscv.has(ri+'_'+si)).length,done=g===L.length;
     total+=L.length;got+=g;
-    h+='<div class="sub">'+R.em+' '+R.n+' · '+g+'/'+L.length+(done?' ✅':'')+'</div>';
+    h+='<div class="sub">'+regHTML(R)+' · '+g+'/'+L.length+(done?' ✅':'')+'</div>';
     h+='<div class="rw">🎁 Hadiah lengkap: 🦯 '+BATON[ri+1].n+' — '+batDesc(ri+1)+(done?' (sudah didapat)':'')+'</div><div class="grid">';
     L.forEach((s,si)=>{
       const has=dscv.has(ri+'_'+si);
@@ -3489,7 +3532,7 @@ function updateHUD(dt){
   if(pl.crown)pl.crown.visible=!hideTitle;
   const ri=regionAt(pl.root.position.z),rg=$('region');
   if(ri<0){rg.style.display='none';rg.classList.remove('warn');}
-  else{rg.style.display='';const R=REG[ri],low=pl.speedStat<R.req;rg.textContent=R.em+' '+R.n+' · 👟'+fmt(R.req)+(low?' ⚠':' ✓');rg.classList.toggle('warn',low);}
+  else{rg.style.display='';const R=REG[ri],low=pl.speedStat<R.req;rg.innerHTML=regHTML(R)+' · 👟'+fmt(R.req)+(low?' ⚠':' ✓');rg.classList.toggle('warn',low);}
   const stealing=isStealing();
   $('hud').classList.toggle('stealing',stealing);
   $('hud').classList.toggle('ontread',player.state==='tread');
