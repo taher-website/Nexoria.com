@@ -165,6 +165,20 @@ footer{color:var(--mute2);font-size:12px;text-align:center;padding:14px 0 30px}
 .av-sw{display:flex;flex-wrap:wrap;gap:8px}
 .av-sw button{width:38px;height:38px;border-radius:50%;border:2px solid var(--line2);cursor:pointer;padding:0}
 .av-sw button.on{border-color:var(--cy);box-shadow:0 0 0 2px #39f4ff55}
+.av-prog{margin:12px 0 4px;font-size:12px;color:var(--mute);padding:8px 10px;border-radius:12px;background:#ffffff08;border:1px solid var(--line2)}
+.av-prog b{color:var(--ink)}.dots{display:flex;gap:5px;margin-top:5px}.dots i{flex:1;height:7px;border-radius:4px;background:#ffffff1a}.dots i.on{background:var(--cy);box-shadow:0 0 6px var(--cy)}
+.av-opts button.lk{opacity:.7}
+.av-prev.pv-ninja svg{transform:rotate(13deg) translateX(4px);animation:pvn .5s ease-in-out infinite alternate}
+.av-prev.pv-fly svg{transform:rotate(-72deg) scale(.82);animation:pvf 1.4s ease-in-out infinite alternate}
+@keyframes pvn{to{transform:rotate(16deg) translate(7px,-3px)}}@keyframes pvf{to{transform:rotate(-72deg) scale(.82) translateX(10px)}}
+.mdl{position:fixed;inset:0;z-index:60;background:#000d;display:flex;align-items:center;justify-content:center;padding:12px}
+.mdl-card{width:min(94vw,440px);max-height:92vh;overflow:auto;border-radius:20px;background:linear-gradient(180deg,var(--cardhi),var(--card));border:1px solid var(--line);padding:16px}
+.mdl h3{margin:0 0 12px;font-family:var(--font-d);font-size:17px;font-weight:800}
+.up-cur{text-align:center;padding:12px;border-radius:14px;background:#ffffff08;border:1px solid var(--line2);margin-bottom:10px;font-size:13px;color:var(--mute)}.up-cur b{font-size:28px;color:var(--gold)}
+.up-list{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}.up-row{display:flex;justify-content:space-between;padding:9px 12px;border-radius:10px;background:#ffffff0a;border:1px solid var(--line2);font-weight:700}.up-row.nx{border-color:var(--cy);background:#39f4ff14}
+.gf-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-bottom:12px}
+.gf{position:relative;text-align:center;padding:8px 2px;border-radius:12px;background:#ffffff0a;border:1px solid var(--line2);font-size:12px}.gf small{display:block;color:var(--mute);font-size:10px}.gf div{font-size:20px;margin:2px 0}.gf b{font-size:11px;color:var(--gold)}
+.gf.big{grid-column:span 2}.gf.cur{border-color:var(--cy);box-shadow:0 0 8px #39f4ff66}.gf.done{opacity:.55}.gf em{position:absolute;top:3px;right:6px;font-style:normal;color:#5be38f}
 .av-sets{display:flex;gap:6px;margin:12px 0 8px}
 .av-sets{flex-wrap:wrap}
 .av-foot{display:flex;gap:8px;margin-top:10px;position:sticky;bottom:-16px;padding:10px 0 4px;background:linear-gradient(180deg,#0000,var(--card) 30%)}
@@ -196,7 +210,7 @@ footer{color:var(--mute2);font-size:12px;text-align:center;padding:14px 0 30px}
   <header>
     <button id="menuBtn" aria-label="Buka menu navigasi"><span></span><span></span><span></span></button>
     <div class="brand">NEXORIA</div>
-    <div class="hr"><div class="chip coinchip" title="Koin: +1 tiap 2 detik saat bermain"><span>💵</span><b id="coinV">0</b></div><div class="chip"><div class="ava" id="avaTop">N</div><b id="nameTop"></b></div></div>
+    <div class="hr"><div class="chip coinchip" title="Koin: +0,5/d saat bermain"><span>💵</span><b id="coinV">0</b></div><div class="chip"><div class="ava" id="avaTop">N</div><b id="nameTop"></b></div></div>
   </header>
 
   <div id="scrim"></div>
@@ -206,6 +220,8 @@ footer{color:var(--mute2);font-size:12px;text-align:center;padding:14px 0 30px}
       <button id="navHome" class="on">🏠 Beranda</button>
       <button id="navGames">🎮Semua Game</button>
       <button id="navAvatar">🎨 Avatar</button>
+      <button id="navShop">🛒 Shop</button>
+      <button id="navGift">🎁 Hadiah Harian</button>
       <button id="navProfile">👤 Profil</button>
     </div>
     <div class="d-foot"><div class="nav"><button class="out" id="navLogout">⛔ Logout</button></div></div>
@@ -528,19 +544,25 @@ function tickLoginStreak(){
 }
 
 const fmtC=n=>{n=Math.floor(+n||0);if(n<1000)return String(n);const u=['','K','M','B','T'];let i=0,v=n;while(v>=1000&&i<4){v/=1000;i++;}const f=v>=100?Math.floor(v):Math.floor(v*10)/10;return String(f)+u[i];};
-let coinRef=null,KON=false,konRef=null,COINS=0,SPON=false,spRef=null;
-const SP_PRICE=5000;   /* harga bundle Shadow Purple: 5K koin */
+let coinRef=null,KON=false,konRef=null,COINS=0,SPON=false,spRef=null,OWN={},INC=0,DAILY={n:0,last:''},mdlRender=null;
+const SP_PRICE=5000,ANIM_PRICE=5000,INC_MAX=25;
+const incRate=l=>l<=0?.5:5*Math.pow(2,l-1);   /* koin per detik: Lv0 0,5/d · Lv1 5/d · Lv2 10/d · Lv3 20/d … */
+const incCost=l=>500*Math.pow(2,l);           /* biaya naik dari level l: 500, 1K, 2K, 4K … */
+const fmtR=r=>r<1?String(r).replace('.',','):fmtC(r);
+const GIFT=[[100,300],[200,500],[300,800],[500,1200],[800,2000],[1200,3000],[2500,6000]];   /* hadiah harian hari 1-7 (uang, acak) */   /* harga bundle Shadow Purple: 5K koin */
 function watchCoins(){
   const d=getDB();if(!d||!USER)return;
   if(coinRef)coinRef.off();
   coinRef=d.ref('nexoria/users/'+USER.toLowerCase()+'/coins');
-  coinRef.on('value',sn=>{COINS=Math.floor(+sn.val()||0);$('coinV').textContent=fmtC(sn.val());if($('avM'))renderAv();});
-  if(spRef)spRef.off();
-  spRef=d.ref('nexoria/users/'+USER.toLowerCase()+'/owned/shadowpurple');
-  spRef.on('value',sn=>{SPON=!!sn.val();if($('avM'))renderAv();});
+  coinRef.on('value',sn=>{COINS=Math.floor(+sn.val()||0);$('coinV').textContent=fmtC(sn.val());refreshUI();});
+  if(window._nxRefs)window._nxRefs.forEach(r=>{try{r.off();}catch(e){}});
+  {const K='nexoria/users/'+USER.toLowerCase(),R=window._nxRefs=[d.ref(K+'/owned'),d.ref(K+'/incomeLv'),d.ref(K+'/daily'),d.ref(K+'/anim')];
+   R[0].on('value',sn=>{OWN=sn.val()||{};SPON=!!OWN.shadowpurple;refreshUI();});
+   R[1].on('value',sn=>{INC=Math.max(0,Math.min(INC_MAX,Math.floor(+sn.val()||0)));refreshUI();});
+   R[2].on('value',sn=>{DAILY=sn.val()||{n:0,last:''};refreshUI();});}
   if(!konRef){konRef=d.ref('nexoria/curitelur/konoha');konRef.on('value',sn=>{const v=sn.val();KON=!!(v&&+v.on);if($('avM'))renderAv();});}
 }
-const AV_CAT=[['sk','Kulit'],['h','Rambut'],['f','Wajah'],['t','Baju'],['c','Aksesoris'],['p','Celana'],['s','Sepatu']];
+const AV_CAT=[['sk','Kulit'],['h','Rambut'],['f','Wajah'],['t','Baju'],['c','Aksesoris'],['p','Celana'],['s','Sepatu'],['an','Animasi']];
 const SKINS=['#f2c9a0','#e0ac82','#c68642','#8d5524','#ffe0cf','#b98a6a'];
 const AVI={
  h:{a:{n:'Pendek Klasik',g:'A',st:'short',c:'#3b2a1a'},b:{n:'Duri Neon',g:'B',st:'spiky',c:'#39f4ff'},n1:{n:'Duri Kuning',g:'N',st:'spiky',c:'#ffd54a'},n2:{n:'Duri Perak',g:'N',st:'spiky',c:'#c8ccd4'},n3:{n:'Panjang Merah',g:'N',st:'long',c:'#c0392b'},hnar:{n:'Rambut Naruto',g:'H',st:'spiky',c:'#ffd54a'},hsas:{n:'Rambut Sasuke',g:'H',st:'spiky',c:'#1a1a22'},g:{n:'Rambut Ganteng',g:'C',st:'short',c:'#1a1a22'},sp:{n:'Rambut Shadow',g:'S',st:'short',c:'#0c0c12',x:'spk'}},
@@ -550,6 +572,7 @@ const AVI={
  p:{a:{n:'Celana Biru',g:'A',c:'#34405c'},b:{n:'Celana Neon',g:'B',c:'#1a1a2e',x:'stripe'},n1:{n:'Celana Ninja Oranye',g:'N',c:'#ff6a1a'},n2:{n:'Celana Pita ANBU',g:'N',c:'#1c2038',x:'wrap'},n3:{n:'Celana Merah Gelap',g:'N',c:'#5a1a1a'},hnar:{n:'Celana Naruto',g:'H',c:'#ff6a1a'},hsas:{n:'Celana Sasuke',g:'H',c:'#1c2038'},g:{n:'Celana Cargo Ganteng',g:'C',c:'#141416',x:'gpants'},sp:{n:'Cargo Shadow Purple',g:'S',c:'#0e0e12',x:'spp'}},
  s:{a:{n:'Sepatu Hitam',g:'A',c:'#222222'},b:{n:'Sepatu Neon',g:'B',c:'#39f4ff'},n1:{n:'Sandal Ninja',g:'N',c:'#151520',x:'sandal'},n2:{n:'Sepatu Merah',g:'N',c:'#b02020'},n3:{n:'Sepatu Emas',g:'N',c:'#ffd54a'},hnar:{n:'Sandal Naruto',g:'H',c:'#151520',x:'sandal'},hsas:{n:'Sandal Sasuke',g:'H',c:'#151520',x:'sandal'},g:{n:'Sneaker Ganteng',g:'C',c:'#1a1a22',x:'gshoe'},sp:{n:'Sneaker Shadow Purple',g:'S',c:'#15151c',x:'sps'}}
 };
+AVI.an={a:{n:'Lari Normal',g:'A'},ninja:{n:'🍥 Jalan Ninja Naruto',g:'AN'},fly:{n:'🦸 Gaya Terbang Hero',g:'AF'}};
 const LOOK_RE=/^\d\.[a-z0-9]+(\.[a-z0-9]+){5}$/,DEF_LOOK='0.a.a.a.a.a.a';
 const lookKey=()=>'nx_av_'+USER.toLowerCase();
 function getLook(){let l='';try{l=localStorage.getItem(lookKey())||'';}catch(e){}return LOOK_RE.test(l)?l:DEF_LOOK;}
@@ -602,47 +625,50 @@ function svgAvatar(lk){
   if(f.x==='sharingan')o+='<circle cx="51" cy="42" r="4.5" fill="#ff1a1a"/><circle cx="69" cy="42" r="4.5" fill="#ff1a1a"/><circle cx="51" cy="42" r="1.4" fill="#140006"/><circle cx="69" cy="42" r="1.4" fill="#140006"/>';
   return o+'</svg>';
 }
-let avSel={sk:0,h:'a',f:'a',t:'a',c:'a',p:'a',s:'a'},avTab='h';
-function lookToSel(l){const P=l.split('.');avSel={sk:+P[0]||0,h:P[1],f:P[2],t:P[3],c:P[4],p:P[5],s:P[6]};}
+let avSel={sk:0,h:'a',f:'a',t:'a',c:'a',p:'a',s:'a',an:'a'},avTab='h';
+const ANIM_K=()=>'nx_anim_'+USER.toLowerCase();
+function getAnim(){let a='';try{a=localStorage.getItem(ANIM_K())||'';}catch(e){}return AVI.an[a]?a:'a';}
+function lookToSel(l){const P=l.split('.');avSel={sk:+P[0]||0,h:P[1],f:P[2],t:P[3],c:P[4],p:P[5],s:P[6],an:getAnim()};}
 const selToLook=()=>[avSel.sk,avSel.h,avSel.f,avSel.t,avSel.c,avSel.p,avSel.s].join('.');
 function openAvatar(){
   if(!USER)return;lookToSel(getLook());avTab='h';
   const m=document.createElement('div');m.id='avM';
   m.innerHTML='<div class="av-card"><h3>🎨 Avatar · '+esc(USER)+'</h3><div class="av-top"><div class="av-prev" id="avPrev"></div><div class="av-side"><div class="av-tabs" id="avTabs"></div><div id="avOpts"></div></div></div>'
-   +'<div class="av-sets"><button id="avSetA">Klasik</button><button id="avSetB">Neon</button><button id="avSetC">Ganteng</button><button id="avSetS"></button></div>'
-   +'<div class="av-sets" id="avHeroRow"></div>'
+   +'<div class="av-prog" id="avProg"></div>'
    +'<div class="av-foot"><button class="btn" id="avSave">SIMPAN</button><button class="btn ghost" id="avClose">Tutup</button></div>'
    +'</div>';
   document.body.appendChild(m);
   m.addEventListener('pointerdown',e=>{if(e.target===m)closeAvatar();});
   $('avClose').onclick=closeAvatar;
-  $('avSetA').onclick=()=>{avSel={sk:avSel.sk,h:'a',f:'a',t:'a',c:'a',p:'a',s:'a'};renderAv();};
-  $('avSetB').onclick=()=>{avSel={sk:avSel.sk,h:'b',f:'b',t:'b',c:'b',p:'b',s:'b'};renderAv();};
-  $('avSetC').onclick=()=>{avSel={sk:avSel.sk,h:'g',f:'g',t:'g',c:'g',p:'g',s:'g'};renderAv();};
-  $('avSetS').onclick=()=>{if(!SPON){buyShadow();return;}avSel={sk:avSel.sk,h:'sp',f:'sp',t:'sp',c:'sp',p:'sp',s:'sp'};renderAv();};
   $('avSave').onclick=saveAvatar;
-  $('avHeroRow').innerHTML='<button id="avSetNar">🍥 Pakai Naruto</button><button id="avSetSas">🌀 Pakai Sasuke</button>';
-  $('avSetNar').onclick=()=>{if(!heroOn){status('Selesaikan misi login 7 hari saat Event Naruto aktif dulu','err');return;}avSel={sk:avSel.sk,h:'hnar',f:'hnar',t:'hnar',c:'hnar',p:'hnar',s:'hnar'};renderAv();};
-  $('avSetSas').onclick=()=>{if(!heroOn){status('Selesaikan misi login 7 hari saat Event Naruto aktif dulu','err');return;}avSel={sk:avSel.sk,h:'hsas',f:'hsas',t:'hsas',c:'hsas',p:'hsas',s:'hsas'};renderAv();};
   renderAv();
 }
-function buyShadow(){
+/* pembelian umum: potong koin (transaksi) → simpan kepemilikan; koin dikembalikan jika gagal simpan */
+let buying=false;
+function buyOwned(key,price,label){
   const d=getDB();if(!d||!USER){status('Belum terhubung ke server','err');return;}
-  if(SPON)return;
+  if(OWN[key]||buying)return;
   const nf=n=>Math.floor(n).toLocaleString('id-ID');
-  if(COINS<SP_PRICE){status('Koin kurang: kamu punya 💵 '+nf(COINS)+', butuh 💵 '+nf(SP_PRICE),'err');return;}
-  const key=USER.toLowerCase(),cref=d.ref('nexoria/users/'+key+'/coins');
-  cref.transaction(cur=>{if(cur===null)return 0;cur=Math.floor(+cur||0);return cur>=SP_PRICE?cur-SP_PRICE:undefined;}).then(r=>{
-    if(!r.committed){status('Koin kurang: kamu punya 💵 '+nf(COINS)+', butuh 💵 '+nf(SP_PRICE),'err');return;}
-    return d.ref('nexoria/users/'+key+'/owned/shadowpurple').set(1).then(()=>{SPON=true;status('💜 Bundle Shadow Purple terbeli!','ok');renderAv();})
-      .catch(e=>{cref.set(firebase.database.ServerValue.increment(SP_PRICE)).catch(()=>{});status('Gagal menyimpan pembelian, koin dikembalikan'+(e&&e.code?' ('+e.code+')':''),'err');});
-  }).catch(e=>status('Pembelian gagal'+(e&&e.code?' ('+e.code+')':'')+', coba lagi','err'));
+  if(COINS<price){status('Koin kurang: kamu punya 💵 '+nf(COINS)+', butuh 💵 '+nf(price),'err');return;}
+  const K='nexoria/users/'+USER.toLowerCase(),cref=d.ref(K+'/coins');buying=true;
+  cref.transaction(cur=>{if(cur===null)return 0;cur=Math.floor(+cur||0);return cur>=price?cur-price:undefined;}).then(r=>{
+    if(!r.committed){status('Koin kurang: kamu punya 💵 '+nf(COINS)+', butuh 💵 '+nf(price),'err');return;}
+    return d.ref(K+'/owned/'+key).set(1).then(()=>{OWN[key]=1;if(key==='shadowpurple')SPON=true;status('✅ '+label+' terbeli!','ok');refreshUI();})
+      .catch(e=>{cref.set(firebase.database.ServerValue.increment(price)).catch(()=>{});status('Gagal menyimpan pembelian, koin dikembalikan'+(e&&e.code?' ('+e.code+')':''),'err');});
+  }).catch(e=>status('Pembelian gagal'+(e&&e.code?' ('+e.code+')':'')+', coba lagi','err')).then(()=>{buying=false;});
 }
+function refreshUI(){try{if($('avM'))renderAv();if(mdlRender)mdlRender();const c=document.querySelector('.coinchip');if(c)c.title='Koin: +'+fmtR(incRate(INC))+'/d saat bermain';}catch(e){}}
 function closeAvatar(){const m=$('avM');if(m)m.remove();}
+const isLocked=it=>(it.g==='N'&&!KON)||(it.g==='H'&&!heroOn)||(it.g==='S'&&!OWN.shadowpurple)||(it.g==='AN'&&!OWN.anim_ninja)||(it.g==='AF'&&!OWN.anim_fly);
+const lockKey=it=>it.g==='S'?['shadowpurple',SP_PRICE,'Bundle Shadow Purple']:it.g==='AN'?['anim_ninja',ANIM_PRICE,'Animasi Jalan Ninja Naruto']:it.g==='AF'?['anim_fly',ANIM_PRICE,'Animasi Gaya Terbang']:null;
+function dailyShown(){const t=todayUTC(0),y=todayUTC(1),n=DAILY.n||0,today=DAILY.last===t;if(!today&&DAILY.last!==y)return{n:0,today:false};if(!today&&n>=7)return{n:0,today:false};return{n,today};}
 function renderAv(){
   if(!$('avM'))return;
+  $('avPrev').className='av-prev'+(avSel.an==='ninja'?' pv-ninja':avSel.an==='fly'?' pv-fly':'');
   $('avPrev').innerHTML=svgAvatar(selToLook());
-  $('avSetS').textContent=SPON?'💜 Shadow Purple':'💜 Shadow Purple · 💵 '+fmtC(SP_PRICE)+' (punyamu '+fmtC(COINS)+')';
+  const ds=dailyShown(),dots=[1,2,3,4,5,6,7].map(i=>'<i class="'+(i<=ds.n?'on':'')+'"></i>').join('');
+  $('avProg').innerHTML='<div>📅 Progres login: <b>Hari '+ds.n+'/7</b></div><div class="dots">'+dots+'</div>'
+    +'<div style="margin-top:6px">🍥 Misi Naruto: <b>'+(heroOn?'Selesai ✅':Math.min(7,+(streakInfo&&streakInfo.n)||0)+'/7 hari')+'</b></div>';
   $('avTabs').innerHTML=AV_CAT.map(([k,n])=>'<button data-k="'+k+'" class="'+(k===avTab?'on':'')+'">'+n+'</button>').join('');
   $('avTabs').querySelectorAll('button').forEach(b=>b.onclick=()=>{avTab=b.dataset.k;renderAv();});
   const o=$('avOpts');
@@ -652,21 +678,95 @@ function renderAv(){
   }else{
     const L=AVI[avTab];
     o.innerHTML='<div class="av-opts">'+Object.keys(L).map(id=>{
-      const it=L[id],lock=(it.g==='N'&&!KON)||(it.g==='H'&&!heroOn)||(it.g==='S'&&!SPON),tag=it.g==='A'||it.g==='B'||it.g==='C'?'':it.g==='S'?(lock?'🔒 💵 '+fmtC(SP_PRICE):'💜 Shadow Purple'):it.g==='H'?(lock?'🔒 Misi Login 7 Hari':'🍥 Naruto Limited'):(lock?'🔒 Eksklusif Naruto':'🍥 Naruto');
-      return '<button data-id="'+id+'" class="'+(avSel[avTab]===id?'on':'')+'"'+(lock?' disabled':'')+'><span>'+esc(it.n)+'</span>'+(tag?'<i>'+tag+'</i>':'')+'</button>';
+      const it=L[id],lock=isLocked(it),lk=lockKey(it),
+        tag=it.g==='S'?(lock?'🔒 💵 '+fmtC(SP_PRICE)+' (bundle)':'💜 Shadow Purple'):(it.g==='AN'||it.g==='AF')?(lock?'🔒 💵 '+fmtC(ANIM_PRICE):'✅ Dimiliki'):it.g==='H'?(lock?'🔒 Misi Login 7 Hari':'🍥 Naruto Limited'):it.g==='N'?(lock?'🔒 Eksklusif Naruto':'🍥 Naruto'):'';
+      return '<button data-id="'+id+'" class="'+(avSel[avTab]===id?'on':'')+(lock?' lk':'')+'"><span>'+esc(it.n)+'</span>'+(tag?'<i>'+tag+'</i>':'')+'</button>';
     }).join('')+'</div>';
-    o.querySelectorAll('button').forEach(b=>b.onclick=()=>{avSel[avTab]=b.dataset.id;renderAv();});
+    o.querySelectorAll('button').forEach(b=>b.onclick=()=>{
+      const it=L[b.dataset.id];
+      if(isLocked(it)){
+        const lk=lockKey(it);
+        if(lk){if(confirm('Beli '+lk[2]+' seharga 💵 '+fmtC(lk[1])+'?'))buyOwned(lk[0],lk[1],lk[2]);return;}
+        status(it.g==='H'?'Selesaikan misi login 7 hari saat Event Naruto aktif dulu':'Item Naruto masih terkunci','err');return;
+      }
+      avSel[avTab]=b.dataset.id;renderAv();
+    });
   }
 }
 function saveAvatar(){
   const l=selToLook();
-  for(const k of ['h','f','t','c','p','s']){const g=AVI[k][avSel[k]].g;if(g==='N'&&!KON){status('Item Naruto masih terkunci','err');return;}if(g==='H'&&!heroOn){status('Kostum Naruto/Sasuke masih terkunci','err');return;}if(g==='S'&&!SPON){status('Bundle Shadow Purple belum dibeli','err');return;}}
-  try{localStorage.setItem(lookKey(),l);}catch(e){}
+  for(const k of ['h','f','t','c','p','s','an']){const it=AVI[k][avSel[k]];if(it&&isLocked(it)){status('Ada item yang masih terkunci/belum dibeli','err');return;}}
+  try{localStorage.setItem(lookKey(),l);localStorage.setItem(ANIM_K(),avSel.an);}catch(e){}
   const d=getDB();
-  if(d)d.ref('nexoria/users/'+USER.toLowerCase()+'/avatar').set(l).then(()=>status('Avatar tersimpan!','ok')).catch(()=>status('Tersimpan di perangkat (server menolak)','err'));
+  if(d){const K='nexoria/users/'+USER.toLowerCase();Promise.all([d.ref(K+'/avatar').set(l),d.ref(K+'/anim').set(avSel.an==='a'?'':avSel.an)]).then(()=>status('Avatar tersimpan!','ok')).catch(()=>status('Tersimpan di perangkat (server menolak)','err'));}
   else status('Avatar tersimpan di perangkat','ok');
   closeAvatar();
 }
+/* ---------- modal umum (Shop & Hadiah Harian) ---------- */
+function closeMdl(){mdlRender=null;document.querySelectorAll('.mdl').forEach(x=>x.remove());}
+function openMdl(title,render){
+  closeMdl();const m=document.createElement('div');m.className='mdl';
+  m.innerHTML='<div class="mdl-card"><h3>'+title+'</h3><div id="mdlBody"></div><div class="av-foot"><button class="btn ghost" id="mdlClose">Tutup</button></div></div>';
+  document.body.appendChild(m);m.addEventListener('pointerdown',e=>{if(e.target===m)closeMdl();});
+  $('mdlClose').onclick=closeMdl;mdlRender=()=>{if($('mdlBody'))render($('mdlBody'));};mdlRender();
+}
+/* ---------- SHOP: upgrade penghasilan koin di game online (per detik) ---------- */
+function openShop(){
+  openMdl('🛒 Shop · Penghasilan Game Online',body=>{
+    const l=INC,max=l>=INC_MAX;
+    let rows='';
+    for(let i=l+1;i<=Math.min(INC_MAX,l+4);i++)rows+='<div class="up-row'+(i===l+1?' nx':'')+'"><span>'+fmtR(incRate(i))+'/d</span><b>💵 '+fmtC(incCost(i-1))+'</b></div>';
+    body.innerHTML='<div class="up-cur">Penghasilanmu sekarang<br><b>'+fmtR(incRate(l))+'/d</b> <small>(Lv '+l+')</small></div>'
+      +(max?'<p style="text-align:center">✅ Level maksimal!</p>':'<div class="up-list">'+rows+'</div><button class="btn" id="upBuy">⬆ Upgrade ke '+fmtR(incRate(l+1))+'/d · 💵 '+fmtC(incCost(l))+'</button>')
+      +'<p class="hint" style="text-align:center">Berlaku di semua game Nexoria. Koin kamu: 💵 '+fmtC(COINS)+'</p>';
+    const bt=$('upBuy');if(bt)bt.onclick=buyIncome;
+  });
+}
+function buyIncome(){
+  const d=getDB();if(!d||!USER){status('Belum terhubung ke server','err');return;}
+  if(buying||INC>=INC_MAX)return;
+  const lv=INC,cost=incCost(lv),nf=n=>Math.floor(n).toLocaleString('id-ID');
+  if(COINS<cost){status('Koin kurang: kamu punya 💵 '+nf(COINS)+', butuh 💵 '+nf(cost),'err');return;}
+  const K='nexoria/users/'+USER.toLowerCase(),cref=d.ref(K+'/coins');buying=true;
+  cref.transaction(cur=>{if(cur===null)return 0;cur=Math.floor(+cur||0);return cur>=cost?cur-cost:undefined;}).then(r=>{
+    if(!r.committed){status('Koin kurang: kamu punya 💵 '+nf(COINS)+', butuh 💵 '+nf(cost),'err');return;}
+    return d.ref(K+'/incomeLv').set(lv+1).then(()=>{INC=lv+1;status('⬆ Penghasilan naik jadi '+fmtR(incRate(INC))+'/d!','ok');refreshUI();})
+      .catch(e=>{cref.set(firebase.database.ServerValue.increment(cost)).catch(()=>{});status('Gagal menyimpan upgrade, koin dikembalikan'+(e&&e.code?' ('+e.code+')':''),'err');});
+  }).catch(e=>status('Upgrade gagal'+(e&&e.code?' ('+e.code+')':''),'err')).then(()=>{buying=false;});
+}
+/* ---------- HADIAH HARIAN: hari 1-7, hadiah uang acak ---------- */
+function openGift(){
+  openMdl('🎁 Hadiah Harian',body=>{
+    const ds=dailyShown(),next=ds.today?(ds.n%7)+1:(ds.n%7)+1;
+    let cells='';
+    for(let i=1;i<=7;i++){
+      const done=i<=ds.n,cur=!ds.today&&i===next;
+      cells+='<div class="gf'+(done?' done':'')+(cur?' cur':'')+(i===7?' big':'')+'"><small>Hari '+i+'</small><div>'+(i===7?'🎁':'💵')+'</div><b>'+fmtC(GIFT[i-1][0])+'–'+fmtC(GIFT[i-1][1])+'</b>'+(done?'<em>✔</em>':'')+'</div>';
+    }
+    body.innerHTML='<div class="gf-grid">'+cells+'</div>'
+      +(ds.today?'<button class="btn" disabled>Sudah diambil hari ini · kembali besok</button>':'<button class="btn" id="gfBtn">🎁 Ambil Hadiah Hari '+next+'</button>')
+      +'<p class="hint" style="text-align:center">Login tiap hari tanpa putus. Kalau terlewat sehari, hitungan kembali ke Hari 1.</p>';
+    const bt=$('gfBtn');if(bt)bt.onclick=claimGift;
+  });
+}
+function claimGift(){
+  const d=getDB();if(!d||!USER){status('Belum terhubung ke server','err');return;}
+  if(buying)return;buying=true;
+  const K='nexoria/users/'+USER.toLowerCase(),t=todayUTC(0),y=todayUTC(1);let prev=null,amt=0,day=0;
+  d.ref(K+'/daily').transaction(cur=>{
+    prev=cur;cur=cur||{n:0,last:''};
+    if(cur.last===t)return;
+    const base=cur.last===y?(cur.n||0):0;day=(base%7)+1;
+    const r=GIFT[day-1];amt=r[0]+Math.floor(Math.random()*(r[1]-r[0]+1));
+    return{n:day,last:t,amt};
+  }).then(r=>{
+    if(!r.committed){status('Hadiah hari ini sudah diambil','err');return;}
+    return d.ref(K+'/coins').set(firebase.database.ServerValue.increment(amt)).then(()=>{status('🎁 Hari '+day+': kamu dapat 💵 '+Math.floor(amt).toLocaleString('id-ID')+'!','ok');})
+      .catch(e=>{d.ref(K+'/daily').set(prev).catch(()=>{});status('Gagal memberi hadiah, coba lagi'+(e&&e.code?' ('+e.code+')':''),'err');});
+  }).catch(()=>status('Gagal mengambil hadiah','err')).then(()=>{buying=false;});
+}
+$('navShop').addEventListener('click',()=>{closeDrawer();openShop();});
+$('navGift').addEventListener('click',()=>{closeDrawer();openGift();});
 $('navAvatar').addEventListener('click',()=>{closeDrawer();openAvatar();});
 $('heroAvatar').addEventListener('click',openAvatar);
 
