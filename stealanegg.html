@@ -1443,12 +1443,12 @@ const qId=new THREE.Quaternion(),qLie=new THREE.Quaternion().setFromEuler(new TH
 /* ===== katalog avatar (sama dengan index.html): Set A & Set B gratis, sisanya EKSKLUSIF collab Naruto ===== */
 const SKINS=[0xf2c9a0,0xe0ac82,0xc68642,0x8d5524,0xffe0cf,0xb98a6a];
 const AVC={
- h:{a:{st:'short',c:0x3b2a1a},b:{st:'spiky',c:0x39f4ff},n1:{st:'spiky',c:0xffd54a},n2:{st:'spiky',c:0xc8ccd4},n3:{st:'long',c:0xc0392b},hnar:{st:'spiky',c:0xffd54a},hsas:{st:'spiky',c:0x1a1a22},g:{st:'short',c:0x1a1a22}},
- f:{a:{},b:{x:'glow'},n1:{x:'whisk'},n2:{x:'mask'},n3:{x:'red'},hnar:{x:'whisk',eye:0x3d8bff},hsas:{x:'sharingan'},g:{x:'glow',eye:0x9a4dff}},
- t:{a:{c:'auto'},b:{c:0x8b5cf6,x:'stripe'},n1:{c:0xff8a3a},n2:{c:0x15151c,x:'vest'},n3:{c:0x5a1414,x:'cloak'},hnar:{c:0xff6a1a,x:'naruto'},hsas:{c:0x8f939c,x:'sasuke'},g:{c:0x141416,x:'ganteng'}},
- c:{a:{x:'glass'},b:{x:'phone'},n1:{x:'band'},n2:{x:'scarf'},n3:{x:'sword'},hnar:{x:'band'},hsas:{x:'rope'},g:{x:'crown'}},
- p:{a:{c:0x34405c},b:{c:0x1a1a2e,x:'stripe'},n1:{c:0xff6a1a},n2:{c:0x1c2038,x:'wrap'},n3:{c:0x5a1a1a},hnar:{c:0xff6a1a},hsas:{c:0x1c2038},g:{c:0x141416,x:'gpants'}},
- s:{a:{c:0x222222},b:{c:0x39f4ff},n1:{c:0x151520,x:'sandal'},n2:{c:0xb02020},n3:{c:0xffd54a},hnar:{c:0x151520,x:'sandal'},hsas:{c:0x151520,x:'sandal'},g:{c:0x1a1a22,x:'gshoe'}}
+ h:{a:{st:'short',c:0x3b2a1a},b:{st:'spiky',c:0x39f4ff},n1:{st:'spiky',c:0xffd54a},n2:{st:'spiky',c:0xc8ccd4},n3:{st:'long',c:0xc0392b},hnar:{st:'spiky',c:0xffd54a},hsas:{st:'spiky',c:0x1a1a22},g:{st:'short',c:0x1a1a22},sp:{st:'short',c:0x0c0c12,x:'spk'}},
+ f:{a:{},b:{x:'glow'},n1:{x:'whisk'},n2:{x:'mask'},n3:{x:'red'},hnar:{x:'whisk',eye:0x3d8bff},hsas:{x:'sharingan'},g:{x:'glow',eye:0x9a4dff},sp:{x:'oni'}},
+ t:{a:{c:'auto'},b:{c:0x8b5cf6,x:'stripe'},n1:{c:0xff8a3a},n2:{c:0x15151c,x:'vest'},n3:{c:0x5a1414,x:'cloak'},hnar:{c:0xff6a1a,x:'naruto'},hsas:{c:0x8f939c,x:'sasuke'},g:{c:0x141416,x:'ganteng'},sp:{c:0x0e0e12,x:'spt'}},
+ c:{a:{x:'glass'},b:{x:'phone'},n1:{x:'band'},n2:{x:'scarf'},n3:{x:'sword'},hnar:{x:'band'},hsas:{x:'rope'},g:{x:'crown'},sp:{x:'spn'}},
+ p:{a:{c:0x34405c},b:{c:0x1a1a2e,x:'stripe'},n1:{c:0xff6a1a},n2:{c:0x1c2038,x:'wrap'},n3:{c:0x5a1a1a},hnar:{c:0xff6a1a},hsas:{c:0x1c2038},g:{c:0x141416,x:'gpants'},sp:{c:0x0e0e12,x:'spp'}},
+ s:{a:{c:0x222222},b:{c:0x39f4ff},n1:{c:0x151520,x:'sandal'},n2:{c:0xb02020},n3:{c:0xffd54a},hnar:{c:0x151520,x:'sandal'},hsas:{c:0x151520,x:'sandal'},g:{c:0x1a1a22,x:'gshoe'},sp:{c:0x15151c,x:'sps'}}
 };
 const DEF_LOOK='0.a.a.a.a.a.a';
 let MYLOOK=DEF_LOOK;
@@ -1467,6 +1467,7 @@ function dressAvatar(av,lk,shirtCol){
   if(tp.x==='cloak')add(mk(model,G.box,SH,0,.82,-.02,.62,.9,.34));
   if(tp.x==='naruto'){add(mk(model,G.box,M(0x111318),0,1.4,0,.58,.24,.32));add(mk(model,G.tor,M(0xd42a1a),0,1.28,.16,.09,.09,.09));}
   if(tp.x==='sasuke'){add(mk(model,G.box,M(0x232733),0,1.4,0,.58,.24,.33));add(mk(model,G.box,M(0x232733),0,1.15,0,.62,.3,.4));}
+  if(tp.x==='spt'){add(mk(model,G.box,BM(0x9a4dff),-.14,1.34,.155,.09,.09,.02));add(mk(model,G.box,BM(0xc48bff),-.14,1.34,.158,.04,.04,.02));}
   if(tp.x==='ganteng'){
     add(mk(model,G.box,BM(0x8a4dff),0,1.15,.155,.1,.7,.02));
     add(mk(model,G.box,M(0x1c1c22),0,1.55,-.05,.7,.14,.42));
@@ -1478,6 +1479,8 @@ function dressAvatar(av,lk,shirtCol){
   add(mk(head,G.sph,HC,0,.08,-.03,.25,.2,.26));
   if(hr.st==='spiky')for(let k=0;k<7;k++){const an=k/7*TAU,h=add(mk(head,G.cone,HC,Math.cos(an)*.13,.26,Math.sin(an)*.13,.08,.24,.08));h.rotation.z=-Math.cos(an)*.6;h.rotation.x=Math.sin(an)*.6;}
   if(hr.st==='long')add(mk(head,G.box,HC,0,-.14,-.17,.42,.5,.12));
+  if(hr.x==='spk'){for(let k=0;k<8;k++){const an=k/8*TAU,h=add(mk(head,G.cone,HC,Math.cos(an)*.14,.24,Math.sin(an)*.14,.06,.2+(k%3)*.04,.06));h.rotation.z=-Math.cos(an)*.5;h.rotation.x=Math.sin(an)*.5;}
+    [-1,1].forEach(sd=>add(mk(head,G.box,BM(0x8a4dff),sd*.1,.2,.1,.025,.02,.14)));}
   if(fc.x==='mask'){
     const W=M(0xf4f4f4);add(mk(head,G.sph,W,0,-.01,.09,.25,.27,.19));
     [-1,1].forEach(sd=>{add(mk(head,G.cone4,W,sd*.12,.27,.05,.07,.18,.05));add(mk(head,G.box,M(0xd42a2a),sd*.12,0,.28,.03,.14,.02));});
@@ -1486,6 +1489,16 @@ function dressAvatar(av,lk,shirtCol){
       add(mk(head,G.sph,BM(0xff1a1a),sd*.09,.02,.2,.045));
       for(let k=0;k<3;k++){const an=k/3*TAU;add(mk(head,G.sph,BM(0x140006),sd*.09+Math.cos(an)*.025,.02+Math.sin(an)*.025,.235,.012));}
     });
+  }else if(fc.x==='oni'){   /* topeng Oni hitam: tanduk berlis ungu, mata & gigi ungu menyala */
+    const OB=M(0x15151c);
+    add(mk(head,G.sph,OB,0,-.01,.1,.25,.27,.19));
+    [-1,1].forEach(sd=>{
+      const hn=add(mk(head,G.cone,OB,sd*.15,.3,.04,.06,.32,.06));hn.rotation.z=-sd*.35;
+      const ed=add(mk(head,G.cone,BM(0x9a4dff),sd*.15,.3,.075,.025,.3,.025));ed.rotation.z=-sd*.35;
+      const ey=add(mk(head,G.box,BM(0xc48bff),sd*.09,.04,.285,.1,.03,.02));ey.rotation.z=-sd*.35;
+    });
+    for(let k=-2;k<=2;k++)add(mk(head,G.box,BM(0xb07dff),k*.04,-.1,.29,.028,.04,.02));
+    add(mk(head,G.box,BM(0x8a4dff),0,-.075,.29,.2,.012,.02));
   }else{
     const ec=eyeCol||(fc.x==='glow'?BM(0x39f4ff):fc.x==='red'?BM(0xff2020):M(0x111111)),er=fc.x==='glow'?.045:.035;
     add(mk(head,G.sph,ec,-.09,.02,.2,er));add(mk(head,G.sph,ec,.09,.02,.2,er));
@@ -1497,6 +1510,7 @@ function dressAvatar(av,lk,shirtCol){
   if(ac.x==='scarf'){add(mk(model,G.tor,M(0xd42a2a),0,1.5,0,.2,.2,.2)).rotation.x=Math.PI/2;add(mk(model,G.box,M(0xd42a2a),.12,1.2,-.18,.1,.45,.03));}
   if(ac.x==='sword'){const sw=add(mk(model,G.box,M(0x15151a),.1,1.15,-.2,.05,.95,.05));sw.rotation.z=.6;}
   if(ac.x==='rope'){add(mk(model,G.tor,M(0x7a4dcc),0,.98,0,.34,.34,.22)).rotation.x=Math.PI/2;}
+  if(ac.x==='spn'){add(mk(model,G.tor,M(0xc8ccd4),0,1.48,0,.19,.19,.19)).rotation.x=Math.PI/2;add(mk(model,G.box,M(0x1a1a22),0,1.2,.17,.06,.1,.02));add(mk(model,G.box,BM(0x9a4dff),0,1.2,.18,.025,.06,.02));}
   if(ac.x==='crown'){add(mk(model,G.cyl,M(0x222222),0,1.28,.17,.006,.4,.006));add(mk(model,G.box,BM(0x9a4dff),0,1.08,.19,.09,.09,.02));}
   av.legs.forEach((l,i)=>{
     const sd=i?1:-1;
@@ -1504,8 +1518,10 @@ function dressAvatar(av,lk,shirtCol){
     if(pn.x==='stripe')add(mk(l,G.box,BM(0x39f4ff),sd*.105,-.38,0,.02,.76,.1));
     if(pn.x==='wrap')add(mk(l,G.box,M(0xf4f4f4),0,-.62,0,.23,.16,.25));
     if(sh.x==='sandal'){add(mk(l,G.box,M(sh.c),0,-.78,.05,.22,.06,.34));add(mk(l,G.box,skin,0,-.72,.1,.16,.06,.14));}
+    else if(sh.x==='sps'){add(mk(l,G.box,M(sh.c),0,-.76,.05,.22,.1,.34));add(mk(l,G.box,BM(0xf2f2f7),0,-.815,.05,.235,.035,.36));add(mk(l,G.box,BM(0x8a4dff),0,-.755,.15,.1,.025,.12));}
     else if(sh.x==='gshoe'){add(mk(l,G.box,M(sh.c),0,-.76,.05,.22,.1,.34));add(mk(l,G.box,BM(0x8a4dff),0,-.81,.05,.22,.03,.34));}
     else add(mk(l,G.box,M(sh.c),0,-.76,.05,.22,.1,.34));
+    if(pn.x==='spp'){add(mk(l,G.box,M(0x14141a),sd*.115,-.42,.0,.05,.2,.17));add(mk(l,G.box,BM(0x7a2df0),sd*.095,-.46,.115,.025,.5,.02));add(mk(l,G.box,BM(0xb07bff),sd*.095,-.68,.115,.04,.02,.022));}
     if(pn.x==='gpants')add(mk(l,G.box,BM(0x8a4dff),sd*.115,-.5,0,.025,.5,.025));
   });
 }
