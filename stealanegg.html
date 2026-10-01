@@ -506,7 +506,7 @@ const REGTR={'Danau':0,'Laut':1,'Salju':2,'Gurun':3,'Neraka':4,'Surga':5,'Kuil M
 const REGTHEME={'Danau':['#4cd964','#0e4a1c'],'Laut':['#3d8bff','#0a2a66'],'Salju':['#7ef9ff','#0a4a55'],'Gurun':['#ffd93d','#5a4200'],'Neraka':['#ff3b3b','#4a0000'],'Surga':['#fffbe0','#e0a800'],'Kuil Monster':['#0a0a0a','#2eff6a'],'Galaxy':['#b07dff','#2a0a5a'],'Konoha':['#ffb300','#b53d00']};
 const regTh=R=>REGTHEME[R.n]||['#ffffff','#000000'];
 const regCol=R=>regTh(R)[0],regStroke=R=>regTh(R)[1];
-const regHTML=(R,up)=>{const th=regTh(R),g=th[1],sh=R.n==='Kuil Monster'?'0 0 3px '+g+',0 0 6px '+g+',0 0 10px '+g+',1px 1px 0 '+g+',-1px -1px 0 '+g:(R.n==='Surga'?'0 0 6px '+g+',0 0 2px '+g:'0 0 5px '+g+',1px 1px 0 '+g);return'<span style="color:'+th[0]+';text-shadow:'+sh+'">'+esc(up?R.n.toUpperCase():R.n)+'</span>';};
+const regHTML=(R,up)=>{const th=regTh(R),gl=R.n==='Kuil Monster'?'#2eff6a':(R.n==='Surga'?'#ffd54a':th[0]);return'<span style="color:'+th[0]+';text-shadow:0 0 5px '+gl+'bb,0 0 11px '+gl+'66;filter:drop-shadow(0 1px 1px rgba(0,0,0,.55))">'+esc(up?R.n.toUpperCase():R.n)+'</span>';};
 const REGB=[GATEZ];
 REG.forEach(R=>{R.bnd0=REGB[REGB.length-1];R.bnd1=R.bnd0-R.depth;R.cz=R.bnd0-R.depth/2;REGB.push(R.bnd1);});
 /* tata letak: penjaga terbagi jadi 3 (1 penjaga per telur), tersebar di wilayah; telur ada di sisi (arah tengah) penjaganya */
@@ -1438,7 +1438,7 @@ function makeEgg(reg,sp,mut){
   if(t===7){const r=mk(g,G.tor,BM(0xffffff),0,.6,0,.46,.46,.46);r.rotation.x=Math.PI/2;}
   if(m>0||t>=8){const r=mk(g,G.tor,BM(m===2?0xff4dd2:m===1?0xffd34d:TIERS[t].c),0,.05,0,.6,.6,.6);r.rotation.x=Math.PI/2;}
   if(m===2){const r2=mk(g,G.tor,BM(0x4dd2ff),0,.6,0,.62,.62,.62);r2.rotation.x=Math.PI/2;r2.rotation.z=.6;}
-  eggFeat(g,S0);
+  if(reg>1)eggFeat(g,S0);   /* Danau & Laut: telur polos, hanya bulat berwarna */
   if(t===12){const sn=new THREE.Sprite(sunMat);sn.scale.set(4.4,4.4,1);sn.position.set(0,.65,0);sn.renderOrder=3;g.add(sn);}   /* telur GOOD bersinar seperti matahari */
   g.scale.setScalar(eggScale(m));
   return g;
@@ -1601,34 +1601,41 @@ function posePlayer(A,t){
     A.arms[1].rotation.x=-3.3+2.8*u;A.arms[1].rotation.z=.1;A.model.rotation.x=.3*Math.sin(u*Math.PI);
     if(A.held&&isB)A.held.rotation.x=-1.9*(1-Math.min(1,u*2.5));   /* saat memukul, pentung searah lengan */
   }else if(A.held&&isB)A.held.rotation.x=-1.9;
-  if(st==='steal'){
+  /* animasi kosmetik (Nexoria): 'ninja' / 'fly' — tetap aktif saat mencuri, memegang item, & di treadmill; 'fly' juga melayang santai saat diam */
+  const an=A.anim||'',elig=(an==='ninja'||an==='fly')&&(st==='normal'||st==='steal'||st==='tread'),
+        runN=(ra>.12||st==='steal'||st==='tread');
+  if(st==='steal'&&!elig){
     const u=Math.sin(clamp(A.stealT,0,1)*Math.PI);
     A.model.rotation.x=.85*u;A.arms[0].rotation.x=A.arms[1].rotation.x=-1.5*u;
     A.legs[0].rotation.x=A.legs[1].rotation.x=-.5*u;A.model.position.y=-.12*u;
   }
-  /* animasi lari kosmetik (dibeli di Nexoria): 'ninja' = tangan ke belakang & badan condong; 'fly' = gaya terbang pahlawan */
-  A.model.position.z=0;
-  const an=A.anim||'',on=(an==='ninja'||an==='fly')&&st==='normal'&&A.runAmt>.12&&!A.heldKey&&!(A.swing>0);
-  A.ak=(A.ak||0)+((on?1:0)-(A.ak||0))*.18;
+  A.model.position.z=0;A.model.rotation.z=0;
+  const tgt=elig&&(an==='fly'||runN)?1:0;
+  A.ak=(A.ak||0)+(tgt-(A.ak||0))*.18;
+  A.rk=(A.rk||0)+((elig&&runN?1:0)-(A.rk||0))*.16;
   const k=A.ak;
   if(k>.01&&(an==='ninja'||an==='fly')){
-    const L=(a,b)=>a+(b-a)*k,r=A.runAmt;
+    const L=(a,b)=>a+(b-a)*k,mix=(a,b)=>a+(b-a)*A.rk,hold=!!A.heldKey||A.swing>0;
+    const r=st==='steal'?Math.max(ra,.9):Math.max(ra,st==='tread'?.9:0),ph=st==='steal'?t*13:A.phase;
     if(an==='ninja'){
-      const sw2=Math.sin(A.phase)*.95*r;
+      const sw2=Math.sin(ph)*.95*r;
       A.model.rotation.x=L(A.model.rotation.x,.72*r+.1);
-      A.arms[0].rotation.x=L(A.arms[0].rotation.x,1.45+sw2*.08);A.arms[1].rotation.x=L(A.arms[1].rotation.x,1.45-sw2*.08);
-      A.arms[0].rotation.z=L(A.arms[0].rotation.z,-.12);A.arms[1].rotation.z=L(A.arms[1].rotation.z,.12);
+      A.arms[0].rotation.x=L(A.arms[0].rotation.x,1.45+sw2*.08);
+      if(!hold)A.arms[1].rotation.x=L(A.arms[1].rotation.x,1.45-sw2*.08);
+      A.arms[0].rotation.z=L(A.arms[0].rotation.z,-.12);if(!hold)A.arms[1].rotation.z=L(A.arms[1].rotation.z,.12);
       A.legs[0].rotation.x=L(A.legs[0].rotation.x,sw2*1.25);A.legs[1].rotation.x=L(A.legs[1].rotation.x,-sw2*1.25);
       A.head.rotation.x=L(A.head.rotation.x,-.5*r);
-      A.model.position.y=L(A.model.position.y,A.modelY+Math.abs(Math.sin(A.phase))*.1*r);
+      A.model.position.y=L(A.model.position.y,A.modelY+Math.abs(Math.sin(ph))*.1*r);
     }else{
-      A.model.rotation.x=L(A.model.rotation.x,1.38);
-      A.arms[1].rotation.x=L(A.arms[1].rotation.x,-3.0);A.arms[1].rotation.z=L(A.arms[1].rotation.z,.05);
-      A.arms[0].rotation.x=L(A.arms[0].rotation.x,.7);A.arms[0].rotation.z=L(A.arms[0].rotation.z,-.15);
-      A.legs[0].rotation.x=L(A.legs[0].rotation.x,.25+Math.sin(t*6)*.08);A.legs[1].rotation.x=L(A.legs[1].rotation.x,.05-Math.sin(t*6)*.08);
-      A.head.rotation.x=L(A.head.rotation.x,-1.1);
-      A.model.position.y=L(A.model.position.y,A.modelY+.95+Math.sin(t*3)*.06);
-      A.model.position.z=-.85*k;
+      const hv=Math.sin(t*1.6);
+      A.model.rotation.x=L(A.model.rotation.x,mix(-.1,1.38));
+      A.model.rotation.z=Math.sin(t*1.3)*.05*(1-A.rk)*k;
+      A.arms[0].rotation.x=L(A.arms[0].rotation.x,mix(-.35,.7));A.arms[0].rotation.z=L(A.arms[0].rotation.z,mix(-.3,-.15));
+      if(!hold){A.arms[1].rotation.x=L(A.arms[1].rotation.x,mix(-.3+hv*.05,-3.0));A.arms[1].rotation.z=L(A.arms[1].rotation.z,mix(.3,.05));}
+      A.legs[0].rotation.x=L(A.legs[0].rotation.x,mix(.38+hv*.08,.25+Math.sin(t*6)*.08));A.legs[1].rotation.x=L(A.legs[1].rotation.x,mix(-.14-hv*.08,.05-Math.sin(t*6)*.08));
+      A.head.rotation.x=L(A.head.rotation.x,mix(.05,-1.1));
+      A.model.position.y=L(A.model.position.y,A.modelY+mix(.4+hv*.1,.95+Math.sin(t*3)*.06));
+      A.model.position.z=-.85*A.rk*k;
     }
   }
 }
