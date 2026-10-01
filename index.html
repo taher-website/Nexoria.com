@@ -88,6 +88,12 @@ header{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:12px
 .nav .sp{flex:1}
 .nav button.out{color:var(--bad);margin-top:auto}
 .d-foot{margin-top:auto}
+#drawer>.nav{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding-right:6px;scrollbar-width:thin;scrollbar-color:var(--cy) #ffffff14}
+#drawer>.nav button{flex:none}
+#drawer>.nav::-webkit-scrollbar{width:6px}
+#drawer>.nav::-webkit-scrollbar-track{background:#ffffff14;border-radius:6px}
+#drawer>.nav::-webkit-scrollbar-thumb{background:var(--cy);border-radius:6px}
+.d-foot{flex:none}
 
 /* ---------- Beranda ---------- */
 main{max-width:1100px;margin:0 auto;padding:16px 14px 40px;position:relative}

@@ -399,6 +399,7 @@ const HT=[60,120,180,240,600,3600];       // 1m 2m 3m 4m 10m 1j
 const PENCAP=[24,36,50,70,100,150],PENCOST=[0,2e4,5e6,5e8,5e10,5e12],BAGMAX=36,FULLDET=24;
 const MAXPEN=PENCAP[PENCAP.length-1];
 let penLv=0;const penCap=()=>PENCAP[penLv];
+const ILAHI_SURGA=.12;   /* peluang tiap sarang Surga berisi telur Ilahi (10–15%) */
 const TIER_CHANCE={7:.45,8:.25,9:.12,10:.06,11:.025,12:.05};   // peluang tiap pagi: telur tingkat Rahasia 45%, Abadi 25%, Ilahi 12%, Prismatic 6%, OG 2,5%, GOOD ⚡5%
 const COLX=[-21,-7,7,21],COLC=[0x3d8bff,0xff5a5a,0x35d07f,0xffc93d],TMZ=-3;   /* treadmill dimundurkan (dulu -7) */
 const PEN_Z=[2,26],PEN_W=5.6;   /* kandang lebih besar, mundur ke belakang & lebih renggang */
@@ -1738,6 +1739,7 @@ function resetNests(){
   const day=dayIdx(),seed=(room*100003+day*7919+12345+(abuseOn?99991:0))>>>0,rng=mulberry32(seed);
   const plan=nests.map(()=>-1);
   [7,8,9,10,11,12].forEach(t=>{
+    if(t===9&&!abuseOn)return;   /* Ilahi diundi per sarang di Surga (lihat bawah) */
     if(rng()>=(abuseOn?.5:TIER_CHANCE[t]))return;   /* Admin Abuse: semua tingkat OP (termasuk GOOD) 50% */
     const cand=[];nests.forEach((N,i)=>{if(plan[i]<0&&!REG[N.reg].pct&&SP[N.reg].some(sp=>sp.t===t))cand.push(i);});
     if(!cand.length)return;
@@ -1771,7 +1773,7 @@ function resetNests(){
     if(N.reg===KON_I&&!konohaOn)setupNest(N,-1,0);
     else if(plan[i]>=0)setupNest(N,plan[i],mut);
     else if(SP[N.reg].some(sp=>sp.t<7))setupNest(N,rollSp(N.reg,false,rng),mut);
-    else if(REG[N.reg].n==='Surga'){let lo=0;SP[N.reg].forEach((sp,k)=>{if(sp.t<SP[N.reg][lo].t)lo=k;});setupNest(N,lo,mut);}   /* Surga: sarang tanpa telur langka diisi spesies tingkat terendah */
+    else if(REG[N.reg].n==='Surga'){const il=[];SP[N.reg].forEach((sp,k)=>{if(sp.t===9)il.push(k);});if(il.length&&rng()<ILAHI_SURGA)setupNest(N,il[Math.floor(rng()*il.length)],mut);else setupNest(N,-1,0);}   /* Surga: tiap sarang 12% berisi Ilahi, sisanya kosong */
     else setupNest(N,-1,0);
     if(N.active)N.c.sleep=1;
   });
