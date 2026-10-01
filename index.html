@@ -527,7 +527,7 @@ function tickLoginStreak(){
   }).catch(()=>{});
 }
 
-const fmtC=n=>{n=Math.floor(+n||0);if(n<1000)return String(n);const u=['','K','M','B','T'];let i=0,v=n;while(v>=1000&&i<4){v/=1000;i++;}return (v>=100?v.toFixed(0):v.toFixed(1)).replace(/\.0$/,'')+u[i];};
+const fmtC=n=>{n=Math.floor(+n||0);if(n<1000)return String(n);const u=['','K','M','B','T'];let i=0,v=n;while(v>=1000&&i<4){v/=1000;i++;}const f=v>=100?Math.floor(v):Math.floor(v*10)/10;return String(f)+u[i];};
 let coinRef=null,KON=false,konRef=null,COINS=0,SPON=false,spRef=null;
 const SP_PRICE=5000;   /* harga bundle Shadow Purple: 5K koin */
 function watchCoins(){
@@ -629,18 +629,20 @@ function openAvatar(){
 function buyShadow(){
   const d=getDB();if(!d||!USER){status('Belum terhubung ke server','err');return;}
   if(SPON)return;
-  if(COINS<SP_PRICE){status('Koin kurang, butuh 💵 '+fmtC(SP_PRICE),'err');return;}
-  const key=USER.toLowerCase();
-  d.ref('nexoria/users/'+key+'/coins').transaction(cur=>{cur=Math.floor(+cur||0);return cur>=SP_PRICE?cur-SP_PRICE:undefined;}).then(r=>{
-    if(!r.committed){status('Koin kurang, butuh 💵 '+fmtC(SP_PRICE),'err');return;}
-    return d.ref('nexoria/users/'+key+'/owned/shadowpurple').set(1).then(()=>{SPON=true;status('💜 Bundle Shadow Purple terbeli!','ok');renderAv();});
-  }).catch(()=>status('Pembelian gagal, coba lagi','err'));
+  const nf=n=>Math.floor(n).toLocaleString('id-ID');
+  if(COINS<SP_PRICE){status('Koin kurang: kamu punya 💵 '+nf(COINS)+', butuh 💵 '+nf(SP_PRICE),'err');return;}
+  const key=USER.toLowerCase(),cref=d.ref('nexoria/users/'+key+'/coins');
+  cref.transaction(cur=>{if(cur===null)return 0;cur=Math.floor(+cur||0);return cur>=SP_PRICE?cur-SP_PRICE:undefined;}).then(r=>{
+    if(!r.committed){status('Koin kurang: kamu punya 💵 '+nf(COINS)+', butuh 💵 '+nf(SP_PRICE),'err');return;}
+    return d.ref('nexoria/users/'+key+'/owned/shadowpurple').set(1).then(()=>{SPON=true;status('💜 Bundle Shadow Purple terbeli!','ok');renderAv();})
+      .catch(e=>{cref.set(firebase.database.ServerValue.increment(SP_PRICE)).catch(()=>{});status('Gagal menyimpan pembelian, koin dikembalikan'+(e&&e.code?' ('+e.code+')':''),'err');});
+  }).catch(e=>status('Pembelian gagal'+(e&&e.code?' ('+e.code+')':'')+', coba lagi','err'));
 }
 function closeAvatar(){const m=$('avM');if(m)m.remove();}
 function renderAv(){
   if(!$('avM'))return;
   $('avPrev').innerHTML=svgAvatar(selToLook());
-  $('avSetS').textContent=SPON?'💜 Shadow Purple':'💜 Shadow Purple · 💵 '+fmtC(SP_PRICE);
+  $('avSetS').textContent=SPON?'💜 Shadow Purple':'💜 Shadow Purple · 💵 '+fmtC(SP_PRICE)+' (punyamu '+fmtC(COINS)+')';
   $('avTabs').innerHTML=AV_CAT.map(([k,n])=>'<button data-k="'+k+'" class="'+(k===avTab?'on':'')+'">'+n+'</button>').join('');
   $('avTabs').querySelectorAll('button').forEach(b=>b.onclick=()=>{avTab=b.dataset.k;renderAv();});
   const o=$('avOpts');
