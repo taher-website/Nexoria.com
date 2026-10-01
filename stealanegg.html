@@ -1432,7 +1432,7 @@ function eggFeat(g,s){
 }
 function makeEgg(reg,sp,mut){
   const m=+mut||0,S0=SP[reg][sp],t=S0.t,g=new THREE.Group();
-  const mat=S0.ec!==undefined?M(S0.ec,{emissive:0x100818}):t===10?prisMat:M(TIERS[t].c,EMI[t]?{emissive:EMI[t]}:undefined);
+  const mat=S0.ec!==undefined?M(S0.ec,{emissive:0x100818}):reg<=3?M(S0.col.a,{emissive:0x0c0c0c}):t===10?prisMat:M(TIERS[t].c,EMI[t]?{emissive:EMI[t]}:undefined);   /* Danau–Gurun: telur berwarna & berciri seperti induknya */
   mk(g,G.sph,mat,0,.6,0,.45,.6,.45);
   if(t===7){const r=mk(g,G.tor,BM(0xffffff),0,.6,0,.46,.46,.46);r.rotation.x=Math.PI/2;}
   if(m>0||t>=8){const r=mk(g,G.tor,BM(m===2?0xff4dd2:m===1?0xffd34d:TIERS[t].c),0,.05,0,.6,.6,.6);r.rotation.x=Math.PI/2;}
@@ -1638,7 +1638,7 @@ function buildLocal(){
   player.root.position.set(COLX[mySlot],0,-11);player.yaw=Math.PI;
   setTreadOwner(tms[mySlot],NAME);
 }
-const runSpeed=()=>pw(player.speedStat)*laneMult()*(susAct()?2:1);   /* Susanoo Roh: ×2 kecepatan lari */
+const runSpeed=()=>pw(player.speedStat)*laneMult()*1;   /* Susanoo Roh: kecepatan lari 1× (tidak ada bonus lari) */
 function hitPlayer(fx,fz,force,dur){
   const pl=player,p=pl.root.position;
   pl.state='fly';
@@ -1769,9 +1769,9 @@ function resetNests(){
     if(N.wild)moveNestEgg(N,wild.x,wild.z);else moveNestEgg(N,N.hx,N.hz);
     const mut=r3<MONSTER_CHANCE?3:(r1*100<REG[N.reg].big?(r2<TITAN_CHANCE?2:1):0);
     if(N.reg===KON_I&&!konohaOn)setupNest(N,-1,0);
-    else if(N.reg<=3&&mut===0&&plan[i]<0)setupNest(N,-1,0);   /* telur polos (tanpa mutasi) Biasa–Mistik di Danau–Gurun dihapus */
     else if(plan[i]>=0)setupNest(N,plan[i],mut);
     else if(SP[N.reg].some(sp=>sp.t<7))setupNest(N,rollSp(N.reg,false,rng),mut);
+    else if(REG[N.reg].n==='Surga'){let lo=0;SP[N.reg].forEach((sp,k)=>{if(sp.t<SP[N.reg][lo].t)lo=k;});setupNest(N,lo,mut);}   /* Surga: sarang tanpa telur langka diisi spesies tingkat terendah */
     else setupNest(N,-1,0);
     if(N.active)N.c.sleep=1;
   });
@@ -2370,8 +2370,8 @@ function renderLaneShop(){
     ?'<div class="cell" style="border-color:#fff44d"><div class="ic"><div class="an" style="filter:drop-shadow(0 0 8px #fff44d)">⚡</div></div><div>Khodam Zeus</div><div class="tr" style="color:#fff44d">'+(zeusOn?'Aktif':'Nonaktif')+'</div><div style="opacity:.8">Upkeep '+fmt(KHODAM_UPKEEP)+'/hari</div>'+(zeusOn?'':'<button class="sell" id="actZeus">Aktifkan</button>')+'</div>'
     :'<div class="cell" style="border-color:#fff44d"><div class="ic"><div class="an" style="filter:drop-shadow(0 0 8px #fff44d)">⚡</div></div><div>Khodam Zeus</div><div class="tr" style="color:#fff44d">Petir terus menyambar</div><div style="opacity:.8">💵 '+fmt(KHODAM_PRICE)+' + '+fmt(KHODAM_UPKEEP)+'/hari</div><button class="sell" id="buyKhodam">Beli</button></div>';
   const sc2='#b07dff',su=susOwn
-    ?'<div class="cell" style="border-color:'+sc2+'"><div class="ic"><div class="an" style="filter:drop-shadow(0 0 8px '+sc2+')">💀</div></div><div>Susanoo Roh</div><div class="tr" style="color:'+sc2+'">'+(susOn?'Aktif':'Nonaktif')+'</div><div style="opacity:.8">×2 lari · ×1,25 treadmill</div>'+(susOn?'':'<button class="sell" id="actSus">Aktifkan</button>')+'</div>'
-    :'<div class="cell" style="border-color:'+sc2+'"><div class="ic"><div class="an" style="filter:drop-shadow(0 0 8px '+sc2+')">💀</div></div><div>Susanoo Roh</div><div class="tr" style="color:'+sc2+'">×2 lari · ×1,25 treadmill</div><div style="opacity:.8">💵 '+fmt(SUS_PRICE)+'</div><button class="sell" id="buySus">Beli</button></div>';
+    ?'<div class="cell" style="border-color:'+sc2+'"><div class="ic"><div class="an" style="filter:drop-shadow(0 0 8px '+sc2+')">💀</div></div><div>Susanoo Roh</div><div class="tr" style="color:'+sc2+'">'+(susOn?'Aktif':'Nonaktif')+'</div><div style="opacity:.8">×1,25 treadmill</div>'+(susOn?'':'<button class="sell" id="actSus">Aktifkan</button>')+'</div>'
+    :'<div class="cell" style="border-color:'+sc2+'"><div class="ic"><div class="an" style="filter:drop-shadow(0 0 8px '+sc2+')">💀</div></div><div>Susanoo Roh</div><div class="tr" style="color:'+sc2+'">×1,25 treadmill</div><div style="opacity:.8">💵 '+fmt(SUS_PRICE)+'</div><button class="sell" id="buySus">Beli</button></div>';
   $('khodamBox').innerHTML=kh+su;
   if(!khodam)$('buyKhodam').addEventListener('click',buyKhodam);
   else if(!zeusOn&&$('actZeus'))$('actZeus').addEventListener('click',()=>{zeusOn=true;susOn=false;saveSoon();renderLaneShop();toast('⚡ Khodam Zeus aktif — Susanoo Roh dinonaktifkan');});
