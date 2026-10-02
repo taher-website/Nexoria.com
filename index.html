@@ -816,7 +816,7 @@ function claimGift(){
 $('navShop').addEventListener('click',()=>{closeDrawer();openShop();});
 $('navGift').addEventListener('click',()=>{closeDrawer();openGift();});
 /* ---------- REDEEM CODE: tiap kode hanya 1× per akun ---------- */
-const CODES={'NEXO2026':5000,'TAHERSAE':5000,'NEXTUPTD':5000};
+const CODES={'NEXO2026':5000,'TAHERSAE':5000,'NEXTUPTD':5000,'NEXO1002':10000,'JUMAT02':5000,'FAISXSAE':5000,'NARUTOUP':5000};
 function openRedeem(){
   openMdl('🎟️ Redeem Code',body=>{
     body.innerHTML='<input id="rdIn" class="field-in" maxlength="24" placeholder="Masukkan kode" autocomplete="off" autocapitalize="characters" spellcheck="false" style="width:100%;height:46px;border-radius:12px;border:1px solid var(--line);background:#ffffff0a;color:var(--ink);padding:0 14px;font:700 16px var(--font-b);letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px">'

@@ -120,6 +120,8 @@ body.hudEdit #acts .act,body.hudEdit #bTread,body.hudEdit #bSteal,body.hudEdit #
 .adminRow b{flex:1;font-weight:800}
 .adminRow .rm{opacity:.55;font-size:11px;white-space:nowrap}
 .kickBtn{height:30px;border:0;border-radius:8px;background:var(--bad);color:#fff;font-weight:900;padding:0 10px;font-family:inherit;font-size:12px}
+.bpost{background:#150e29;border:2px solid #ffffff22;border-radius:12px;padding:10px 12px;margin:8px 0}.bpost .bh{display:flex;justify-content:space-between;gap:8px;align-items:baseline;margin-bottom:6px}.bpost small{opacity:.6;font-size:11px}.bpost .bt{font-size:14px;line-height:1.4;overflow-wrap:anywhere}.bpost img{display:block;max-width:100%;max-height:46vh;margin-top:8px;border-radius:10px}
+.bdRow{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #ffffff1a;font-size:12px}.bdRow span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.bdRow button{flex:none;height:30px;border:0;border-radius:8px;background:#7a1f1f;color:#fff;font-weight:800;padding:0 10px}
 .aField{height:40px;border-radius:10px;border:2px solid #ffffff40;background:#150e29;color:#fff;padding:0 10px;font-family:inherit;font-size:13px;width:100%}
 #stealnote{display:none;position:absolute;top:clamp(38px,11vh,50px);left:50%;transform:translateX(-50%);padding:6px 18px;border-radius:16px;background:#7a1010e6;border:2px solid #ff8a6a;font-weight:900;font-size:clamp(13px,4.2vh,22px);white-space:nowrap;pointer-events:none;animation:pulse .8s infinite alternate}
 @keyframes pulse{to{background:#b02020e6}}
@@ -189,6 +191,7 @@ body.hudEdit #acts .act,body.hudEdit #bTread,body.hudEdit #bSteal,body.hudEdit #
     <button class="act up" id="bUp">⬆ Upgrade</button>
     <button class="act shop" id="bShop"> Toko</button>
     <button class="act shop" id="bLane" style="background:linear-gradient(#fff9c4,#fff44d);color:#3a2d00">⚡ Jalur</button>
+    <button class="act shop" id="bBoard" style="background:linear-gradient(#ffe9a8,#f1c24a);color:#3a2d00">📋 Lihat</button>
     <button class="act shop" id="bTrade" style="background:linear-gradient(#8fd9ff,#3fa9f5)">🤝 Perdagangan</button>
   </div>
 </div>
@@ -254,6 +257,11 @@ body.hudEdit #acts .act,body.hudEdit #bTread,body.hudEdit #bSteal,body.hudEdit #
   <label class="swRow"><b>Sembunyikan pet semua player</b><input type="checkbox" id="swAllPets"><span class="sw"></span></label>
 </div></div>
 
+<div class="modal" id="boardM"><div class="box">
+  <div class="hd"><b>📋 Papan Informasi</b><span></span><button class="x" id="boardX">✖</button></div>
+  <div id="boardList"></div>
+</div></div>
+
 <div class="modal" id="admin"><div class="box">
   <div class="hd"><b>👑 Creator</b><span></span><button class="x" id="adminX">✖</button></div>
   <div id="adminPlist"><p class="hint">Memuat daftar pemain…</p></div>
@@ -308,6 +316,14 @@ body.hudEdit #acts .act,body.hudEdit #bTread,body.hudEdit #bSteal,body.hudEdit #
     <input id="msgTxt" class="aField" type="text" maxlength="120" placeholder="Ketik pesan">
     <input id="msgName" class="aField" type="text" maxlength="20" placeholder="Costum">
     <button id="msgGo" style="height:42px;border:0;border-radius:10px;background:linear-gradient(#5be07a,#1fae4d);color:#04140a;font-weight:900;font-family:inherit;font-size:14px"> KIRIM</button>
+  </div>
+  <div class="sub" style="margin-top:14px">📋 Papan Info</div>
+  <div style="display:flex;flex-direction:column;gap:8px;margin:6px 0 10px">
+    <input id="bdName" class="aField" type="text" maxlength="24" placeholder="Nama (mis. Developer)">
+    <textarea id="bdText" class="aField" maxlength="800" rows="4" style="height:auto;padding:8px 10px;resize:vertical" placeholder="Teks informasi / update"></textarea>
+    <input id="bdImg" class="aField" type="url" maxlength="400" placeholder="Link foto (https://…, kosongkan jika tanpa foto)">
+    <button id="bdGo" style="height:42px;border:0;border-radius:10px;background:linear-gradient(#ffd34d,#f1a21a);color:#2b1c00;font-weight:900;font-family:inherit;font-size:14px">📋 Tambahkan ke Papan Info</button>
+    <div id="bdList"></div>
   </div>
 </div></div>
 
@@ -406,7 +422,8 @@ const PEN_Z=[2,26],PEN_W=5.6;   /* kandang lebih besar, mundur ke belakang & leb
 const penBox=s=>({x0:COLX[s]-PEN_W,x1:COLX[s]+PEN_W,z0:PEN_Z[0],z1:PEN_Z[1]});
 const penMid=s=>({x:COLX[s],z:(PEN_Z[0]+PEN_Z[1])/2});
 const SHOP={x:9.5,z:-18.7};
-const LSHOP={x:14.2,z:-18.7};   // toko JALUR, di samping kanan toko utama
+const LSHOP={x:14.2,z:-18.7};
+const INFOB={x:-9.5,z:-18.7};   // papan informasi (kiri depan, dekat pagar zona aman)   // toko JALUR, di samping kanan toko utama
 const GATEZ=-20,DAY=180,CYC=190,BIGX=3,TITANX=10,TITAN_CHANCE=.1,MONSTERX=5,MONSTER_CHANCE=.04;   // mutasi Besar ×3, Titan (10% dari mutasi) ×10; Monster (mata merah + petir) ×5 uang, peluang 4%/sarang; Pagi = 3 menit (180d)
 
 const TIERS=[
@@ -1020,6 +1037,13 @@ function stageSafe(){
   }
   buildShop(SHOP.x,SHOP.z,{body:0x7a4a22,top:0xf1d9a6,pole:wood2,s1:0xffffff,s2:0xe23b3b,d1:0xffd34d,d2:0x9dd6ff},'JUAL','#ffe38a');
   buildShop(LSHOP.x,LSHOP.z,{body:0x1f4f7a,top:0xcfe8ff,pole:M(0x3a6f9a),s1:0xffffff,s2:0xfff44d,d1:0xfff44d,d2:0xff9de2},'JALUR','#fff44d');
+  /* papan informasi: papan kayu polos (tanpa teks) dengan kertas tertempel */
+  {const bx=INFOB.x,bz=INFOB.z,wd=M(0x8a5a2b),wd2=M(0xb5803f),pp=M(0xf6edd0);
+   [-1.5,1.5].forEach(x=>mk(scene,G.box,wd,bx+x,1.35,bz-.2,.2,2.7,.2));
+   mk(scene,G.box,wd,bx,1.95,bz-.2,3.5,1.9,.14);
+   mk(scene,G.box,wd2,bx,3.0,bz-.2,3.9,.2,.36);
+   mk(scene,G.box,pp,bx,1.95,bz-.11,3.1,1.5,.05);
+   [[-1.0,2.2,.7,.8,0xffd34d,.06],[0,1.85,.9,.7,0x9dd6ff,-.04],[1.0,2.15,.7,.9,0xff9db0,.05],[-.5,1.45,.8,.45,0xb8f2a8,-.05]].forEach(n=>{const q=mk(scene,G.box,M(n[4]),bx+n[0],n[1],bz-.07,n[2],n[3],.03);q.rotation.z=n[5];mk(scene,G.sph,M(0xd23b3b),bx+n[0],n[1]+n[3]/2-.1,bz-.04,.06);});}
   /* kandang (model pagar lama): 1 per pemain */
   const straw=new THREE.MeshLambertMaterial({map:groundTex('#d9b96a',['#c9a655','#ecd08a','#b8934a'],[4,6])});
   const fence=M(0xa8743a);
@@ -1707,7 +1731,11 @@ function setupNest(N,sp,mut){
   }
   N.active=true;N.ring.visible=true;N.pad.visible=true;
   N.sp=sp;N.mut=+mut||0;N.big=N.mut>0;
-  const s=SP[N.reg][N.sp],gd=gdAt(REG[N.reg],N.k);
+  const s=SP[N.reg][N.sp];let gd=gdAt(REG[N.reg],N.k);
+  if(N.reg<=4){   /* Danau–Neraka: induk = spesies telurnya, jadi tingkat induk sama dengan telur (Mistik→induk Mistik, Rahasia→Rahasia) */
+    const kf=[1.35,1.1,1.25,1.2,1][N.reg];gd={n:s.n,kind:s.kind,S:s.S*kf,col:s.col,opt:s.opt};
+    if(N.mSp!==N.sp||!N.c){if(N.c&&N.c.root.parent)N.c.root.parent.remove(N.c.root);N.c=buildCreature(gd.kind,gd.S,gd.col,gd.opt);N.holder.add(N.c.root);N.c.root.rotation.y=N.sy;N.top=N.c.top*gd.S;N.mSp=N.sp;}
+  }
   if(!N.c){N.c=buildCreature(gd.kind,gd.S,gd.col,gd.opt);N.holder.add(N.c.root);N.top=N.c.top*gd.S;}
   N.c.monsterEyes=N.mut===3||!!(gd.opt&&gd.opt.red);N.c.sleep=1;N.c.sleepT=1;
   N.egg=makeEgg(N.reg,N.sp,N.mut);N.egg.position.set(N.ex,0,N.ez);N.egg.visible=true;scene.add(N.egg);
@@ -2090,11 +2118,11 @@ function renderInv(){
     const i=+b.dataset.i,it=bag[i],cur=slots[sel];slots[sel]=it;if(cur)bag[i]=cur;else bag.splice(i,1);renderAll();
   }));
 }
-function closeModals(){['inv','shop','bookM','laneShop','tradeM','admin','petsM','setM'].forEach(id=>{$(id).style.display='none';});adminCloseList();}
+function closeModals(){['inv','shop','bookM','laneShop','tradeM','admin','petsM','setM','boardM'].forEach(id=>{$(id).style.display='none';});adminCloseList();}
 function toggleModal(id){
   const el=$(id),open=el.style.display==='flex';
   closeModals();
-  if(!open){el.style.display='flex';if(id==='inv')renderInv();else if(id==='shop')renderShop();else if(id==='laneShop')renderLaneShop();else if(id==='tradeM')renderTrade();else if(id==='admin'){fillAdminRegionSelect();adminOpenList();}else if(id==='petsM')renderPets();else if(id==='bookM')renderBook();}
+  if(!open){el.style.display='flex';if(id==='inv')renderInv();else if(id==='shop')renderShop();else if(id==='laneShop')renderLaneShop();else if(id==='tradeM')renderTrade();else if(id==='admin'){fillAdminRegionSelect();adminOpenList();adminBoardRender();}else if(id==='boardM'){boardRender();}else if(id==='petsM')renderPets();else if(id==='bookM')renderBook();}
 }
 /* ===== Admin Panel (Creator) ===== */
 let adminRoomsRef=null;
@@ -2213,6 +2241,35 @@ $('msgGo')&&$('msgGo').addEventListener('click',()=>{
   $('msgTxt').value='';
 });
 let anWatchOn=false,anLastTs=0;
+/* ---- Papan Informasi: info update dari admin/developer, tampil di jendela mengambang ---- */
+let BOARD_POSTS=[],boardWatch=false;
+const BOARD_REF=()=>'nexoria/curitelur/board';
+const fmtTs=ts=>{try{return new Date(+ts).toLocaleString('id-ID',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});}catch(e){return'';}};
+const okImg=u=>/^https:\/\/[^\s"'<>]+$/i.test(String(u||''));
+function boardRender(){
+  const el=$('boardList');if(!el)return;
+  if(!BOARD_POSTS.length){el.innerHTML='<p class="hint">Belum ada informasi.</p>';return;}
+  el.innerHTML=BOARD_POSTS.map(p=>'<div class="bpost"><div class="bh"><b>'+esc(p.n||'Developer')+'</b><small>'+esc(fmtTs(p.ts))+'</small></div>'+(p.t?'<div class="bt">'+esc(p.t).replace(/\n/g,'<br>')+'</div>':'')+(okImg(p.img)?'<img src="'+esc(p.img)+'" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.style.display=\'none\'">':'')+'</div>').join('');
+}
+function adminBoardRender(){
+  const el=$('bdList');if(!el)return;
+  el.innerHTML=BOARD_POSTS.length?'<div class="hint" style="margin:6px 0 2px">Terpasang ('+BOARD_POSTS.length+'):</div>'+BOARD_POSTS.map(p=>'<div class="bdRow"><span>'+esc((p.n||'Developer')+': '+(p.t||'(foto)'))+'</span><button data-k="'+esc(p.k)+'">Hapus</button></div>').join(''):'';
+  el.querySelectorAll('button[data-k]').forEach(b=>b.addEventListener('click',()=>{if(IS_CREATOR&&db)db.ref(BOARD_REF()+'/'+b.dataset.k).remove().catch(()=>toast('Gagal menghapus'));}));
+}
+function watchBoard(){
+  if(boardWatch||!db)return;boardWatch=true;
+  db.ref(BOARD_REF()).on('value',sn=>{const v=(sn&&sn.val())||{};BOARD_POSTS=Object.keys(v).map(k=>Object.assign({k},v[k])).sort((a,b)=>(+b.ts||0)-(+a.ts||0)).slice(0,40);boardRender();adminBoardRender();});
+}
+$('bdGo')&&$('bdGo').addEventListener('click',()=>{
+  if(!IS_CREATOR||!db)return;
+  const n=$('bdName').value.trim().slice(0,24)||'Developer',t=$('bdText').value.trim().slice(0,800),img=$('bdImg').value.trim().slice(0,400);
+  if(!t&&!img){toast('Isi teks atau link foto dulu');return;}
+  if(img&&!okImg(img)){toast('Link foto harus diawali https://');return;}
+  db.ref(BOARD_REF()).push({n,t,img,ts:sNow(),by:NAME}).then(()=>{$('bdText').value='';$('bdImg').value='';toast('📋 Ditambahkan ke Papan Info');}).catch(()=>toast('Gagal menambah (izin ditolak?)'));
+});
+$('boardX').addEventListener('click',closeModals);
+$('boardM').addEventListener('pointerdown',e=>{if(e.target===$('boardM'))closeModals();});
+$('bBoard').addEventListener('click',()=>{toggleModal('boardM');});
 function watchAnnounce(){
   if(anWatchOn||!db)return;anWatchOn=true;anLastTs=sNow();
   db.ref('nexoria/curitelur/announce').on('value',sn=>{
@@ -2327,6 +2384,7 @@ function takePet(i){
 ['inv','shop','bookM','laneShop','tradeM','petsM','setM'].forEach(id=>$(id).addEventListener('pointerdown',e=>{if(e.target===$(id))toggleModal(id);}));
 
 /* ===== toko ===== */
+const nearBoard=()=>{const p=player.root.position;return Math.hypot(p.x-INFOB.x,p.z-INFOB.z)<3.8;};
 const nearShop=()=>{const p=player.root.position;return Math.hypot(p.x-SHOP.x,p.z-SHOP.z)<3.8;};
 let confirmKind='',confirmT=0;
 function renderShop(){
@@ -3229,7 +3287,7 @@ async function connectFlow(){
   if(!acc.ok)throw new Error('Gagal memeriksa akun ('+acc.why+').');
   if(!acc.val){try{localStorage.removeItem('nexoria_user');}catch(e){}goHome();return new Promise(()=>{});}
   if(!await claimSession())throw new Error('Akun ini sedang bermain di perangkat lain. Tutup game di sana, tunggu ±20 detik, lalu coba lagi.');
-  watchSession();watchKick();watchGlobalSpawn();watchAnnounce();watchAbuse();watchKonoha();watchMyAvatar();watchAWild();watchUpdateEvent();watchNSE();
+  watchSession();watchKick();watchGlobalSpawn();watchAnnounce();watchBoard();watchAbuse();watchKonoha();watchMyAvatar();watchAWild();watchUpdateEvent();watchNSE();
   $('ltxt').textContent='Masuk ke server…';
   if(!await claimSlot(room,mySlot))throw new Error('Semua server penuh. Coba lagi nanti.');
   setupPresence();
@@ -3761,6 +3819,7 @@ function updateHUD(dt){
   if(showUp){const nx=TREAD[tl+1];$('bUp').textContent='⬆ '+nx.n+' 💵'+fmt(nx.p);}
   $('bShop').style.display=(pl.state==='normal'&&nearShop())?'block':'none';
   $('bLane').style.display=(pl.state==='normal'&&nearLaneShop())?'block':'none';
+  $('bBoard').style.display=(pl.state==='normal'&&nearBoard())?'block':'none';
   const np=pl.state==='normal'&&inBox(pl.root.position.x,pl.root.position.z,penBox(mySlot),3)&&penLv<PENCAP.length-1;
   if(np)$('bPen').textContent='⬆ Upgrade '+fmt(PENCOST[penLv+1]);
   updatePenSign(np);
