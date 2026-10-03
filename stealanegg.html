@@ -61,6 +61,9 @@ html,body{margin:0;height:100%;overflow:hidden;background:var(--bg);color:var(--
 .an.titan{filter:drop-shadow(0 0 8px #ff4dd2) drop-shadow(0 0 4px #4dd2ff);font-size:clamp(30px,10vh,46px)}
 #bTread{position:absolute;right:calc(max(14px,env(safe-area-inset-right)) + clamp(56px,15vh,72px));top:50%;transform:translateY(-50%);min-width:clamp(120px,32vh,160px);height:clamp(54px,16vh,70px);font-size:clamp(16px,4.6vh,22px)}
 .pensign{position:absolute;left:0;top:0;display:none;z-index:5;padding:4px 10px;border-radius:6px;border:2px solid #4a2c12;background:linear-gradient(#d19a5a,#9a6a34);color:#fff3d6;font:900 clamp(10px,2.8vh,13px) inherit;font-family:inherit;text-shadow:0 1px 0 #3a200c;box-shadow:0 3px 0 #4a2c12,0 5px 8px #0006;transform:translate(-50%,-50%);white-space:nowrap;cursor:pointer}
+#redVig{position:fixed;inset:0;z-index:4;pointer-events:none;opacity:0;transition:opacity .35s;box-shadow:inset 0 0 70px 26px rgba(235,0,0,.75),inset 0 0 180px 60px rgba(150,0,0,.55)}
+#redVig.on{opacity:1;animation:redPulse 1s ease-in-out infinite}
+@keyframes redPulse{0%,100%{opacity:.55}45%{opacity:1}}
 #acts{position:absolute;right:max(14px,env(safe-area-inset-right));bottom:46px;display:flex;flex-direction:column;align-items:flex-end;gap:8px}
 .act{display:none;min-width:clamp(96px,26vh,130px);padding:0 16px;height:clamp(44px,13vh,58px);border-radius:30px;border:3px solid #fff;color:#fff;font-weight:900;font-size:clamp(14px,4vh,20px);text-shadow:0 2px 2px #0006;box-shadow:0 5px 0 #0006,0 8px 14px #0006;font-family:inherit}
 .act:active{transform:translateY(3px);box-shadow:0 2px 0 #0006}
@@ -191,6 +194,7 @@ body.hudEdit #acts .act,body.hudEdit #bTread,body.hudEdit #bSteal,body.hudEdit #
     <button class="act up" id="bUp">⬆ Upgrade</button>
     <button class="act shop" id="bShop"> Toko</button>
     <button class="act shop" id="bLane" style="background:linear-gradient(#fff9c4,#fff44d);color:#3a2d00">⚡ Jalur</button>
+    <button class="act" id="bDrop" style="display:none;background:linear-gradient(#ff4a4a,#a80c0c);color:#fff;border-color:#ffb0b0">🗑️ JATUH</button>
     <button class="act shop" id="bBoard" style="background:linear-gradient(#ffe9a8,#f1c24a);color:#3a2d00">📋 Lihat</button>
     <button class="act shop" id="bTrade" style="background:linear-gradient(#8fd9ff,#3fa9f5)">🤝 Perdagangan</button>
   </div>
@@ -252,11 +256,13 @@ body.hudEdit #acts .act,body.hudEdit #bTread,body.hudEdit #bSteal,body.hudEdit #
   <div class="gfxRow"><b>🎞️ FPS</b><div class="seg" id="fpsSeg"><button data-f="20">20</button><button data-f="30">30</button><button data-f="60">60</button><button data-f="120">120</button></div></div>
   <div class="gfxRow"><b>Render <span id="rsV">100</span>%</b><input type="range" id="rsR" min="1" max="100" step="1" value="100"></div>
   <div class="gfxRow"><b>👁️ Jarak pandang <span id="dpV">100</span></b><input type="range" id="dpR" min="1" max="100" step="1" value="100"></div>
+  <div class="gfxRow"><b>🎯 Sensitivitas <span id="snV">100</span>%</b><input type="range" id="snR" min="20" max="300" step="5" value="100"></div>
   <button id="hudEditBtn" style="width:100%;height:40px;margin:10px 0 2px;border:0;border-radius:10px;background:linear-gradient(#b190ff,#6a3fd9);color:#fff;font-weight:900;font-family:inherit;font-size:14px">🎛️ Sesuaikan Kontrol / Custom HUD</button>
   <label class="swRow"><b>Sembunyikan pet saya</b><input type="checkbox" id="swMyPets"><span class="sw"></span></label>
   <label class="swRow"><b>Sembunyikan pet semua player</b><input type="checkbox" id="swAllPets"><span class="sw"></span></label>
 </div></div>
 
+<div id="redVig"></div>
 <div class="modal" id="boardM"><div class="box">
   <div class="hd"><b>📋 Papan Informasi</b><span></span><button class="x" id="boardX">✖</button></div>
   <div id="boardList"></div>
@@ -274,6 +280,7 @@ body.hudEdit #acts .act,body.hudEdit #bTread,body.hudEdit #bSteal,body.hudEdit #
       <option value="1">Besar</option>
       <option value="2">TITAN</option>
       <option value="3">Monster</option>
+      <option value="4">Mutant</option>
     </select>
     <input id="spKg" class="aField" type="number" min="0" step="any" placeholder="Berat kg custom (kosongkan = acak)">
     <input id="spDur" class="aField" type="number" min="1" step="1" placeholder="Durasi menetas (detik) — kosongkan = default, bisa 1 detik">
@@ -296,7 +303,7 @@ body.hudEdit #acts .act,body.hudEdit #bTread,body.hudEdit #bSteal,body.hudEdit #
   <div class="sub" style="margin-top:14px">🥚 Telur Liar (bebas taruh)</div>
   <div style="display:flex;flex-direction:column;gap:8px;margin:6px 0 10px">
     <select id="awSp" class="aField"></select>
-    <select id="awMut" class="aField"><option value="0">Normal</option><option value="1">Besar</option><option value="2">TITAN</option><option value="3">Monster</option></select>
+    <select id="awMut" class="aField"><option value="0">Normal</option><option value="1">Besar</option><option value="2">TITAN</option><option value="3">Monster</option><option value="4">Mutant</option></select>
     <div style="display:flex;gap:8px"><input id="awX" class="aField" type="number" step="any" placeholder="X (-14..14)" style="flex:1;min-width:0"><input id="awZ" class="aField" type="number" step="any" placeholder="Z" style="flex:1;min-width:0"></div>
     <button id="awHere" style="height:38px;border:0;border-radius:10px;background:#333;color:#fff;font-weight:900;font-family:inherit;font-size:13px">📍 Pakai posisiku</button>
     <button id="awGo" style="height:42px;border:0;border-radius:10px;background:linear-gradient(#ff66cc,#ffb84d);color:#1a0a1a;font-weight:900;font-family:inherit;font-size:14px">🥚 Taruh Telur Liar</button>
@@ -378,10 +385,10 @@ const saveAdm=()=>{try{localStorage.setItem(ADM_KEY,JSON.stringify({ht:hideTitle
 const guardOff=()=>IS_CREATOR&&!guardOn;
 /* pengaturan pemain: sembunyikan pet (hewan di kandang) supaya tidak lag */
 let hideMyPets=false,hideOtherPets=false;
-let gfxQ=1,renderPct=100,fpsCap=60,distPct=100,hudCfg={};   /* hudCfg: posisi/ukuran tiap elemen HUD {id:{x,y,s}} */   /* fpsCap 20/30/60/120; distPct 1-100 jarak pandang */   /* grafik: 0 Rendah, 1 Sedang (standar), 2 Tinggi; render 1-100 (% resolusi) */
+let gfxQ=1,renderPct=100,fpsCap=60,distPct=100,sensPct=100,hudCfg={};   /* hudCfg: posisi/ukuran tiap elemen HUD {id:{x,y,s}} */   /* fpsCap 20/30/60/120; distPct 1-100 jarak pandang */   /* grafik: 0 Rendah, 1 Sedang (standar), 2 Tinggi; render 1-100 (% resolusi) */
 const SET_KEY='curitelur_set_'+KEY;
-try{const a=JSON.parse(localStorage.getItem(SET_KEY)||'{}');hideMyPets=a.hm===1;hideOtherPets=a.ho===1;if(a.gq===0||a.gq===1||a.gq===2)gfxQ=a.gq;if(+a.rs>=1&&+a.rs<=100)renderPct=Math.round(+a.rs);if([20,30,60,120].indexOf(+a.fp)>=0)fpsCap=+a.fp;if(+a.dp>=1&&+a.dp<=100)distPct=Math.round(+a.dp);if(a.hud&&typeof a.hud==='object')for(const k in a.hud){const c=a.hud[k];if(c&&isFinite(+c.x)&&isFinite(+c.y))hudCfg[k]={x:Math.round(+c.x),y:Math.round(+c.y),s:Math.min(2,Math.max(.5,+c.s||1))};}}catch(e){}
-const saveSet=()=>{try{localStorage.setItem(SET_KEY,JSON.stringify({hm:hideMyPets?1:0,ho:hideOtherPets?1:0,gq:gfxQ,rs:renderPct,fp:fpsCap,dp:distPct,hud:hudCfg}));}catch(e){}};
+try{const a=JSON.parse(localStorage.getItem(SET_KEY)||'{}');hideMyPets=a.hm===1;hideOtherPets=a.ho===1;if(a.gq===0||a.gq===1||a.gq===2)gfxQ=a.gq;if(+a.rs>=1&&+a.rs<=100)renderPct=Math.round(+a.rs);if([20,30,60,120].indexOf(+a.fp)>=0)fpsCap=+a.fp;if(+a.dp>=1&&+a.dp<=100)distPct=Math.round(+a.dp);if(+a.sn>=20&&+a.sn<=300)sensPct=Math.round(+a.sn);if(a.hud&&typeof a.hud==='object')for(const k in a.hud){const c=a.hud[k];if(c&&isFinite(+c.x)&&isFinite(+c.y))hudCfg[k]={x:Math.round(+c.x),y:Math.round(+c.y),s:Math.min(2,Math.max(.5,+c.s||1))};}}catch(e){}
+const saveSet=()=>{try{localStorage.setItem(SET_KEY,JSON.stringify({hm:hideMyPets?1:0,ho:hideOtherPets?1:0,gq:gfxQ,rs:renderPct,fp:fpsCap,dp:distPct,sn:sensPct,hud:hudCfg}));}catch(e){}};
 const distK=()=>.1+.9*(distPct-1)/99;   /* 100 = jarak standar; 1 = 10% */
 const gfxBase=()=>{const d=window.devicePixelRatio||1;return gfxQ===0?Math.min(d,1):gfxQ===2?Math.min(Math.max(d*1.4,1.6),2.6):Math.min(d,1.6);};
 
@@ -416,7 +423,7 @@ const PENCAP=[24,36,50,70,100,150],PENCOST=[0,2e4,5e6,5e8,5e10,5e12],BAGMAX=36,F
 const MAXPEN=PENCAP[PENCAP.length-1];
 let penLv=0;const penCap=()=>PENCAP[penLv];
 const ILAHI_SURGA=.12;   /* peluang tiap sarang Surga berisi telur Ilahi (10–15%) */
-const TIER_CHANCE={7:.45,8:.25,9:.12,10:.06,11:.025,12:.05};   // peluang tiap pagi: telur tingkat Rahasia 45%, Abadi 25%, Ilahi 12%, Prismatic 6%, OG 2,5%, GOOD ⚡5%
+const TIER_CHANCE={7:.25,8:.25,9:.12,10:.06,11:.025,12:.05};   // peluang tiap pagi: telur tingkat Rahasia 25%, Abadi 25%, Ilahi 12%, Prismatic 6%, OG 2,5%, GOOD ⚡5%
 const COLX=[-21,-7,7,21],COLC=[0x3d8bff,0xff5a5a,0x35d07f,0xffc93d],TMZ=-3;   /* treadmill dimundurkan (dulu -7) */
 const PEN_Z=[2,26],PEN_W=5.6;   /* kandang lebih besar, mundur ke belakang & lebih renggang */
 const penBox=s=>({x0:COLX[s]-PEN_W,x1:COLX[s]+PEN_W,z0:PEN_Z[0],z1:PEN_Z[1]});
@@ -424,7 +431,7 @@ const penMid=s=>({x:COLX[s],z:(PEN_Z[0]+PEN_Z[1])/2});
 const SHOP={x:9.5,z:-18.7};
 const LSHOP={x:14.2,z:-18.7};
 const INFOB={x:-9.5,z:-18.7};   // papan informasi (kiri depan, dekat pagar zona aman)   // toko JALUR, di samping kanan toko utama
-const GATEZ=-20,DAY=180,CYC=190,BIGX=3,TITANX=10,TITAN_CHANCE=.1,MONSTERX=5,MONSTER_CHANCE=.04;   // mutasi Besar ×3, Titan (10% dari mutasi) ×10; Monster (mata merah + petir) ×5 uang, peluang 4%/sarang; Pagi = 3 menit (180d)
+const GATEZ=-20,DAY=180,CYC=190,BIGX=3,TITANX=10,TITAN_CHANCE=.1,MONSTERX=5,MONSTER_CHANCE=.04,MUTANTX=100,MUTANT_CHANCE=.005;   /* Mutant: berat 30× Monster, uang 20× Monster (×100 dari normal), peluang 0,5% */   // mutasi Besar ×3, Titan (10% dari mutasi) ×10; Monster (mata merah + petir) ×5 uang, peluang 4%/sarang; Pagi = 3 menit (180d)
 
 const TIERS=[
  {n:'Biasa',c:0xd9dde2},{n:'Tidak Biasa',c:0x5fd35f},{n:'Langka',c:0x4aa3ff},{n:'Epik',c:0xb266ff},
@@ -489,8 +496,8 @@ const SP=[
  ],
  [ /* Konoha — Collab X Naruto: index wilayah terakhir. Hadiah lengkap: senjata Sharinggan */
   {n:'Genin Ninja',ic:'🥷',t:5,w:45,lo:5e33,hi:2e34,kg:[45,65],kind:8,S:1.05,col:{a:0xff8a3a,b:0xff6a1a,c:0xff7a2a},opt:{hair:0xffd54a,band:0x1a3a8a}},
-  {n:'Anbu Bertopeng',ic:'🎭',t:7,w:25,lo:2e34,hi:8e34,kg:[50,70],kind:8,S:1.1,col:{a:0x15151c,b:0x8e8a99,c:0x1c2038},opt:{mask:1,vest:1,sword:1,hair:0xc8ccd4},pct:.3},
-  {n:'Sannin Katak',ic:'🐸',t:7,w:15,lo:8e34,hi:3e35,kg:[60,90],kind:9,S:1.3,col:{a:0xc8642a,b:0x1b2038,c:0xf2c230},opt:{},pct:.3},
+  {n:'Anbu Bertopeng',ic:'🎭',t:7,w:25,lo:2e34,hi:8e34,kg:[50,70],kind:8,S:1.1,col:{a:0x15151c,b:0x8e8a99,c:0x1c2038},opt:{mask:1,vest:1,sword:1,hair:0xc8ccd4},pct:.25},
+  {n:'Sannin Katak',ic:'🐸',t:7,w:15,lo:8e34,hi:3e35,kg:[60,90],kind:9,S:1.3,col:{a:0xc8642a,b:0x1b2038,c:0xf2c230},opt:{},pct:.25},
   {n:'Susanoo Roh',ic:'👻',t:10,w:8,lo:3e35,hi:1e36,kg:[300,600],kind:8,S:1.6,col:{a:0x7a4dff,b:0xd6b8ff},opt:{susanoo:1}},
   {n:'Hachibi Ekor Delapan',ic:'🐙',t:11,w:3,lo:1e36,hi:4e36,kg:[8000,15000],kind:10,S:1.2,col:{a:0x8a3a44,b:0x4a1c28,c:0xe8dcd0},opt:{},fx:17},
   {n:'Kurama Ekor Sembilan',ic:'🦊',t:12,w:2,lo:4e36,hi:1e37,kg:[9000,18000],kind:3,S:1.95,col:{a:0xff8a2a,b:0x2a1a10,c:0xff4d1a},opt:{ears:1,bushy:1,tails9:1,leg:.65},good:1,fx:18}
@@ -589,10 +596,10 @@ const mkBaton=()=>({id:'baton',kind:'baton'});
 const spOf=it=>SP[it.reg][it.sp];
 const tierOf=it=>spOf(it).t;
 const mutOf=it=>it.mut!==undefined?(+it.mut||0):(it.big?1:0);
-const mutMult=m=>m===2?TITANX:m===1?BIGX:m===3?MONSTERX:1;
-const MUTN=['','Besar','TITAN','Monster'];
-const eggScale=m=>m===3?2.6:m===2?2.3:m===1?1.6:1;
-const carryScale=m=>m===3?2.1:m===2?1.9:m===1?1.4:.9;
+const mutMult=m=>m===4?MUTANTX:m===2?TITANX:m===1?BIGX:m===3?MONSTERX:1;
+const MUTN=['','Besar','TITAN','Monster','Mutant'];
+const eggScale=m=>m===4?4.2:m===3?2.6:m===2?2.3:m===1?1.6:1;
+const carryScale=m=>m===4?2.6:m===3?2.1:m===2?1.9:m===1?1.4:.9;
 const hatchTime=it=>(it&&it.hatchOverride!=null&&+it.hatchOverride>0)?+it.hatchOverride:HT[Math.min(5,it.reg+(mutOf(it)>0?1:0))];
 function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
 /* op=true: hanya spesies OP (tingkat Rahasia ke atas); op=false: hanya yang non-OP */
@@ -608,6 +615,7 @@ function rollSp(reg,op,rng){
 const okItem=it=>!!(it&&(it.kind==='baton'||(SP[it.reg]&&SP[it.reg][it.sp]&&(it.kind==='egg'||it.kind==='animal'))));
 /* berat (kg): normal = kisaran spesies, Besar = sampai 1.000.000 kg, TITAN = 1.000.000 – 99.999.999 kg, Monster = 1.000.000.000 – 999.999.999.999 kg (lebih besar dari TITAN) */
 function rollKg(s,mut){
+  if(mut===4)return Math.floor(30*Math.exp(rnd(Math.log(1e9),Math.log(999999999999))));   /* Mutant: 30× Monster */
   if(mut===3)return Math.floor(Math.exp(rnd(Math.log(1e9),Math.log(999999999999))));
   if(mut===2)return Math.floor(Math.exp(rnd(Math.log(1e6),Math.log(99999999))));
   if(mut===1){const lo=Math.min(s.kg[1]*30,5e5);return Math.floor(Math.exp(rnd(Math.log(lo),Math.log(1e6))));}
@@ -1289,7 +1297,7 @@ function poseCreature(c,t,dt){
 }
 function buildLite(s,mut){   /* versi ringan: siluet tiap spesies tetap dikenali */
   const g=new THREE.Group(),o=s.opt||{},A=M(s.col.a),B=M(s.col.b||s.col.a),m=+mut||0;
-  const f=Math.max(.5,s.S*.62)*[1,1.3,1.9,2.4][m];
+  const f=Math.max(.5,s.S*.62)*[1,1.3,1.9,2.4,3.4][m];
   switch(s.kind){
     case 0:mk(g,G.sph,A,0,.75,0,.55,.45,.7);mk(g,G.sph,A,0,1.25,.5,.3);mk(g,G.box,M(s.col.c||0xff8c1a),0,1.2,.85,.2,.07,.26);if(o.comb)mk(g,G.box,M(0xe02020),0,1.6,.5,.08,.14,.22);break;
     case 1:mk(g,G.dome,A,0,.3,0,.9,.65,1);mk(g,G.sph,B,0,.5,1.05,.28);break;
@@ -1330,7 +1338,7 @@ function buildLite(s,mut){   /* versi ringan: siluet tiap spesies tetap dikenali
 /* efek percikan & aura untuk hewan tingkat Abadi–OG (dan Titan) */
 const FXP={8:[0x25e8ff,0xa855f7],9:[0xffe066,0xffa040,0xffffff],10:[0xff4d4d,0xffd24d,0x4dff88,0x4dd2ff,0xb04dff],11:[0xff3b1a,0xff9a1a,0xffd23f],12:[0xfff9c4,0xfff44d,0x7ef9ff,0xffffff],13:[0xff1a1a,0xff5a1a,0x660000],14:[0xb07dff,0xff9a3a,0xffffff,0x6a2cff],15:[0xff2a3a,0x7a1030,0x3a0a4a],16:[0x7ef9ff,0xb58cff,0xffffff],17:[0x6a3fae,0xb07dff,0x241a3a],18:[0xff8a2a,0xffd23f,0xff4d1a,0xfff2a8]};
 const fxMat=new THREE.PointsMaterial({size:.3,vertexColors:true,transparent:true,opacity:.95,depthWrite:false,blending:THREE.AdditiveBlending});
-function fxTierOf(tier,mut,sp){return mut===3?13:(sp&&sp.fx)?sp.fx:tier>=8?tier:(mut===2?10:0);}
+function fxTierOf(tier,mut,sp){return mut>=3?13:(sp&&sp.fx)?sp.fx:tier>=8?tier:(mut===2?10:0);}
 function makeFx(parent,tier,sc){
   sc=Math.max(.35,sc||1);
   const pal=FXP[tier]||FXP[9],n=tier>=10?26:18,pos=new Float32Array(n*3),col=new Float32Array(n*3),P=[];
@@ -1737,7 +1745,7 @@ function setupNest(N,sp,mut){
     if(N.mSp!==N.sp||!N.c){if(N.c&&N.c.root.parent)N.c.root.parent.remove(N.c.root);N.c=buildCreature(gd.kind,gd.S,gd.col,gd.opt);N.holder.add(N.c.root);N.c.root.rotation.y=N.sy;N.top=N.c.top*gd.S;N.mSp=N.sp;}
   }
   if(!N.c){N.c=buildCreature(gd.kind,gd.S,gd.col,gd.opt);N.holder.add(N.c.root);N.top=N.c.top*gd.S;}
-  N.c.monsterEyes=N.mut===3||!!(gd.opt&&gd.opt.red);N.c.sleep=1;N.c.sleepT=1;
+  N.c.monsterEyes=N.mut>=3||!!(gd.opt&&gd.opt.red);N.c.sleep=1;N.c.sleepT=1;
   N.egg=makeEgg(N.reg,N.sp,N.mut);N.egg.position.set(N.ex,0,N.ez);N.egg.visible=true;scene.add(N.egg);
   N.zzS.position.y=N.top+.9;N.exS.position.y=N.top+1.2;
   N.present=true;N.eh.visible=true;
@@ -1745,7 +1753,7 @@ function setupNest(N,sp,mut){
   /* status telur di atas telur: nama tingkat + mutasi (Besar/TITAN/Monster) */
   const eTop=1.2*eggScale(N.mut);
   N.tag=tierSprite(s.t,3.6);N.tag.position.set(0,eTop+.6,0);N.eh.add(N.tag);
-  if(N.mut>0){N.tag2=cachedLabel(MUTN[N.mut].toUpperCase(),N.mut===3?'#ff4a4a':N.mut===2?'#ff4dd2':'#ffd34d',3.2);N.tag2.position.set(0,eTop+1.25,0);N.eh.add(N.tag2);}
+  if(N.mut>0){N.tag2=cachedLabel(MUTN[N.mut].toUpperCase(),N.mut===4?'#7cff3a':N.mut===3?'#ff4a4a':N.mut===2?'#ff4dd2':'#ffd34d',3.2);N.tag2.position.set(0,eTop+1.25,0);N.eh.add(N.tag2);}
   if(N.wild){N.beam=mk(N.eh,G.cyl,wildBeamMat,0,16,0,.8,32,.8);N.tag3=cachedLabel('🌈 TELUR LIAR','#ffffff',4.2);N.tag3.position.set(0,eTop+1.95,0);N.eh.add(N.tag3);}
 }
 function buildNests(){
@@ -1804,7 +1812,7 @@ function resetNests(){
     const r1=rng(),r2=rng(),r3=rng();
     N.wild=!!(wild&&wild.i===i);
     if(N.wild)moveNestEgg(N,wild.x,wild.z);else moveNestEgg(N,N.hx,N.hz);
-    const mut=r3<MONSTER_CHANCE?3:(r1*100<REG[N.reg].big?(r2<TITAN_CHANCE?2:1):0);
+    const mut=r3<MUTANT_CHANCE?4:r3<MUTANT_CHANCE+MONSTER_CHANCE?3:(r1*100<REG[N.reg].big?(r2<TITAN_CHANCE?2:1):0);
     if(N.reg===KON_I&&!konohaOn)setupNest(N,-1,0);
     else if(plan[i]>=0)setupNest(N,plan[i],mut);
     else if(SP[N.reg].some(sp=>sp.t<7))setupNest(N,rollSp(N.reg,false,rng),mut);
@@ -1912,7 +1920,7 @@ function localGuard(N,dt,t){
   /* telur mutasi Besar/TITAN/Monster: induk lari ×2 lebih kuat, kecepatan efektif player berkurang 1%-10% makin jauh wilayahnya */
   const isMutG=N.mut>0,regPen=isMutG?(1-(.01+(N.reg/(REG.length-1))*.09)):1;
   const effSpd=pl.speedStat*regPen;
-  const ok=effSpd>=R.req,gs=pw(effSpd)*laneMult()*(ok?R.gf:1.3)*(isMutG?2:1)*(abuseOn?5:1);   /* jalur ×N → induk ikut ×N */
+  const ok=effSpd>=R.req,gs=pw(effSpd)*laneMult()*(ok?R.gf:1.3)*(isMutG?2:1);   /* jalur ×N → induk ikut ×N (Admin Abuse tidak lagi melipatkan kecepatan induk) */
   c.runT=0;c.bow=lerp(c.bow,0,Math.min(1,dt*8));
   let tgt=null,sp=0;
   switch(N.st){
@@ -2227,7 +2235,7 @@ function watchGlobalSpawn(){
 function applyGlobalSpawn(v){
   const reg=clamp(v.reg|0,0,REG.length-1);
   if(!SP[reg]||!SP[reg][v.sp|0])return;
-  const spI=v.sp|0,mut=clamp(v.mut|0,0,3);
+  const spI=v.sp|0,mut=clamp(v.mut|0,0,4);
   const N=nests.find(n=>n.reg===reg);if(!N)return;
   setupNest(N,spI,mut);if(N.active)N.c.sleep=1;
   N.priceOv=(+v.pr>0&&isFinite(+v.pr))?Math.min(+v.pr,9999e72):0;   /* harga custom dari Creator */
@@ -2270,6 +2278,7 @@ $('bdGo')&&$('bdGo').addEventListener('click',()=>{
 $('boardX').addEventListener('click',closeModals);
 $('boardM').addEventListener('pointerdown',e=>{if(e.target===$('boardM'))closeModals();});
 $('bBoard').addEventListener('click',()=>{toggleModal('boardM');});
+$('bDrop').addEventListener('click',()=>{if(carryingEgg())dropStolenEggs();});
 function watchAnnounce(){
   if(anWatchOn||!db)return;anWatchOn=true;anLastTs=sNow();
   db.ref('nexoria/curitelur/announce').on('value',sn=>{
@@ -2352,13 +2361,15 @@ $('hudDone').addEventListener('click',()=>{hudStop();hudCloudSave();});
 hudApplyAll();
 function applyGfx(){renderer.setPixelRatio(Math.max(.25,gfxBase()*renderPct/100));resize();}
 function applyDist(){camera.far=Math.max(25,250*distK());camera.updateProjectionMatrix();if(skyDome)skyDome.scale.setScalar(Math.min(1,camera.far*.9/200));}
-function syncGfxUI(){document.querySelectorAll('#gfxSeg button').forEach(b=>b.classList.toggle('on',+b.dataset.q===gfxQ));$('rsR').value=renderPct;$('rsV').textContent=renderPct;document.querySelectorAll('#fpsSeg button').forEach(b=>b.classList.toggle('on',+b.dataset.f===fpsCap));$('dpR').value=distPct;$('dpV').textContent=distPct;}
+function syncGfxUI(){document.querySelectorAll('#gfxSeg button').forEach(b=>b.classList.toggle('on',+b.dataset.q===gfxQ));$('rsR').value=renderPct;$('rsV').textContent=renderPct;document.querySelectorAll('#fpsSeg button').forEach(b=>b.classList.toggle('on',+b.dataset.f===fpsCap));$('dpR').value=distPct;$('dpV').textContent=distPct;$('snR').value=sensPct;$('snV').textContent=sensPct;}
 document.querySelectorAll('#gfxSeg button').forEach(b=>b.addEventListener('click',()=>{gfxQ=+b.dataset.q;saveSet();applyGfx();syncGfxUI();}));
 $('rsR').addEventListener('input',e=>{renderPct=Math.max(1,Math.min(100,Math.round(+e.target.value||100)));$('rsV').textContent=renderPct;applyGfx();});
 $('rsR').addEventListener('change',saveSet);
 document.querySelectorAll('#fpsSeg button').forEach(b=>b.addEventListener('click',()=>{fpsCap=+b.dataset.f;saveSet();syncGfxUI();}));
 $('dpR').addEventListener('input',e=>{distPct=Math.max(1,Math.min(100,Math.round(+e.target.value||100)));$('dpV').textContent=distPct;applyDist();});
 $('dpR').addEventListener('change',saveSet);
+$('snR').addEventListener('input',e=>{sensPct=Math.max(20,Math.min(300,Math.round(+e.target.value||100)));$('snV').textContent=sensPct;});
+$('snR').addEventListener('change',saveSet);
 syncGfxUI();
 [['swMyPets',()=>hideMyPets,v=>{hideMyPets=v;}],['swAllPets',()=>hideOtherPets,v=>{hideOtherPets=v;}]].forEach(([id,get,set])=>{
   const el=$(id);if(!el)return;el.checked=get();
@@ -2384,6 +2395,7 @@ function takePet(i){
 ['inv','shop','bookM','laneShop','tradeM','petsM','setM'].forEach(id=>$(id).addEventListener('pointerdown',e=>{if(e.target===$(id))toggleModal(id);}));
 
 /* ===== toko ===== */
+const carryingEgg=()=>nests.some(N=>N.active&&N.stolenId&&N.mine);
 const nearBoard=()=>{const p=player.root.position;return Math.hypot(p.x-INFOB.x,p.z-INFOB.z)<3.8;};
 const nearShop=()=>{const p=player.root.position;return Math.hypot(p.x-SHOP.x,p.z-SHOP.z)<3.8;};
 let confirmKind='',confirmT=0;
@@ -2469,9 +2481,9 @@ function buyKhodam(){
 let incDirty=true,totalInc=0,penDirty=true;
 const inBox=(x,z,b,m)=>{m=m||0;return x>=b.x0-m&&x<=b.x1+m&&z>=b.z0-m&&z<=b.z1+m;};
 const inPen=()=>{const p=player.root.position;return inBox(p.x,p.z,penBox(mySlot),.1);};
-const MUTSC=[1,1.3,1.9,2.4];   /* 0=normal,1=Besar,2=TITAN,3=Monster — Monster paling besar (>TITAN); dulu index 3 kosong sehingga hewan mutasi Monster jadi NaN/tak terlihat */
+const MUTSC=[1,1.3,1.9,2.4,3.4];   /* 0=normal,1=Besar,2=TITAN,3=Monster — Monster paling besar (>TITAN); dulu index 3 kosong sehingga hewan mutasi Monster jadi NaN/tak terlihat */
 /* tubuh membesar sesuai BERAT (kg) asli hewan, bukan cuma teks: makin berat dalam rentang mutasinya, makin besar badannya */
-const MUT_KG_LO=[0,1e3,1e6,1e9],MUT_KG_HI=[0,1e6,1e8,1e12],MUT_KG_EXTRA=[0,.5,.9,1.8];
+const MUT_KG_LO=[0,1e3,1e6,1e9,3e10],MUT_KG_HI=[0,1e6,1e8,1e12,3e13],MUT_KG_EXTRA=[0,.5,.9,1.8,2.6];
 function weightBoost(mut,kg){
   if(!mut)return 1;
   const lo=Math.log(MUT_KG_LO[mut]||1),hi=Math.log(MUT_KG_HI[mut]);
@@ -2589,7 +2601,7 @@ function hatch(e){
 }
 
 /* ===== treadmill milik sendiri ===== */
-const admRate=()=>TREAD[TREAD.findIndex(t=>t.n==='Petir')].r*5;   /* Treadmill Admin: 5× tingkat Petir, bisa dipakai semua orang */
+const admRate=()=>TREAD[tl].r*8;   /* Treadmill Admin: 8× treadmill pemain sendiri, bisa dipakai semua orang */
 const tmX=()=>onAdm?ADM.x:COLX[mySlot],tmZ=()=>onAdm?ADM.z:TMZ;
 const nearOwn=()=>Math.hypot(player.root.position.x-COLX[mySlot],player.root.position.z-TMZ)<3.4;
 const nearAdm=()=>abuseOn&&Math.hypot(player.root.position.x-ADM.x,player.root.position.z-ADM.z)<4.6;
@@ -2611,7 +2623,7 @@ function buildAdminTread(){
   const r=mk(g,G.tor,prisMat,0,2.8,0,.95,.95,.95);r.rotation.x=Math.PI/2;
   mk(g,G.cyl,wildBeamMat,0,3,0,1.7,6,1.7);
   const n1=textSprite('👑 TREADMILL ADMIN',{w:768,h:192,fs:88,sw:6,color:'#fff'});n1.position.set(0,4.6,0);g.add(n1);
-  const n2=textSprite('+'+fmt(admRate())+'/d · untuk semua orang',{w:768,h:160,fs:60,sw:5,color:'#ffe066'});n2.position.set(0,3.85,0);g.add(n2);
+  const n2=textSprite('8× ADMIN',{w:768,h:160,fs:60,sw:5,color:'#ffe066'});n2.position.set(0,3.85,0);g.add(n2);
   admT=g;
 }
 function upgradeTread(){
@@ -2856,8 +2868,9 @@ function tickGenjWorld(dt,t){
     if(genjMobs)genjMobs.children.forEach((m,i)=>{m.rotation.y+=dt*(m.userData.spin||.2);m.position.y=Math.sin(t*1.4+(m.userData.ph||0))*.15;});
   }else if(genjAmt<.02&&genjMobs)clearGenjMobs();
 }
+function stopGenjutsu(){const pl=player;if(pl.state==='genjutsu'){pl.state='normal';pl.genT=0;pl.inv=.5;if(pl.gjTag)pl.gjTag.visible=false;endGenjutsuVisual();}}
 function startNight(){
-  isNight=true;gateTarget=1;
+  isNight=true;gateTarget=1;stopGenjutsu();   /* malam tiba → Genjutsu dihentikan */
   const dropped=releaseStolen();
   toast('🌙 Malam tiba! Gerbang ditutup · telur menetas 2× lebih cepat',3500);
   nests.forEach(N=>{if(N.st==='chase'||N.st==='wake')N.st='return';});
@@ -2998,7 +3011,7 @@ function setAbuse(on,loud){
   if(!loaded||!loud)return;
   if(on){
     bannerQ.push({msg:'<span class="t10">👑 ADMIN ABUSE SUDAH TIBA! 🌈</span>'});runBanner();
-    toast('🌌 Semua telur 50% · induk 5× lebih kuat · Treadmill Admin dibuka untuk semua!',5000);
+    toast('🌌 Semua telur 50% · Treadmill Admin dibuka untuk semua!',5000);
     announceRare();
     if(wildN&&!isNight)setTimeout(()=>startCine(wildN),3800);
   }else toast('Admin Abuse berakhir',2500);
@@ -3540,7 +3553,7 @@ function onPens(sn){
       const m=penMid(i),box=penBox(i),fullSet={};
       items.map((it,k)=>({k,p:it[0]===1?(+it[6]||0):-1})).sort((a,b)=>b.p-a.p).slice(0,REMOTE_FULL).forEach(o=>{if(o.p>=0)fullSet[o.k]=1;});
       items.forEach((it,k)=>{
-        const x=m.x+it[4]/10,z=m.z+it[5]/10,mu=clamp(it[3]|0,0,3),s=SP[it[1]][it[2]];
+        const x=m.x+it[4]/10,z=m.z+it[5]/10,mu=clamp(it[3]|0,0,4),s=SP[it[1]][it[2]];
         const en={k:it[0],x,z,big:mu>0,label:null,fx:null};
         if(it[0]===0){
           en.mesh=makeEgg(it[1],it[2],mu);en.mesh.position.set(x,0,z);scene.add(en.mesh);
@@ -3635,7 +3648,7 @@ canvas.addEventListener('pointerdown',e=>{
 canvas.addEventListener('pointermove',e=>{
   if(e.pointerId!==camPtr)return;
   const dx=e.clientX-cLast.x,dy=e.clientY-cLast.y;cLast.x=e.clientX;cLast.y=e.clientY;cMoved+=Math.abs(dx)+Math.abs(dy);
-  cam.yaw-=dx*.0055;cam.pitch=clamp(cam.pitch+dy*.004,.08,1.3);
+  const sk=sensPct/100;cam.yaw-=dx*.0055*sk;cam.pitch=clamp(cam.pitch+dy*.004*sk,.08,1.3);
 });
 const camEnd=e=>{
   if(e.pointerId!==camPtr)return;camPtr=null;
@@ -3766,7 +3779,7 @@ function updatePlayer(dt,t){
   /* anti-tembus: kalau ada pemain yang berhasil nyelinap masuk area curi saat malam (gerbang tutup), langsung dipaksa kembali ke zona aman */
   if(isNight&&pos.z<GATEZ-.05){
     const dropped=releaseStolen();
-    pos.set(0,0,-16.5);pl.state='normal';pl.model.rotation.set(0,0,0);pl.modelY=0;
+    stopGenjutsu();pos.set(0,0,-16.5);pl.state='normal';pl.model.rotation.set(0,0,0);pl.modelY=0;
     if(!pl.nightTP){pl.nightTP=true;toast(dropped?'🌙 Malam! Kamu dibawa ke zona aman & telur curianmu terlepas':'🌙 Malam! Kamu tembus ke area curi & dipaksa kembali ke zona aman',3200);}
   }else if(pl.nightTP)pl.nightTP=false;
   pl.runAmt+=(runT-pl.runAmt)*Math.min(1,dt*9);
@@ -3820,6 +3833,7 @@ function updateHUD(dt){
   $('bShop').style.display=(pl.state==='normal'&&nearShop())?'block':'none';
   $('bLane').style.display=(pl.state==='normal'&&nearLaneShop())?'block':'none';
   $('bBoard').style.display=(pl.state==='normal'&&nearBoard())?'block':'none';
+  {const ce=(pl.state==='normal'||pl.state==='steal')&&carryingEgg();$('bDrop').style.display=ce?'block':'none';$('redVig').classList.toggle('on',ce||pl.state==='steal');}   /* sedang mencuri: tepi layar merah berdenyut */
   const np=pl.state==='normal'&&inBox(pl.root.position.x,pl.root.position.z,penBox(mySlot),3)&&penLv<PENCAP.length-1;
   if(np)$('bPen').textContent='⬆ Upgrade '+fmt(PENCOST[penLv+1]);
   updatePenSign(np);
@@ -3885,9 +3899,9 @@ function frame(now){
     updateBolts(dt);updateTrails(dt);updateBooms(dt);updateHoles(dt);updateSharinFx(dt);tickGenjWorld(dt,t);
     if(zeusAct()){khodamCd-=dt;if(khodamCd<=0){khodamCd=rnd(1,2.2);const kp=player.root.position;spawnBolt(kp.x+rnd(-1,1),kp.z+rnd(-1,1),7,0xfff44d);}}
     nests.forEach(N=>{if(N.active&&N.present&&SP[N.reg][N.sp].t===12){N.boltCd=(N.boltCd===undefined?0:N.boltCd)-dt;if(N.boltCd<=0){N.boltCd=rnd(1.2,2.8);spawnBolt(N.ex,N.ez,(N.top||2)+3,0x7ef9ff);}}
-      if(N.active&&N.mut===3){N.mBoltCd=(N.mBoltCd===undefined?0:N.mBoltCd)-dt;if(N.mBoltCd<=0){N.mBoltCd=rnd(1,2.4);spawnBolt(N.px,N.pz,(N.top||2)+3,0xff2222);}}
+      if(N.active&&N.mut>=3){N.mBoltCd=(N.mBoltCd===undefined?0:N.mBoltCd)-dt;if(N.mBoltCd<=0){N.mBoltCd=rnd(1,2.4);spawnBolt(N.px,N.pz,(N.top||2)+3,N.mut===4?0x66ff33:0xff2222);}}
       /* mutasi Monster: efek petir merah juga muncul di TELUR-nya sendiri (bukan cuma di induk), terlihat semua pemain */
-      if(N.active&&N.present&&N.mut===3){N.eBoltCd=(N.eBoltCd===undefined?0:N.eBoltCd)-dt;if(N.eBoltCd<=0){N.eBoltCd=rnd(.8,2);spawnBolt(N.ex,N.ez,3.4,0xff2222);}}
+      if(N.active&&N.present&&N.mut>=3){N.eBoltCd=(N.eBoltCd===undefined?0:N.eBoltCd)-dt;if(N.eBoltCd<=0){N.eBoltCd=rnd(.8,2);spawnBolt(N.ex,N.ez,3.4,N.mut===4?0x66ff33:0xff2222);}}
     });
     if(player.state==='normal'&&player.runAmt>.15&&laneLv>0){trailCd-=dt;if(trailCd<=0){trailCd=.09;spawnTrail(player.root.position.x,player.root.position.z,LANE[laneLv].c);}}
     sendState(dt);
