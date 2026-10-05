@@ -1088,7 +1088,47 @@ function applyTreadVis(T,lv){
   T.screen.color.setHex(col);
   while(T.deco.children.length)T.deco.remove(T.deco.children[0]);
   while(T.orbit.children.length)T.orbit.remove(T.orbit.children[0]);
-  if(lv===11||lv===12||lv===14||lv===15){   /* Prismatic, OG, Monster & Petir: ringkas & satu warna (1 cincin + rel samping + cahaya tipis), tanpa piringan campuran */
+  if(lv>=7&&lv<=11){   /* Rahasia–Prismatic: tiap tingkat satu desain bersih (tanpa piring ganda & kotak) */
+    [-.8,.8].forEach(sd=>mk(T.deco,G.box,BM(col),sd,.33,0,.05,.05,2.7));
+    const flat=(c1,o,r)=>{const m=mk(T.deco,G.rng,bmT(c1,o),0,.1,0,r,r,1);m.rotation.x=-Math.PI/2;return m;};
+    const hf=grp(T.deco,0,0,0);
+    if(lv===7){   /* Rahasia: cincin rune di lantai + 3 diamond kecil mengorbit */
+      const rg=flat(col,.7,2.2);flat(col,.35,1.5);
+      const ds=[0,1,2].map(()=>mk(T.deco,G.dia,BM(col),0,1.6,0,.11,.32,.11));
+      const rs=risers(hf,8,[col,0xffffff],.9,3.2,.22,.045);
+      T.fxs=[(dt,t)=>{rg.rotation.z+=dt*.4;ds.forEach((m,i)=>{const a=t*.9+i*TAU/3;m.position.set(Math.cos(a)*1.5,1.6+Math.sin(t*1.6+i)*.15,Math.sin(a)*1.7);m.rotation.y=t*1.5;});hf.visible=gfxQ>0;if(gfxQ>0)rs(t,1);}];
+    }else if(lv===8){   /* Kosmik: satu orbit miring tipis dengan bulan kecil + bintang naik */
+      const orb=grp(T.deco,0,2.1,0);orb.rotation.x=.5;orb.rotation.z=.2;
+      const ring=mk(orb,G.rng,bmT(col,.75),0,0,0,1.25,1.25,1);ring.rotation.x=-Math.PI/2;
+      const moon=mk(orb,G.sph,BM(0xe8e6ff),1.25,0,0,.13);mk(orb,G.sph,bmT(col,.3),1.25,0,0,.26);
+      const rs=risers(hf,10,[0xffffff,0xb9b4ff,col],.9,3.4,.2,.045);
+      T.fxs=[(dt,t)=>{orb.rotation.y+=dt*.25;const a=t*1.3;moon.position.set(Math.cos(a)*1.25,0,Math.sin(a)*1.25);hf.visible=gfxQ>0;if(gfxQ>0)rs(t,1);}];
+    }else if(lv===9){   /* Abadi: satu halo putih tipis + kolom cahaya lembut + kilau turun */
+      const halo=mk(T.deco,G.tor,BM(0xffffff),0,3.05,0,.7,.7,.7);halo.rotation.x=Math.PI/2;
+      const col2=new THREE.Mesh(new THREE.CylinderGeometry(.9,.9,4.2,20,1,true),new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:.08,depthWrite:false,side:THREE.DoubleSide,blending:THREE.AdditiveBlending}));col2.position.set(0,2.1,0);T.deco.add(col2);
+      flat(0xffffff,.45,2);
+      const rs=risers(hf,10,[0xffffff,0xe8f4ff],.8,3.6,.24,.045);
+      T.fxs=[(dt,t)=>{halo.position.y=3.05+Math.sin(t*1.8)*.06;halo.scale.setScalar(.7*(1+.04*Math.sin(t*2.4)));col2.visible=gfxQ>0;hf.visible=gfxQ>0;if(gfxQ>0)rs(t,-1);}];
+    }else if(lv===10){   /* Ilahi: halo emas + kipas sinar tipis di belakang + kilau emas naik */
+      const halo=mk(T.deco,G.tor,BM(0xffe066),0,3.15,0,.75,.75,.75);halo.rotation.x=Math.PI/2;
+      const rg=grp(T.deco,0,1.2,1.35),mat=bmT(0xffe066,.55),rays=[];
+      for(let k=0;k<7;k++){const ang=(k-3)*.32,g2=grp(rg,0,0,0);g2.rotation.z=ang;mk(g2,G.box,mat,0,1.3,0,.04,2.6,.02);rays.push(g2);}
+      flat(0xffe066,.5,2);
+      const rs=risers(hf,12,[0xffe066,0xffffff,0xffc94a],.8,3.6,.26,.05);
+      T.fxs=[(dt,t)=>{halo.position.y=3.15+Math.sin(t*1.6)*.06;mat.opacity=.4+.2*Math.sin(t*2.2);rg.rotation.z=Math.sin(t*.6)*.06;hf.visible=gfxQ>0;if(gfxQ>0)rs(t,1);}];
+    }else{   /* Prismatic: cincin pelangi di atas + cincin lantai berwarna + 3 diamond prisma mengorbit */
+      const rb=mk(T.deco,G.tor,new THREE.MeshBasicMaterial({color:0xff66cc}),0,2.9,0,.8,.8,.8);rb.rotation.x=Math.PI/2;
+      const fr=flat(0xff66cc,.7,2.1);
+      const ds=[0,1,2].map(()=>mk(T.deco,G.dia,new THREE.MeshBasicMaterial({color:0xffffff}),0,1.5,0,.11,.32,.11));
+      const rs=risers(hf,8,[0xff66cc,0x66ccff,0xffee66,0x99ff99],.9,3.2,.22,.045);
+      T.fxs=[(dt,t)=>{rb.material.color.setHSL((t*.15)%1,.85,.62);fr.material.color.setHSL((t*.15+.3)%1,.85,.62);fr.rotation.z+=dt*.4;
+        ds.forEach((m,i)=>{const a=t*.9+i*TAU/3;m.position.set(Math.cos(a)*1.5,1.5+Math.sin(t*1.6+i)*.15,Math.sin(a)*1.7);m.rotation.y=t*1.5;m.material.color.setHSL((t*.15+i/3)%1,.9,.65);});hf.visible=gfxQ>0;if(gfxQ>0)rs(t,1);}];
+    }
+    T.zeus=false;
+    setText(T.tierS,'+'+fmt(R.r)+'/d',hex(col));
+    return;
+  }
+  if(lv===12||lv===14||lv===15){   /* OG, Monster & Petir: ringkas & satu warna (1 cincin + rel samping + cahaya tipis), tanpa piringan campuran */
     [-.8,.8].forEach(s=>mk(T.deco,G.box,BM(col),s,.33,0,.05,.05,2.7));
     const r1=mk(T.deco,G.tor,BM(col),0,2.5,0,.8,.8,.8);r1.rotation.x=Math.PI/2;
     mk(T.deco,G.cyl,new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:.16,depthWrite:false}),0,2.2,0,1.5,4.4,1.5);
@@ -1254,13 +1294,8 @@ function applyTreadVis(T,lv){
     setText(T.tierS,'+'+fmt(R.r)+'/d',hex(col));
     return;
   }
-  if(lv===6){   /* Jiwa Roh: api ungu + tengkorak roh + rune spiral, mirip referensi */
+  if(lv===6){   /* Jiwa Roh: minimal — hanya deretan duri ungu di bawah (menghadap ke bawah) */
     for(let k=0;k<10;k++){const a=k/10*TAU,rad=1.05;mk(T.deco,G.cone,BM(k%2?0x9a4dff:0xc9a0ff),Math.cos(a)*rad,.5+(k%2)*.15,Math.sin(a)*rad*1.7,.08,.5+(k%2)*.2,.08).rotation.x=Math.PI;}
-    const r1=mk(T.deco,G.tor,BM(0xc9a0ff),0,2.5,0,.75,.75,.75);r1.rotation.x=Math.PI/2;
-    const r2=mk(T.deco,G.tor,BM(0x9a4dff),0,2.5,0,.5,.5,.5);r2.rotation.x=Math.PI/2;
-    const sk=grp(T.deco,.85,2.2,-.4);mk(sk,G.sph,M(0xe8e0f5),0,0,0,.22);
-    [-1,1].forEach(sd=>mk(sk,G.sph,BM(0x9a4dff),sd*.08,.02,.18,.045));
-    mk(T.orbit,G.sph,BM(0xc9a0ff),0,3.4,0,.22);
     T.zeus=false;
     setText(T.tierS,'+'+fmt(R.r)+'/d',hex(col));
     return;
