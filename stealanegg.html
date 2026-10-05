@@ -485,7 +485,7 @@ const SP=[
   {n:'Elang Petir',ic:'⚡🦅',t:12,w:3,lo:5e12,hi:1e13,kg:[8,20],kind:0,S:1.15,col:{a:0xfff6c9,b:0xffe066,c:0x7ef9ff},opt:{},good:1}
  ],
  [ /* Neraka */
-  {n:'Anjing Neraka',ic:'🐕',t:5,w:35,lo:1e12,hi:5e12,kg:[80,160],kind:3,S:1.4,col:{a:0x2a1414,b:0xd62a1a},opt:{ears:1,horns:1,leg:.6,bulk:1.2}},
+  {n:'Anjing Neraka',ic:'🐕',t:5,w:35,lo:1e12,hi:5e12,kg:[80,160],kind:19,S:1.45,col:{a:0x2a1414,b:0xd62a1a},opt:{}},
   {n:'Buaya Lava',ic:'🐊',t:6,w:30,lo:5e12,hi:2e13,kg:[400,900],kind:3,S:1.5,col:{a:0x7a2a1a,b:0xff8a2a},opt:{spikes:1,leg:.3,bulk:1.1,splay:1}},
   {n:'Iblis Kecil',ic:'👹',t:8,w:15,lo:2e13,hi:1e14,kg:[60,120],kind:3,S:1.5,col:{a:0x9e1c1c,b:0xffb23a},opt:{horns:1,spikes:1,leg:.6}},
   {n:'Naga Api',ic:'🐉',t:10,w:15,lo:1e14,hi:5e14,kg:[3000,9000],kind:17,S:1.6,col:{a:0xb01e1e,b:0xff9a3a,c:0x5a1010},opt:{fire:1}},
@@ -1599,6 +1599,47 @@ function buildCreature(kind,S,col,opt){
       mk(tg,G.cone,FL(k%3===0?0xff4a1a:(k%3===1?0xff8a1a:0xffc83a)),0,0,-L/2,.11,L,.09).rotation.x=-Math.PI/2;c.ptail.push({g:tg,k,t});}
     [-1,1].forEach(sd=>{const l=leg(sd*.18,1.2,0,BR,1.2,.05,true);for(let k=-1;k<=1;k++)mk(l,G.cone,WC,k*.06,-1.2,.2,.025,.12,.025).rotation.x=Math.PI/2;});
     c.tail=grp(body,0,0,-.5);
+  }else if(kind===19){ /* Anjing Neraka: serigala vulkanik hitam berlapis baja, retakan lava, surai & ekor api, rantai, duri, taring */
+    const DK=M(0x1d1411),DK2=M(0x2c1c15),RK=M(0x3d2a1e),CH=M(0x6a6470);
+    const LV=BM(0xff6a1a),LV2=BM(0xffc83a),FR=c1=>new THREE.MeshBasicMaterial({color:c1,transparent:true,opacity:.9,depthWrite:false,blending:THREE.AdditiveBlending});
+    const FL1=FR(0xff4a1a),FL2=FR(0xffa81a),FL3=FR(0xffe066);
+    c.bodyY=1.15;c.dropY=.5;c.top=2.7;body.position.y=c.bodyY;c.monsterEyes=true;c.flames=[];
+    const flame=(par,mat,x,y,z,r,h,rx,rz)=>{const f=mk(par,G.cone,mat,x,y,z,r,h,r*.8);f.rotation.x=rx||0;f.rotation.z=rz||0;c.flames.push({m:f,sy:h,ph:c.flames.length*.9});return f;};
+    mk(body,G.sph,DK,0,.06,.55,.56,.56,.62);mk(body,G.sph,DK2,0,0,-.05,.5,.48,.66);mk(body,G.sph,DK,0,-.02,-.66,.52,.5,.56);
+    [-1,1].forEach(sd=>{
+      [[.5,.12,.4,.6,.34],[.52,-.06,-.05,-.7,.4],[.5,.14,-.55,.9,.3],[.46,-.2,.75,.25,.28],[.54,.05,.1,1.2,.22]].forEach(q=>{const k=mk(body,G.box,LV,sd*q[0],q[1],q[2],.025,q[4],.05);k.rotation.z=sd*q[3];k.rotation.x=sd*.2;});
+      const sh=mk(body,G.box,RK,sd*.52,.38,.6,.2,.34,.5);sh.rotation.z=-sd*.3;
+      for(let k=0;k<3;k++)mk(body,G.cone,DK,sd*(.64+k*.03),.55+k*.08,.7-k*.2,.07,.34-k*.04,.07).rotation.z=-sd*(.9+k*.1);
+      for(let k=0;k<3;k++)mk(body,G.cone,DK,sd*(.5+k*.02),.28+k*.1,-.5-k*.22,.065,.3,.065).rotation.z=-sd*(.7+k*.1);
+    });
+    for(let k=0;k<8;k++){const z=.85-k*.24;mk(body,G.cone,DK,0,.52+(k<3?k*.03:0)-k*.015,z,.07,.36-(k%2)*.06,.07).rotation.x=-.25;}
+    for(let k=0;k<8;k++)flame(body,k%3===0?FL3:(k%2?FL2:FL1),0,.6+(k<4?.06:0),.95-k*.24,.09,.42+(k%3)*.1,-.45,0);
+    for(let i=0;i<14;i++){const u=i/13,a=Math.PI*(.12+.76*u),x=-Math.cos(a)*.52*1.02,y=.3-Math.sin(a)*.5;const lk=mk(body,G.tor,CH,x,y,.86+Math.sin(u*Math.PI)*.16,.07,.07,.07);lk.rotation.y=i%2?Math.PI/2:0;lk.rotation.x=a;}
+    dmd(body,LV,0,-.33,1.04,.1,.17,.06,0,0);dmd(body,LV2,0,-.33,1.07,.05,.09,.04,0,0);
+    const nk=mk(body,G.sph,DK,0,.35,.95,.34,.36,.4);
+    c.head=grp(body,0,.4,1.14);
+    mk(c.head,G.sph,DK,0,0,0,.28,.26,.34);mk(c.head,G.sph,DK2,0,-.06,.34,.16,.13,.27);mk(c.head,G.sph,M(0x0a0808),0,-.02,.6,.045);
+    for(let k=-1;k<=1;k++)mk(c.head,G.cone,CH,k*.07,-.12,.56,.022,.12,.022).rotation.x=Math.PI;
+    c.jaw=grp(c.head,0,-.13,.1);mk(c.jaw,G.box,DK2,0,-.03,.24,.2,.06,.4);mk(c.jaw,G.box,LV,0,.01,.24,.14,.02,.3);
+    for(let k=-2;k<=2;k++)mk(c.jaw,G.cone,CH,k*.045,.04,.4,.02,.1,.02);
+    c.jaw.rotation.x=.22;
+    [-1,1].forEach(sd=>{
+      mk(c.head,G.sph,BM(0xff2a1a),sd*.12,.08,.24,.055);mk(c.head,G.sph,BM(0xffe066),sd*.12,.08,.275,.025);
+      const br=mk(c.head,G.box,DK,sd*.12,.16,.22,.17,.04,.08);br.rotation.z=-sd*.4;
+      mk(c.head,G.cone,DK,sd*.15,.3,-.12,.07,.3,.05).rotation.z=sd*.25;
+      const hn=mk(c.head,G.cone,DK2,sd*.2,.42,-.04,.055,.55,.055);hn.rotation.z=-sd*.4;mk(c.head,G.cone,LV,sd*.3,.65,-.04,.035,.2,.035).rotation.z=-sd*.7;
+      flame(c.head,FL2,sd*.12,.34,-.2,.07,.4,-.5,-sd*.3);
+    });
+    for(let k=-2;k<=2;k++)flame(c.head,k%2?FL1:FL3,k*.07,.3,-.22-Math.abs(k)*.03,.07,.42+(2-Math.abs(k))*.1,-.55,-k*.15);
+    [[-.32,.6],[.32,.6],[-.34,-.62],[.34,-.62]].forEach((q,i)=>{
+      const l=leg(q[0],1.15,q[1],DK,1.15,i<2?.12:.16,true);
+      mk(l,G.cyl,RK,0,-.92,0,i<2?.17:.2,.2,i<2?.17:.2);for(let k=0;k<3;k++)mk(l,G.cone,DK,Math.cos(k*2.1)*.2,-.92,Math.sin(k*2.1)*.2,.045,.16,.045).rotation.z=Math.cos(k*2.1)*1.2;
+      for(let k=-1;k<=1;k++)mk(l,G.cone,LV,k*.055,-1.13,.24,.03,.14,.03).rotation.x=Math.PI/2;
+      mk(l,G.box,LV,0,-.5,.11,.025,.3,.02);
+    });
+    c.tseg=[];let par=grp(body,0,.05,-.95);c.tail=par;
+    for(let i=0;i<5;i++){const sg=grp(par,0,0,i?-.36:0),wd=.22-i*.028;mk(sg,G.cone,i%2?DK:DK2,0,0,-.2,wd,.42,wd).rotation.x=-Math.PI/2;sg.rotation.x=i?.28:.15;mk(sg,G.cone,DK,0,wd*.9,-.15,.04,.14,.04).rotation.x=-.3;c.tseg.push(sg);par=sg;}
+    {const tf=grp(par,0,0,-.35);for(let j=-3;j<=3;j++){const g2=grp(tf,0,0,0);g2.rotation.y=j*.25;const m=mk(g2,G.cone,j%2?FL1:(Math.abs(j)===3?FL2:FL3),0,.05,-.3,.1,.8-Math.abs(j)*.1,.08);m.rotation.x=-Math.PI/2.4;c.flames.push({m,sy:.8-Math.abs(j)*.1,ph:j});}}
   }else if(kind===4){ /* naga */
     const WG=M(col.c||0x5a1010,{side:THREE.DoubleSide});
     c.bodyY=1.2;c.dropY=.55;c.top=2.4;body.position.y=c.bodyY;
@@ -1723,6 +1764,9 @@ function poseCreature(c,t,dt){
       if(c.arms)c.arms.forEach((a,i)=>{a.rotation.x=Math.sin(ph+(i?0:Math.PI))*.55*run-atk*1.7+s*.35;a.rotation.z=(i?-1:1)*(.08+mad*.25+atk*.3);});break;
     case 12:c.head.rotation.x=.55*s-atk*.5+bow*.8;
       if(c.tails9)c.tails9.forEach(o=>{o.g.rotation.x=o.elev*(1-s*.7)+Math.sin(t*1.6+o.k*.7)*.08*(1-s*.6)+Math.sin(ph*.8+o.k)*.05*run;o.g.rotation.y=o.yaw*(1-s*.25)+Math.sin(t*1.1+o.k*.9)*.05;});break;
+    case 19:c.head.rotation.x=.38*s-atk*.35+bow*.6;if(c.jaw)c.jaw.rotation.x=.18+.1*Math.sin(t*2)*(1-s)+atk*.45+mad*.2-s*.18;
+      if(c.tseg)c.tseg.forEach((g,i)=>{g.rotation.y=Math.sin(t*1.7-i*.6)*.2*(1-s*.6)+Math.sin(ph-i*.5)*.14*run;});
+      if(c.flames)c.flames.forEach(f=>{f.m.scale.y=f.sy*(1+.2*Math.sin(t*9+f.ph))*(1-s*.5);});break;
     case 13:c.head.rotation.x=.5*s-atk*.5+bow*.8;c.body.position.y+=run*Math.abs(Math.sin(ph))*.22;c.tail.rotation.y=Math.sin(ph*.5)*.2*run;break;
     case 14:c.head.rotation.x=.45*s-atk*.4+bow*.7+Math.sin(t*.9)*.04*(1-s);c.tail.rotation.y=Math.sin(ph)*.3*run;break;
     case 15:c.head.rotation.x=.3*s-atk*.35+bow*.6;c.body.rotation.x+=.06;
@@ -1760,6 +1804,9 @@ function buildLite(s,mut){   /* versi ringan: siluet tiap spesies tetap dikenali
     case 14:mk(g,G.sph,A,0,1.3,0,.42,.4,.85);mk(g,G.cyl,A,0,1.9,.9,.17,.95,.17);mk(g,G.sph,A,0,2.4,1.15,.2,.21,.3);[-1,1].forEach(sd=>{mk(g,G.cone,BM(0x7ef9ff),sd*.1,2.9,1.1,.03,.8,.03);mk(g,G.cyl,A,sd*.22,.65,.6,.07,1.3,.07);mk(g,G.cyl,A,sd*.22,.65,-.6,.07,1.3,.07);});break;
     case 15:mk(g,G.box,M(0x3b4470),0,1.9,0,1.15,1.25,.75);mk(g,G.box,M(0x3b4470),0,3.0,.05,.58,.52,.52);dmd(g,BM(0x8fe9ff),0,2,.42,.3,.46,.16);[-1,1].forEach(sd=>{mk(g,G.box,M(0x2c3358),sd*.95,1.2,0,.4,1.4,.42);mk(g,G.box,M(0x3b4470),sd*.4,.55,0,.52,1.1,.52);});break;
     case 16:mk(g,G.sph,A,0,1.5,0,.14,.14,.5);[-1,1].forEach(sd=>{const w=mk(g,G.dia,M(s.col.b||0xff7ae0),sd*.6,1.5,.15,.6,.02,.7);w.rotation.y=-sd*.35;mk(g,G.dia,M(s.col.c||0x7ef9ff),sd*.4,1.5,-.2,.4,.02,.5);});break;
+    case 19:mk(g,G.sph,M(0x1d1411),0,1.2,.4,.52,.5,1.1);mk(g,G.sph,M(0x1d1411),0,1.7,1.5,.3,.28,.36);
+      [-1,1].forEach(sd=>{mk(g,G.cyl,M(0x1d1411),sd*.33,.58,.65,.12,1.15,.12);mk(g,G.cyl,M(0x1d1411),sd*.34,.58,-.62,.15,1.15,.15);mk(g,G.cone,BM(0xff6a1a),sd*.3,2.05,1.1,.06,.4,.06);});
+      for(let k=0;k<5;k++){const t=(k-2)/2,tt=mk(g,G.cone,BM(k%2?0xffc83a:0xff4a1a),t*.2,1.3,-1.4,.1,1.4,.09);tt.rotation.x=-Math.PI/2.2;tt.rotation.y=t*.3;}break;
     case 17:{const F=!!(s.opt&&s.opt.fire),BD=M(F?0xb8281a:0xe3ecf9),BL=M(F?0xf0d8b0:0xc6d6ec),C1=BM(F?0xffc83a:0x6fd8ff),C2=BM(F?0xff6a1a:0xb58cff);
       mk(g,G.sph,BD,0,1.1,0,.5,.46,.95);mk(g,G.sph,BD,0,2.4,1.3,.2,.18,.32);mk(g,G.cyl,BD,0,1.8,1.1,.2,1.3,.2);
       [-1,1].forEach(sd=>{const w=mk(g,G.dia,C1,sd*1.5,1.8,-.1,1.4,.02,.9);w.rotation.z=sd*.3;mk(g,G.cyl,BD,sd*.4,.5,.6,.14,1,.14);mk(g,G.cyl,BD,sd*.4,.5,-.6,.16,1,.16);});
