@@ -1128,6 +1128,16 @@ function applyTreadVis(T,lv){
     setText(T.tierS,'+'+fmt(R.r)+'/d',hex(col));
     return;
   }
+  if(lv===13){   /* GOOD: minimal — 1 halo kuning + 2 simbol petir kecil + sedikit percikan (kilat asli tetap muncul) */
+    [-.8,.8].forEach(sd=>mk(T.deco,G.box,BM(col),sd,.33,0,.05,.05,2.7));
+    const halo=mk(T.deco,G.tor,BM(col),0,2.8,0,.72,.72,.72);halo.rotation.x=Math.PI/2;
+    const bolts=[-1.35,1.35].map(x=>{const g=grp(T.deco,x,1.7,0);[[.08,.36,-.4],[0,0,.5],[.06,-.38,-.4]].forEach(q=>{const b=mk(g,G.box,BM(0xfff44d),q[0],q[1],0,.07,.46,.05);b.rotation.z=q[2];});return g;});
+    const hf=grp(T.deco,0,0,0),rs=risers(hf,8,[0xfff44d,0xffffff],.8,3.2,.3,.045);
+    T.fxs=[(dt,t)=>{halo.position.y=2.8+Math.sin(t*1.8)*.05;bolts.forEach((g,i)=>{const k=1+.1*Math.sin(t*3+i*2);g.scale.setScalar(k);});hf.visible=gfxQ>0;if(gfxQ>0)rs(t,1);}];
+    T.zeus=true;
+    setText(T.tierS,'+'+fmt(R.r)+'/d',hex(col));
+    return;
+  }
   if(lv===12||lv===14||lv===15){   /* OG, Monster & Petir: ringkas & satu warna (1 cincin + rel samping + cahaya tipis), tanpa piringan campuran */
     [-.8,.8].forEach(s=>mk(T.deco,G.box,BM(col),s,.33,0,.05,.05,2.7));
     const r1=mk(T.deco,G.tor,BM(col),0,2.5,0,.8,.8,.8);r1.rotation.x=Math.PI/2;
