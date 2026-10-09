@@ -103,6 +103,20 @@ main{max-width:1100px;margin:0 auto;padding:16px 14px 40px;position:relative}
 .hero h1{position:relative;z-index:1;margin:0;font-family:var(--font-d);font-weight:800;font-size:clamp(20px,5vw,30px);line-height:1.2}
 .hero p{position:relative;z-index:1;margin:0;color:#c7cdf5;max-width:42ch;font-size:14px;line-height:1.5}
 .hero .btn{position:relative;z-index:1;width:auto;align-self:flex-start;padding:0 22px;margin-top:10px}
+/* ---------- Teman (status online/offline) ---------- */
+.fRow{display:flex;gap:14px;overflow-x:auto;padding:4px 2px 10px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.fRow::-webkit-scrollbar{display:none}
+.fr{flex:none;width:84px;display:flex;flex-direction:column;align-items:center;gap:4px;background:none;border:0;padding:0;color:inherit;cursor:pointer;font:inherit}
+.fc{position:relative;width:72px;height:72px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--font-d);font-weight:900;font-size:30px;color:#04101c;border:3px solid #3a3a48}
+.fr:not(.on):not(.pl) .fc{filter:grayscale(.85) brightness(.65)}
+.fr.on .fc{border-color:var(--ok)}.fr.pl .fc{border-color:var(--cy)}
+.fc i{position:absolute;right:0;bottom:0;width:16px;height:16px;border-radius:50%;background:#666;border:3px solid var(--bg)}
+.fr.on .fc i{background:var(--ok)}.fr.pl .fc i{background:var(--cy)}
+.fn{max-width:84px;font-size:12.5px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fs{max-width:84px;font-size:11px;color:var(--mute);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fr.on .fs{color:var(--ok)}.fr.pl .fs{color:var(--cy)}
+.fc.add{background:#ffffff10;color:var(--ink);border:2px dashed var(--line);font-size:34px;font-weight:400;filter:none!important}
+.fEmpty{flex:none;align-self:center;max-width:180px;color:var(--mute);font-size:12.5px;line-height:1.4}
 
 .sec{display:flex;align-items:center;gap:10px;margin:28px 0 14px;flex-wrap:wrap}
 .sec h2{margin:0;font-family:var(--font-d);font-weight:800;font-size:18px;letter-spacing:.02em}
@@ -235,13 +249,9 @@ footer{color:var(--mute2);font-size:12px;text-align:center;padding:14px 0 30px}
   </aside>
 
   <main id="home">
-    <section class="hero">
-      <div class="bh" aria-hidden="true"></div>
-      <small>BERANDA</small>
-      <h1 id="hello">Halo!</h1>
-      <p>Pilih game, ajak teman, dan mulai bermain. Progres tiap game tersimpan di akunmu.</p>
-      <button class="btn" id="heroPlay"> MAIN</button>
-      <button class="btn ghost" id="heroAvatar" style="margin-top:10px">🎨 Kostumisasi Avatar</button>
+    <section class="friends">
+      <div class="sec" style="margin-top:6px"><h2>👥 Teman</h2></div>
+      <div class="fRow" id="fRow"></div>
     </section>
 
     <div class="sec" id="gamesTop">
@@ -434,7 +444,11 @@ function launch(id){
   const g=GAMES.find(x=>x.id===id);if(!g||!USER)return;
   try{localStorage.setItem(LS_RECENT,id);}catch(e){}
   bumpPlays(id);
-  location.href=g.file+'?u='+encodeURIComponent(USER);
+  const url=g.file+'?u='+encodeURIComponent(USER),d=getDB();
+  if(!d){location.href=url;return;}
+  launching=true;
+  try{d.ref('nexoria/presence/'+USER.toLowerCase()).onDisconnect().cancel();}catch(e){}
+  Promise.race([setPres(id,0),new Promise(r=>setTimeout(r,700))]).then(()=>{location.href=url;});
 }
 
 /* ---------- tampilan ---------- */
@@ -442,15 +456,12 @@ function setUserUI(){
   const ini=(USER[0]||'N').toUpperCase();
   ['avaTop','avaSide'].forEach(i=>$(i).textContent=ini);
   $('nameTop').textContent=USER;$('nameSide').textContent=USER;
-  $('hello').textContent='Halo, '+USER+'!';
 }
 function showApp(){
   $('splash').hidden=true;$('app').hidden=false;
-  setUserUI();renderGames($('search').value);watchCoins();watchHero();
+  setUserUI();renderGames($('search').value);watchCoins();watchHero();watchFriends();
   let rec='curitelur';try{rec=localStorage.getItem(LS_RECENT)||'curitelur';}catch(e){}
   const g=GAMES.find(x=>x.id===rec)||GAMES[1];
-  $('heroPlay').textContent='▶ MAIN '+g.name.toUpperCase();
-  $('heroPlay').dataset.id=g.id;
   closeDrawer();window.scrollTo(0,0);
 }
 function showSplash(){
@@ -472,7 +483,6 @@ $('navLogout').addEventListener('click',()=>{
   try{localStorage.removeItem(LS_USER);}catch(e){}
   USER='';showSplash();
 });
-$('heroPlay').addEventListener('click',()=>launch($('heroPlay').dataset.id||'curitelur'));
 $('search').addEventListener('input',e=>renderGames(e.target.value));
 $('filAll').addEventListener('click',()=>{FILTER='all';$('filAll').classList.add('on');$('filFav').classList.remove('on');renderGames($('search').value);});
 $('filFav').addEventListener('click',()=>{FILTER='fav';$('filFav').classList.add('on');$('filAll').classList.remove('on');renderGames($('search').value);});
@@ -816,7 +826,7 @@ function claimGift(){
 $('navShop').addEventListener('click',()=>{closeDrawer();openShop();});
 $('navGift').addEventListener('click',()=>{closeDrawer();openGift();});
 /* ---------- REDEEM CODE: tiap kode hanya 1× per akun ---------- */
-const CODES={'NEXO2026':5000,'TAHERSAE':5000,'NEXTUPTD':5000,'NEXO1002':10000,'JUMAT02':5000,'FAISXSAE':5000,'NARUTOUP':5000};
+const CODES={'NEXO2026':5000,'TAHERSAE':5000,'NEXTUPTD':5000};
 function openRedeem(){
   openMdl('🎟️ Redeem Code',body=>{
     body.innerHTML='<input id="rdIn" class="field-in" maxlength="24" placeholder="Masukkan kode" autocomplete="off" autocapitalize="characters" spellcheck="false" style="width:100%;height:46px;border-radius:12px;border:1px solid var(--line);background:#ffffff0a;color:var(--ink);padding:0 14px;font:700 16px var(--font-b);letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px">'
@@ -839,7 +849,76 @@ function redeemCode(){
 }
 $('navRedeem').addEventListener('click',()=>{closeDrawer();openRedeem();});
 $('navAvatar').addEventListener('click',()=>{closeDrawer();openAvatar();});
-$('heroAvatar').addEventListener('click',openAvatar);
+
+/* ---------- TEMAN: online/offline + sedang main apa ---------- */
+const FR={},FP={},FRW={};let srvOff=0,fReady=false,launching=false;
+const PRES_TTL=75000,PRES_TTL_NOHB=600000;   /* game dengan heartbeat: 75 dtk; game tanpa heartbeat: 10 menit sejak diluncurkan */
+const gName=id=>{const g=GAMES.find(x=>x.id===id);return id==='curitelur'?'Mencuri telur':g?'Bermain '+g.name:'Online';};
+const fHue=n=>{let x=0;for(const c of String(n))x=(x*31+c.charCodeAt(0))%360;return x;};
+function fStat(k){
+  const p=FP[k];if(!p||!p.ts)return{s:0,t:'Offline'};
+  const age=Date.now()+srvOff-p.ts;
+  if(age>(p.hb?PRES_TTL:PRES_TTL_NOHB))return{s:0,t:'Offline'};
+  return p.g?{s:2,t:gName(p.g)}:{s:1,t:'Online'};
+}
+function renderFriends(){
+  const box=$('fRow');if(!box)return;
+  const arr=Object.keys(FR).map(k=>({k,n:FR[k],st:fStat(k)})).sort((a,b)=>b.st.s-a.st.s||a.n.localeCompare(b.n));
+  box.innerHTML=arr.map(f=>{const x=fHue(f.n),cl=f.st.s===2?'pl':f.st.s===1?'on':'';
+    return '<button class="fr '+cl+'" data-k="'+esc(f.k)+'"><div class="fc" style="background:linear-gradient(135deg,hsl('+x+' 80% 62%),hsl('+((x+60)%360)+' 80% 52%))">'+esc((f.n[0]||'?').toUpperCase())+'<i></i></div><div class="fn">'+esc(f.n)+'</div><div class="fs">'+esc(f.st.t)+'</div></button>';}).join('')
+    +'<button class="fr" id="fAdd" aria-label="Tambah teman"><div class="fc add">+</div><div class="fn">Tambah</div><div class="fs">teman</div></button>'
+    +(arr.length?'':'<div class="fEmpty">Belum ada teman. Ketuk + lalu masukkan username.</div>');
+  box.querySelectorAll('.fr[data-k]').forEach(b=>b.onclick=()=>friendInfo(b.dataset.k));
+  $('fAdd').onclick=addFriendUI;
+}
+function setPres(g,hb){
+  const d=getDB();if(!d||!USER)return Promise.resolve();
+  return d.ref('nexoria/presence/'+USER.toLowerCase()).set({n:USER,g:g||'',hb:hb?1:0,ts:firebase.database.ServerValue.TIMESTAMP}).catch(()=>{});
+}
+function startPresence(){
+  const d=getDB();if(!d||!USER)return;
+  const r=d.ref('nexoria/presence/'+USER.toLowerCase());
+  const beat=()=>{if(document.hidden||launching)return;try{r.onDisconnect().remove();}catch(e){}setPres('',1);};
+  beat();setInterval(beat,30000);
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden)beat();});
+}
+function watchFriends(){
+  const d=getDB();if(!d||!USER||fReady)return;fReady=true;
+  renderFriends();
+  d.ref('.info/serverTimeOffset').on('value',s=>{srvOff=+s.val()||0;});
+  const fref=d.ref('nexoria/users/'+USER.toLowerCase()+'/friends');
+  fref.on('child_added',sn=>{const k=sn.key;FR[k]=String(sn.val()||k);const r=d.ref('nexoria/presence/'+k);FRW[k]=r;r.on('value',s=>{FP[k]=s.val();renderFriends();});renderFriends();});
+  fref.on('child_removed',sn=>{const k=sn.key;if(FRW[k]){FRW[k].off();delete FRW[k];}delete FR[k];delete FP[k];renderFriends();});
+  setInterval(renderFriends,20000);
+  startPresence();
+}
+function addFriendUI(){
+  modal('<h3>👥 Tambah Teman</h3><p>Masukkan username temanmu.</p><input id="fIn" class="search" style="width:100%;margin-bottom:12px" placeholder="Username" maxlength="16" autocomplete="off" autocapitalize="off"><div class="row"><button class="btn ghost" id="fNo">Batal</button><button class="btn" id="fOk">Tambah</button></div>',c=>{
+    c.querySelector('#fNo').onclick=closeModal;
+    const ok=c.querySelector('#fOk');
+    ok.onclick=()=>{
+      const v=c.querySelector('#fIn').value.trim(),k=v.toLowerCase(),d=getDB();
+      if(!valid(v)){status('Username tidak valid','err');return;}
+      if(k===USER.toLowerCase()){status('Itu akunmu sendiri','err');return;}
+      if(FR[k]){status('Sudah jadi temanmu','err');return;}
+      if(!d){status('Belum terhubung ke server','err');return;}
+      ok.disabled=true;
+      withTimeout(d.ref('nexoria/users/'+k+'/name').once('value'),8000).then(s=>{
+        if(!s.exists()){status('Username tidak ditemukan','err');ok.disabled=false;return;}
+        const nm=String(s.val()||v);
+        return d.ref('nexoria/users/'+USER.toLowerCase()+'/friends/'+k).set(nm).then(()=>{status('✅ '+nm+' ditambahkan','ok');closeModal();});
+      }).catch(()=>{status('Gagal menambah teman','err');ok.disabled=false;});
+    };
+    setTimeout(()=>{try{c.querySelector('#fIn').focus();}catch(e){}},60);
+  });
+}
+function friendInfo(k){
+  const n=FR[k];if(!n)return;const st=fStat(k);
+  modal('<h3>'+esc(n)+'</h3><p>'+(st.s?'🟢 ':'⚫ ')+esc(st.t)+'</p><div class="row"><button class="btn ghost" id="fDel">Hapus teman</button><button class="btn" id="fOk2">Tutup</button></div>',c=>{
+    c.querySelector('#fOk2').onclick=closeModal;
+    c.querySelector('#fDel').onclick=()=>{const d=getDB();if(d)d.ref('nexoria/users/'+USER.toLowerCase()+'/friends/'+k).remove().catch(()=>{});closeModal();};
+  });
+}
 
 /* ---------- mulai: akun terdaftar langsung ke beranda ---------- */
 (function init(){
