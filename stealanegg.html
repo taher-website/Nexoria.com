@@ -258,6 +258,7 @@ body.hudEdit #acts .act,body.hudEdit #bTread,body.hudEdit #bSteal,body.hudEdit #
 <div class="modal" id="setM"><div class="box">
   <div class="hd"><b>⚙️ Pengaturan</b><span></span><button class="x" id="setX">✖</button></div>
   <div class="gfxRow"><b>🎨 Grafik</b><div class="seg" id="gfxSeg"><button data-q="0">Rendah</button><button data-q="1">Sedang</button><button data-q="2">Tinggi</button><button data-q="3">Ultra</button></div></div>
+  <label class="swRow"><b>🧊 Grafik Smooth <small style="font-weight:600;opacity:.7">(untuk HP lemot)</small></b><input type="checkbox" id="swSmooth"><span class="sw"></span></label>
   <div class="gfxRow"><b>🎞️ FPS</b><div class="seg" id="fpsSeg"><button data-f="20">20</button><button data-f="30">30</button><button data-f="60">60</button><button data-f="120">120</button><button data-f="200">200</button></div></div>
   <div class="gfxRow"><b>Render <span id="rsV">100</span>%</b><input type="range" id="rsR" min="1" max="100" step="1" value="100"></div>
   <div class="gfxRow"><b>👁️ Jarak pandang <span id="dpV">100</span></b><input type="range" id="dpR" min="1" max="100" step="1" value="100"></div>
@@ -401,10 +402,10 @@ const saveAdm=()=>{try{localStorage.setItem(ADM_KEY,JSON.stringify({ht:hideTitle
 const guardOff=()=>IS_CREATOR&&!guardOn;
 /* pengaturan pemain: sembunyikan pet (hewan di kandang) supaya tidak lag */
 let hideMyPets=false,hideOtherPets=false;
-let gfxQ=1,renderPct=100,fpsCap=60,distPct=100,sensPct=100,musOn=true,musVol=60,hudCfg={};   /* hudCfg: posisi/ukuran tiap elemen HUD {id:{x,y,s}} */   /* fpsCap 20/30/60/120; distPct 1-100 jarak pandang */   /* grafik: 0 Rendah, 1 Sedang (standar), 2 Tinggi; render 1-100 (% resolusi) */
+let smoothG=false,gfxQ=1,renderPct=100,fpsCap=60,distPct=100,sensPct=100,musOn=true,musVol=60,hudCfg={};   /* hudCfg: posisi/ukuran tiap elemen HUD {id:{x,y,s}} */   /* fpsCap 20/30/60/120; distPct 1-100 jarak pandang */   /* grafik: 0 Rendah, 1 Sedang (standar), 2 Tinggi; render 1-100 (% resolusi) */
 const SET_KEY='curitelur_set_'+KEY;
-try{const a=JSON.parse(localStorage.getItem(SET_KEY)||'{}');hideMyPets=a.hm===1;hideOtherPets=a.ho===1;if(a.gq===0||a.gq===1||a.gq===2||a.gq===3)gfxQ=a.gq;if(+a.rs>=1&&+a.rs<=100)renderPct=Math.round(+a.rs);if([20,30,60,120,200].indexOf(+a.fp)>=0)fpsCap=+a.fp;if(+a.dp>=1&&+a.dp<=100)distPct=Math.round(+a.dp);if(+a.sn>=20&&+a.sn<=300)sensPct=Math.round(+a.sn);if(a.mu===0)musOn=false;if(+a.mv>=0&&+a.mv<=100&&a.mv!==undefined)musVol=Math.round(+a.mv);if(a.hud&&typeof a.hud==='object')for(const k in a.hud){const c=a.hud[k];if(c&&isFinite(+c.x)&&isFinite(+c.y))hudCfg[k]={x:Math.round(+c.x),y:Math.round(+c.y),s:Math.min(2,Math.max(.5,+c.s||1))};}}catch(e){}
-const saveSet=()=>{try{localStorage.setItem(SET_KEY,JSON.stringify({hm:hideMyPets?1:0,ho:hideOtherPets?1:0,gq:gfxQ,rs:renderPct,fp:fpsCap,dp:distPct,sn:sensPct,mu:musOn?1:0,mv:musVol,hud:hudCfg}));}catch(e){}};
+try{const a=JSON.parse(localStorage.getItem(SET_KEY)||'{}');hideMyPets=a.hm===1;hideOtherPets=a.ho===1;smoothG=a.sm===1;if(a.gq===0||a.gq===1||a.gq===2||a.gq===3)gfxQ=a.gq;if(+a.rs>=1&&+a.rs<=100)renderPct=Math.round(+a.rs);if([20,30,60,120,200].indexOf(+a.fp)>=0)fpsCap=+a.fp;if(+a.dp>=1&&+a.dp<=100)distPct=Math.round(+a.dp);if(+a.sn>=20&&+a.sn<=300)sensPct=Math.round(+a.sn);if(a.mu===0)musOn=false;if(+a.mv>=0&&+a.mv<=100&&a.mv!==undefined)musVol=Math.round(+a.mv);if(a.hud&&typeof a.hud==='object')for(const k in a.hud){const c=a.hud[k];if(c&&isFinite(+c.x)&&isFinite(+c.y))hudCfg[k]={x:Math.round(+c.x),y:Math.round(+c.y),s:Math.min(2,Math.max(.5,+c.s||1))};}}catch(e){}
+const saveSet=()=>{try{localStorage.setItem(SET_KEY,JSON.stringify({hm:hideMyPets?1:0,ho:hideOtherPets?1:0,sm:smoothG?1:0,gq:gfxQ,rs:renderPct,fp:fpsCap,dp:distPct,sn:sensPct,mu:musOn?1:0,mv:musVol,hud:hudCfg}));}catch(e){}};
 const distK=()=>.1+.9*(distPct-1)/99;   /* 100 = jarak standar; 1 = 10% */
 const gfxBase=()=>{const d=window.devicePixelRatio||1;return gfxQ===0?Math.min(d,1):gfxQ===3?Math.min(Math.max(d*1.8,2),3):gfxQ===2?Math.min(Math.max(d*1.4,1.6),2.6):Math.min(d,1.6);};
 
@@ -888,36 +889,15 @@ function groundTex(base,cols,rep){
   const t=new THREE.CanvasTexture(cv);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(rep[0],rep[1]);return t;
 }
 const groundMeshes=[];
-/* tembok = balok rumput 1×1 bertumpuk (tekstur piksel ala Minecraft, hijau), tinggi & tebal */
-let _gbTex=null;const _gbMats={};
-function grassBlockTex(){
-  if(_gbTex)return _gbTex;
-  const N=16,cv=document.createElement('canvas');cv.width=cv.height=N;const cx=cv.getContext('2d'),im=cx.createImageData(N,N),d=im.data;
-  const P=[[79,143,47],[92,158,54],[74,138,44],[102,173,62],[63,122,38],[88,150,50],[70,130,41]];
-  let sd=7;const rn=()=>{sd=(sd*16807)%2147483647;return sd/2147483647;};
-  for(let y=0;y<N;y++)for(let x=0;x<N;x++){
-    let c=P[Math.floor(rn()*P.length)].slice();
-    if(y===0)c=[c[0]*1.18,c[1]*1.2,c[2]*1.12];          /* bibir atas tiap balok lebih terang */
-    if(y===N-1||x===0)c=[c[0]*.62,c[1]*.66,c[2]*.6];     /* garis sambungan antar balok */
-    if(y===N-2||x===N-1)c=[c[0]*.82,c[1]*.85,c[2]*.8];
-    if(rn()<.06)c=[c[0]*.78,c[1]*.82,c[2]*.75];
-    const i=(y*N+x)*4;d[i]=Math.min(255,c[0]);d[i+1]=Math.min(255,c[1]);d[i+2]=Math.min(255,c[2]);d[i+3]=255;
-  }
-  cx.putImageData(im,0,0);
-  const t=new THREE.CanvasTexture(cv);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.magFilter=THREE.NearestFilter;t.minFilter=THREE.NearestMipmapLinearFilter;t.anisotropy=4;
-  return _gbTex=t;
-}
-function grassFace(rx,ry){
-  rx=Math.max(1,Math.round(rx));ry=Math.max(1,Math.round(ry));const k=rx+'x'+ry;
-  if(_gbMats[k])return _gbMats[k];
-  const t=grassBlockTex().clone();t.needsUpdate=true;t.repeat.set(rx,ry);
-  return _gbMats[k]=new THREE.MeshLambertMaterial({map:t});
-}
-function grassWall(x,y,z,w,h,d){
-  const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),[grassFace(d,h),grassFace(d,h),grassFace(w,d),grassFace(w,d),grassFace(w,h),grassFace(w,h)]);
+/* tembok = balok polos satu warna (tanpa tekstur → ringan, tidak burik/berkedip); warna mengikuti wilayah */
+const _wallMats={};
+function grassWall(x,y,z,w,h,d,col){
+  col=col||0x5b9a3a;
+  const mt=_wallMats[col]||(_wallMats[col]=new THREE.MeshLambertMaterial({color:col}));
+  const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mt);
   m.position.set(x,y,z);if(gfxQ===3){m.castShadow=true;m.receiveShadow=true;}scene.add(m);return m;
 }
-function groundMat(base,cols,rep){const tx=groundTex(base,cols,rep);return gfxQ===3?new THREE.MeshStandardMaterial({map:tx,bumpMap:tx,bumpScale:2.2,roughness:.96,metalness:0}):new THREE.MeshLambertMaterial({map:tx});}
+function groundMat(base,cols,rep){if(smoothG)return new THREE.MeshBasicMaterial({color:base});const tx=groundTex(base,cols,rep);return gfxQ===3?new THREE.MeshStandardMaterial({map:tx,bumpMap:tx,bumpScale:2.2,roughness:.96,metalness:0}):new THREE.MeshLambertMaterial({map:tx});}
 function addGround(x,z,w,h,base,cols,rep,y){
   const m=new THREE.Mesh(G.plane,groundMat(base,cols,rep));
   m.rotation.x=-Math.PI/2;m.scale.set(w,h,1);m.position.set(x,y||0,z);if(gfxQ===3)m.receiveShadow=true;scene.add(m);groundMeshes.push({m,base,cols,rep});return m;
@@ -958,12 +938,13 @@ function stageWorld(){
   REG.forEach((R,i)=>{
     const z0=R.bnd0;
     const wh=7+i*1.1;   // tembok tiap wilayah tinggi & tebal (balok rumput), makin ke ujung makin tinggi
-    grassWall(-16.1,wh/2,R.cz,2.2,wh,R.depth);grassWall(16.1,wh/2,R.cz,2.2,wh,R.depth);
+    grassWall(-16.1,wh/2,R.cz,2.2,wh,R.depth,R.wall);grassWall(16.1,wh/2,R.cz,2.2,wh,R.depth,R.wall);
     const sg=textSprite(R.n.toUpperCase(),{w:1024,h:256,fs:104,sw:12,color:regCol(R),stroke:regStroke(R),depth:false});
     sg.position.set(0,6.5,z0-1.5);scene.add(sg);
   });
   grassWall(0,4.5,WORLD_END-1,35,9,2);
   if(KON_I>=0)konWall=grassWall(0,4.5,REGB[KON_I]-1,35,9,2);
+  const _d0=scene.children.length;
   disc(0,-30,3,new THREE.MeshLambertMaterial({color:0x3aa0ff,transparent:true,opacity:.88}));
   disc(0,-30,3.4,M(0x8a6a3b),.03);
   disc(0,-50,4.2,new THREE.MeshLambertMaterial({color:0x2a8cf0,transparent:true,opacity:.9}));
@@ -1014,8 +995,14 @@ function stageWorld(){
     scene.children.forEach(o=>{if(o!==konWall&&(o.isMesh||o.isSprite||o.isPoints||o.isGroup)&&o.position.z<lim)konHide.push(o);});
     applyKonoha();
   }
+  decoList=scene.children.slice(_d0).filter(o=>o.isMesh||o.isSprite||o.isPoints||o.isGroup);
+  decoList.forEach(o=>{o.userData.deco=1;});
+  applyDeco();
 }
-function applyKonoha(){konHide.forEach(o=>{o.visible=konohaOn;});if(konWall)konWall.visible=!konohaOn;}
+/* Grafik Smooth: semua dekorasi wilayah (pohon, kaktus, batu, kristal, kolam, dll) disembunyikan */
+let decoList=[];
+function applyDeco(){decoList.forEach(o=>{o.visible=!smoothG;});applyKonoha();}
+function applyKonoha(){konHide.forEach(o=>{o.visible=konohaOn&&!(smoothG&&o.userData.deco);});if(konWall)konWall.visible=!konohaOn;}
 
 /* ===== zona aman: gerbang, toko, 4 kolom pemain (3 kandang + treadmill) ===== */
 let gateDoor,gateG=.02,gateTarget=.02;
@@ -1440,8 +1427,8 @@ function applyTreadVis(T,lv){
 }
 function stageSafe(){
   const wood=M(0x8b5a2b),wood2=M(0xa8743a);
-  grassWall(0,2.25,31,60,4.5,2);grassWall(-29,2.25,5,2,4.5,52);grassWall(29,2.25,5,2,4.5,52);
-  grassWall(-17.5,1.7,GATEZ-1,25,3.4,2);grassWall(17.5,1.7,GATEZ-1,25,3.4,2);   /* tembok balok rumput di sekeliling zona aman */
+  grassWall(0,1.7,30.3,58.6,3.4,.6);grassWall(-28.3,1.7,5,.6,3.4,52);grassWall(28.3,1.7,5,.6,3.4,52);   /* tembok zona aman: tipis, tinggi sama semua sisi */
+  grassWall(-17.5,1.7,GATEZ-.3,25,3.4,.6);grassWall(17.5,1.7,GATEZ-.3,25,3.4,.6);   /* tembok balok rumput di sekeliling zona aman */
   [-5.2,5.2].forEach(x=>mk(scene,G.box,wood2,x,2.6,GATEZ,.7,5.2,.7));
   mk(scene,G.box,wood2,0,5.2,GATEZ,11.2,.6,.7);
   const zs=textSprite('🛡️ ZONA AMAN',{w:768,h:192,fs:96,sw:7.5,color:'#aef6ff'});zs.position.set(0,8.6,GATEZ);scene.add(zs);
@@ -3520,6 +3507,10 @@ $('hudMinus').addEventListener('click',()=>hudScale(-.1));$('hudPlus').addEventL
 $('hudReset').addEventListener('click',()=>{HUD_ITEMS.forEach(h=>{const e=hudEl(h[0]);if(e){e.style.translate='';e.style.scale='';}});hudCfg={};saveSet();hudCloudSave();});
 $('hudDone').addEventListener('click',()=>{hudStop();hudCloudSave();});
 hudApplyAll();
+function applySmooth(){
+  applyDeco();
+  groundMeshes.forEach(q=>{const om=q.m.material;q.m.material=groundMat(q.base,q.cols,q.rep);if(om){if(om.map)om.map.dispose();om.dispose();}});
+}
 function applyGfx(){renderer.setPixelRatio(Math.max(.25,gfxBase()*renderPct/100));resize();}
 function applyDist(){camera.far=Math.max(25,250*distK());camera.updateProjectionMatrix();if(skyDome)skyDome.scale.setScalar(Math.min(1,camera.far*.9/200));}
 function syncGfxUI(){document.querySelectorAll('#gfxSeg button').forEach(b=>b.classList.toggle('on',+b.dataset.q===gfxQ));$('rsR').value=renderPct;$('rsV').textContent=renderPct;document.querySelectorAll('#fpsSeg button').forEach(b=>b.classList.toggle('on',+b.dataset.f===fpsCap));$('dpR').value=distPct;$('dpV').textContent=distPct;$('snR').value=sensPct;$('snV').textContent=sensPct;$('mvR').value=musVol;$('mvV').textContent=musVol;}
@@ -3534,7 +3525,7 @@ $('snR').addEventListener('change',saveSet);
 $('mvR').addEventListener('input',e=>{musVol=Math.max(0,Math.min(100,Math.round(+e.target.value)));$('mvV').textContent=musVol;});
 $('mvR').addEventListener('change',saveSet);
 syncGfxUI();
-[['swMusic',()=>musOn,v=>{musOn=v;}],['swMyPets',()=>hideMyPets,v=>{hideMyPets=v;}],['swAllPets',()=>hideOtherPets,v=>{hideOtherPets=v;}]].forEach(([id,get,set])=>{
+[['swSmooth',()=>smoothG,v=>{smoothG=v;applySmooth();toast(v?'🧊 Grafik Smooth AKTIF — objek hilang, warna wilayah polos':'Grafik Smooth mati',2500);}],['swMusic',()=>musOn,v=>{musOn=v;}],['swMyPets',()=>hideMyPets,v=>{hideMyPets=v;}],['swAllPets',()=>hideOtherPets,v=>{hideOtherPets=v;}]].forEach(([id,get,set])=>{
   const el=$(id);if(!el)return;el.checked=get();
   el.addEventListener('change',()=>{set(el.checked);saveSet();});
 });
@@ -4443,6 +4434,14 @@ async function claimSlot(prefRoom,prefSlot){
   for(let r=1;r<=12;r++)for(let i=0;i<4;i++){if(await tryClaim(r,i)){room=r;mySlot=i;return true;}}
   return false;
 }
+/* status teman di beranda Nexoria: online + sedang main Curi Telur (heartbeat tiap 30 dtk) */
+function startGamePresence(){
+  try{
+    const r=db.ref('nexoria/presence/'+KEY);
+    const beat=()=>{if(!db||!connected||document.hidden)return;try{r.onDisconnect().remove();}catch(e){}r.set({n:NAME,g:'curitelur',hb:1,ts:firebase.database.ServerValue.TIMESTAMP}).catch(()=>{});};
+    beat();setInterval(beat,30000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)beat();});
+  }catch(e){}
+}
 function setupPresence(){
   const rp=RP();
   ['slots/'+mySlot,'p/'+mySlot,'pen/'+mySlot,'hit/'+mySlot].forEach(x=>db.ref(rp+x).onDisconnect().remove());
@@ -4538,7 +4537,7 @@ async function connectFlow(){
   watchSession();watchKick();watchGlobalSpawn();watchAnnounce();watchBoard();watchAbuse();watchKonoha();watchMyAvatar();watchAWild();watchUpdateEvent();watchNSE();
   $('ltxt').textContent='Masuk ke server…';
   if(!await claimSlot(room,mySlot))throw new Error('Semua server penuh. Coba lagi nanti.');
-  setupPresence();
+  setupPresence();startGamePresence();
   buildLocal();resetNests();listenRoom();
   $('ltxt').textContent='Memuat data akunmu…';
   const r=await fetchOnce(UP(),10000);
