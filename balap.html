@@ -15,7 +15,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#0b0f1a;font-family:sy
 #pad{right:calc(20px + env(safe-area-inset-right,0px));bottom:calc(20px + env(safe-area-inset-bottom,0px));display:none;gap:14px;align-items:flex-end}
 .r{border:0;border-radius:50%;color:#fff;font-weight:900;touch-action:manipulation}
 #rev{width:60px;height:60px;background:#3b3b4f;font-size:17px}#gas{width:96px;height:96px;background:#e8452c;font-size:18px}#brk{width:68px;height:68px;background:#2a3b6b;font-size:13px}
-#act{right:calc(24px + env(safe-area-inset-right,0px));bottom:calc(140px + env(safe-area-inset-bottom,0px));display:none;background:#2fbf71}
+#act{right:calc(110px + env(safe-area-inset-right,0px));bottom:calc(140px + env(safe-area-inset-bottom,0px));display:none;background:#2fbf71}
 #spd{left:50%;transform:translateX(-50%);bottom:calc(14px + env(safe-area-inset-bottom,0px));text-align:center;font-weight:900;text-shadow:0 2px 6px #000;display:none}
 #spd b{font-size:38px}#rb{width:160px;height:8px;background:#0008;border-radius:5px;margin:4px auto 0;overflow:hidden}#rb i{display:block;height:100%;width:0;background:linear-gradient(90deg,#4dff88,#ffd23a,#ff4a3a)}
 #big{left:50%;top:32%;transform:translate(-50%,-50%);font-size:72px;font-weight:900;text-shadow:0 4px 14px #000;display:none;text-align:center;white-space:pre-line}
@@ -30,15 +30,17 @@ html,body{margin:0;height:100%;overflow:hidden;background:#0b0f1a;font-family:sy
 #gauge{width:130px;height:130px}#gauge circle{fill:none;stroke-width:10;stroke-linecap:round}
 #lb{width:min(70vw,360px);height:10px;border-radius:6px;background:#ffffff1c;overflow:hidden}#lb i{display:block;height:100%;width:0;background:linear-gradient(90deg,#ff7a1a,#ffd23a);transition:width .15s}
 #lt{font-size:14px;color:#aab}#lgo{font-size:17px;font-weight:900;color:#ffd23a;display:none;animation:pl 1s infinite}@keyframes pl{50%{opacity:.35}}
+#gear{right:calc(40px + env(safe-area-inset-right,0px));bottom:calc(126px + env(safe-area-inset-bottom,0px));display:none;flex-direction:column;gap:8px}.gb{width:54px;height:54px;border-radius:14px;border:0;background:#000b;color:#fff;font-weight:900;font-size:22px;touch-action:manipulation}#bCall{left:calc(10px + env(safe-area-inset-left,0px));top:calc(62px + env(safe-area-inset-top,0px));display:none}
 #lap{left:50%;transform:translateX(-50%);top:10px;font-weight:900;font-size:18px;text-shadow:0 2px 6px #000;display:none}#onl{font-size:14px}
 </style></head><body>
 <canvas id="cv"></canvas>
 <button class="b h" id="home" aria-label="Ke NEXO">🏠</button>
 <div class="h" id="top"><span id="onl"></span><span id="coins">💰 0</span><button class="b" id="bSet">⚙️</button></div>
 <div class="h" id="lap"></div><div class="h" id="toast"></div><div class="h" id="big"></div>
-<div class="h" id="spd"><b id="kmh">0</b> km/h<div id="rb"><i></i></div></div>
+<div class="h" id="spd"><b id="kmh">0</b> km/h <span id="gtx" style="font-size:20px;color:#ffd23a"></span><div id="rb"><i></i></div></div>
 <div class="h" id="joy"><div id="knob"></div></div>
 <div class="h" id="pad"><button class="r" id="rev">R</button><button class="r" id="brk">REM</button><button class="r" id="gas">GAS</button></div>
+<div class="h" id="gear"><button class="gb" id="gup">▲</button><button class="gb" id="gdn">▼</button></div><button class="b h" id="bCall">📞 Motor</button>
 <button class="b h" id="act"></button>
 <div class="h" id="dlg"></div><div id="fade"></div>
 <div id="rot">📱↻<br>Putar HP ke mode landscape (miring)</div>
@@ -54,7 +56,7 @@ const $=id=>document.getElementById(id),clamp=(v,a,b)=>Math.max(a,Math.min(b,v))
 if(typeof THREE==='undefined'){$('lt').textContent='Gagal memuat three.js — periksa koneksi internet.';return;}
 let USER='Pemain';try{USER=(new URLSearchParams(location.search).get('u')||localStorage.getItem('nexoria_user')||'Pemain').trim();}catch(e){}
 const KEY='balap_'+USER.toLowerCase();
-let S={mt:[0,0,0],bl:[0,0],ts:0,coins:500,own:[1,0,0],bike:0,eng:[0,0,0],exh:[0,0,0],wl:[0,0,0],house:[0,0,0,0,0],best:0,gfx:1,snd:1,x:0,z:-6,h:0,bp:null};
+let S={uc:0,mt:[0,0,0],bl:[0,0],ts:0,coins:500,own:[1,0,0],bike:0,eng:[0,0,0],exh:[0,0,0],wl:[0,0,0],house:[0,0,0,0,0],best:0,gfx:1,snd:1,x:0,z:-6,h:0,bp:null};
 try{Object.assign(S,JSON.parse(localStorage.getItem(KEY)||'{}'));}catch(e){}
 const FBC={apiKey:"AIzaSyBp4P3nv9w1xYEH_9wNPxq2E-no292ugDM",authDomain:"server-taher.firebaseapp.com",databaseURL:"https://server-taher-default-rtdb.firebaseio.com",projectId:"server-taher",storageBucket:"server-taher.firebasestorage.app",messagingSenderId:"79596136495",appId:"1:79596136495:web:93779c3b3983376253beda"};
 const SK=USER.toLowerCase().replace(/[.#$\[\]\/]/g,'_');let db=null,cpT=0;
@@ -72,7 +74,7 @@ let look='0.a.a.a.a.a.a';try{const l=localStorage.getItem('nx_av_'+USER.toLowerC
 const LP=look.split('.'),SKN=['#f2c9a0','#e0ac82','#c68642','#8d5524','#ffe0cf','#b98a6a'];
 const CH={a:'#3b2a1a',b:'#39f4ff',n1:'#ffd54a',n2:'#c8ccd4',n3:'#c0392b',hnar:'#ffd54a',hsas:'#1a1a22',g:'#1a1a22'},CT={a:'#3d8bff',b:'#8b5cf6',n1:'#ff8a3a',n2:'#15151c',n3:'#5a1414',hnar:'#ff6a1a',hsas:'#8f939c',g:'#141416'},CP={a:'#34405c',b:'#1a1a2e',n1:'#ff6a1a',n2:'#1c2038',n3:'#5a1a1a',hnar:'#ff6a1a',hsas:'#1c2038',g:'#141416'},CS={a:'#222222',b:'#39f4ff',n1:'#151520',n2:'#b02020',n3:'#ffd54a',hnar:'#151520',hsas:'#151520',g:'#1a1a22'};
 const AVC={skin:SKN[+LP[0]]||SKN[0],hair:CH[LP[1]]||'#2a2a30',shirt:CT[LP[3]]||'#3d8bff',pants:CP[LP[5]]||'#34405c',shoe:CS[LP[6]]||'#222222'};
-const BK=[{n:'Mio Drag Biru',p:9,v:40,price:0,st:0x7a3cff,rim:0x2a52ff,w:0},{n:'Vario Ungu Racing',p:11,v:44,price:800,st:0xd4a017,rim:0xd4a017,w:.25},{n:'Beat Gold Monster',p:13.5,v:48,price:2500,st:0xff7a1a,rim:0xe03a3a,w:.5}];
+const BK=[{n:'RX KING',gear:1,p:9,v:40,price:0,st:0x7a3cff,rim:0x2a52ff,w:0},{n:'Vario Ungu Racing',p:11,v:44,price:800,st:0xd4a017,rim:0xd4a017,w:.25},{n:'Beat Gold Monster',p:13.5,v:48,price:2500,st:0xff7a1a,rim:0xe03a3a,w:.5}];
 const QN=['Sedang','Tinggi','Ultra'];
 const avc=l=>{const q=(/^\d\.[a-z0-9]+(\.[a-z0-9]+){5}$/.test(l||'')?l:'0.a.a.a.a.a.a').split('.');return{skin:SKN[+q[0]]||SKN[0],hair:CH[q[1]]||'#2a2a30',shirt:CT[q[3]]||'#3d8bff',pants:CP[q[5]]||'#34405c',shoe:CS[q[6]]||'#222222'};};
 /* sirkuit: lintasan stadion (2 lurus + 2 tikungan). cx,cz = pusat; L = panjang lurus; R = radius tikungan (garis tengah); W = lebar */
@@ -110,7 +112,8 @@ const DES=[
 {frm:0x16161b,body:0x0b0b0e,st2:0x2a52ff,eng:0xc9ced6,eng2:0xa8aeb8,cvt:0x1a1a1f,hd:0xb0b4ba,ex:0xd8dce2,rings:[0x1a1a1f],shk:0xd4a017,spr:0xd4a017,fk:0xc8ccd2,cal:0xe03030,tp:0xb8bcc4},
 {frm:0x101014,body:0x0c0c10,st2:0x3a4fff,eng:0xb8bec8,eng2:0x8d949e,cvt:0x15151a,hd:0x6f7f9a,ex:0x8d9aa8,rings:[0x3a4fff,0x8a3cff,0xd8a030],shk:0xd4a017,spr:0xe03030,fk:0xd4a017,cal:0xd4a017,tp:0x3a4fff},
 {frm:0x1a1a1f,body:0x15151a,st2:0xe03a3a,eng:0xaab0ba,eng2:0x80858e,cvt:0x22222a,hd:0x50545c,ex:0x2a2a30,rings:[0xff7a1a,0xe03a3a],shk:0xff7a1a,spr:0x15151a,fk:0xff7a1a,cal:0xe03a3a,tp:0xff7a1a}];
-function makeBike(i){const c=BK[i],D=DES[i],g=new THREE.Group();g.rotation.order='YXZ';const body=new THREE.Group();g.add(body);const fr=new THREE.Group();body.add(fr);body.userData.dr=0;
+const mkDrop=(fr,body,rs,fs,swm,fkR,ex)=>d=>{fr.position.y=-d;body.userData.dr=d;const e=d*.8;rs.position.z=-.85-e;swm.forEach(m=>{m.scale.z=(.7+e)/.7;m.position.z=-.58-e/2;});fs.position.z=.33+e;const dz=.23+e,L=Math.hypot(.62,dz);fkR.forEach(f=>{f.scale.y=L/.7;f.rotation.x=-Math.atan2(dz,.62);f.position.set(f.userData.x,-.31,.1+dz/2);});ex.forEach(m=>m.position.z=m.userData.z+e);};
+function makeBike(i){if(i===1)return makeVario(i);const c=BK[i],D=DES[i],g=new THREE.Group();g.rotation.order='YXZ';const body=new THREE.Group();g.add(body);const fr=new THREE.Group();body.add(fr);body.userData.dr=0;
  const B=(w,h,d)=>new THREE.BoxGeometry(w,h,d),Y=(r1,r2,h,n)=>new THREE.CylinderGeometry(r1,r2,h,n||10),add=(geo,col,x,y,z,par)=>{const m=new THREE.Mesh(geo,M(col));m.position.set(x,y,z);m.castShadow=true;(par||fr).add(m);return m;};
  /* rangka underbone (terekspos) + lantai */
  [-.1,.1].forEach(x=>add(B(.045,.05,1.35),D.frm,x,.46,-.18));add(B(.05,.55,.05),D.frm,0,.75,.47).rotation.x=-.25;add(B(.32,.03,.5),D.frm,0,.5,.18);
@@ -122,7 +125,7 @@ function makeBike(i){const c=BK[i],D=DES[i],g=new THREE.Group();g.rotation.order
  add(B(.3,.1,.8),0x0c0c0e,0,.93,-.45);add(B(.26,.15,.42),D.body,0,1.0,-.98).rotation.x=.18;add(B(.18,.07,.05),0xff2020,0,.98,-1.2);
  /* mesin bersirip + cover CVT + swingarm */
  add(B(.28,.26,.36),D.eng,0,.38,-.3);for(let k=0;k<4;k++)add(B(.32,.015,.3),D.eng2,0,.28+k*.045,-.3);add(Y(.14,.14,.07,14),D.cvt,-.17,.38,-.28).rotation.z=Math.PI/2;
- [-.12,.12].forEach(x=>add(B(.035,.05,.7),D.eng,x,.33,-.58));
+ const swm=[-.12,.12].map(x=>add(B(.035,.05,.7),D.eng,x,.33,-.58));
  /* knalpot: header + muffler panjang (cincin warna = titanium bakar) */
  add(Y(.03,.03,.7,8),D.hd,.2,.3,-.35).rotation.x=Math.PI/2;add(Y(.075,.07,.62,12),D.ex,.2,.44,-.98).rotation.x=Math.PI/2-.1;
  D.rings.forEach((col,k)=>{const t=-.2+.1*k;add(Y(.079,.079,.05,12),col,.2,.44+.0998*t,-.98+.995*t).rotation.x=Math.PI/2-.1;});add(Y(.06,.06,.02,12),0x222226,.2,.44-.031,-1.289).rotation.x=Math.PI/2-.1;
@@ -131,11 +134,56 @@ function makeBike(i){const c=BK[i],D=DES[i],g=new THREE.Group();g.rotation.order
  const mkW=(par,x,y,z)=>{const s=new THREE.Group();s.position.set(x,y,z);par.add(s);const t=new THREE.Mesh(new THREE.TorusGeometry(.3,.085,8,18),M(0x0c0c0c)),r=new THREE.Mesh(new THREE.TorusGeometry(.25,.03,6,18),M(c.rim)),h=new THREE.Mesh(Y(.05,.05,.1,8),M(c.rim));t.rotation.y=r.rotation.y=Math.PI/2;h.rotation.z=Math.PI/2;t.castShadow=true;s.add(t,r,h);
   for(let k=0;k<4;k++){const d=new THREE.Mesh(B(.012,.5,.02),M(0xbfc3c8));d.rotation.x=k*Math.PI/4;s.add(d);}return s;};
  const rs=mkW(body,0,.33,-.85),fork=new THREE.Group();fork.position.set(0,.95,.5);body.add(fork);
- [-.1,.1].forEach(x=>{const f=new THREE.Mesh(B(.04,.7,.05),M(D.fk));f.position.set(x,-.32,.1);fork.add(f);});
+ const fkR=[-.1,.1].map(x=>{const f=new THREE.Mesh(B(.04,.7,.05),M(D.fk));f.userData.x=x;fork.add(f);return f;});
  const fs=mkW(fork,0,-.62,.33),hb=new THREE.Mesh(B(.8,.04,.04),M(0xb8bcc4));hb.position.set(0,.1,-.05);fork.add(hb);
  [-.4,.4].forEach(x=>{const gr=new THREE.Mesh(Y(.025,.025,.14,8),M(0x111114));gr.rotation.z=Math.PI/2;gr.position.set(x,.1,-.05);fork.add(gr);});
- const dk=new THREE.Mesh(Y(.17,.17,.012,16),M(D.tp));dk.rotation.z=Math.PI/2;dk.position.set(.085,-.62,.33);fork.add(dk);const cl=new THREE.Mesh(B(.04,.07,.1),M(D.cal));cl.position.set(.1,-.5,.45);fork.add(cl);
- sc.add(g);return {g,body,fork,fs,rs,fr,x:0,z:0,h:0,i,drop:d=>{fr.position.y=-d;body.userData.dr=d;}};}
+ const dk=new THREE.Mesh(Y(.17,.17,.012,16),M(D.tp));dk.rotation.z=Math.PI/2;dk.position.set(.085,0,0);fs.add(dk);const cl=new THREE.Mesh(B(.04,.07,.1),M(D.cal));cl.position.set(.1,-.5,.45);cl.userData.z=.45;fork.add(cl);
+ sc.add(g);const api={g,body,fork,fs,rs,fr,x:0,z:0,h:0,i,drop:mkDrop(fr,body,rs,fs,swm,fkR,[cl])};api.drop(0);return api;}
+/* Honda Vario: matic hitam doff, lampu LED sepasang, decal VARIO merah-putih, cover CVT/mesin, muffler hitam + heat shield, pelek cast 5 spoke, cakram depan, spion, panel speedometer */
+const decalTex={};
+function decal(txt,w,h,col,col2){const k=txt+col;if(!decalTex[k]){const c=document.createElement('canvas');c.width=256;c.height=64;const g=c.getContext('2d');g.font='italic 900 46px sans-serif';g.textAlign='center';g.lineWidth=7;g.strokeStyle=col2;g.strokeText(txt,128,48);g.fillStyle=col;g.fillText(txt,128,48);decalTex[k]=new THREE.CanvasTexture(c);}
+ return new THREE.Mesh(new THREE.PlaneGeometry(w,h),new THREE.MeshBasicMaterial({map:decalTex[k],transparent:true,side:THREE.DoubleSide}));}
+function makeVario(i){const g=new THREE.Group();g.rotation.order='YXZ';const body=new THREE.Group();g.add(body);const fr=new THREE.Group();body.add(fr);body.userData.dr=0;
+ const B=(w,h,d)=>new THREE.BoxGeometry(w,h,d),Y=(a,b,h,n)=>new THREE.CylinderGeometry(a,b,h,n||12),add=(geo,col,x,y,z,par,bas)=>{const m=new THREE.Mesh(geo,bas?new THREE.MeshBasicMaterial({color:col}):M(col));m.position.set(x,y,z);m.castShadow=true;(par||fr).add(m);return m;};
+ const BLK=0x17181c,GL=0x0a0a0d,GR=0x2b2d33,RED=0xc8202a,SIL=0xaeb4bc,PI=Math.PI;
+ /* lantai (aluminium strip) + skirt samping + rangka bawah */
+ add(B(.46,.04,.7),GR,0,.4,.12);[-.25,.25].forEach(x=>{add(B(.05,.16,.74),BLK,x,.5,.12);add(B(.045,.04,.7),SIL,x*.94,.39,.12);});[-.1,.1].forEach(x=>add(B(.045,.05,1.2),GR,x,.42,-.3));
+ /* cowl belakang + ekor + spoiler */
+ add(B(.48,.4,.8),BLK,0,.66,-.55);[-1,1].forEach(sx=>{add(B(.04,.36,.74),GL,sx*.26,.62,-.55).rotation.z=-sx*.06;});add(B(.4,.2,.36),GL,0,.84,-1.0).rotation.x=.15;add(B(.52,.05,.3),BLK,0,.95,-1.1).rotation.x=.12;
+ /* jok: depan sempit, belakang tinggi */
+ add(B(.3,.08,.34),0x0c0c0f,0,.92,-.1);add(B(.36,.1,.6),0x0c0c0f,0,.93,-.62);add(B(.34,.08,.22),0x0c0c0f,0,.99,-.98);
+ /* pegangan belakang */
+ [-.17,.17].forEach(x=>add(Y(.014,.014,.4,6),SIL,x,1.0,-.88).rotation.x=PI/2);add(Y(.014,.014,.34,6),SIL,0,1.0,-1.07).rotation.z=PI/2;
+ /* lampu belakang, sein, plat nomor, logo */
+ add(B(.36,.1,.06),0xd0101c,0,.88,-1.2,fr,1);add(B(.3,.03,.02),0xff8a8a,0,.88,-1.235,fr,1);[-.21,.21].forEach(x=>add(B(.07,.05,.05),0xff9a1a,x,.8,-1.19,fr,1));add(B(.2,.11,.012),0xf2f2f2,0,.72,-1.21);
+ const hn=decal('HONDA',.26,.065,'#dddddd','#000000');hn.position.set(0,.78,-1.215);hn.rotation.y=PI;fr.add(hn);
+ /* decal VARIO + strip merah/putih kedua sisi */
+ [-1,1].forEach(sx=>{const d=decal('VARIO',.5,.12,'#ffffff','#c8202a');d.position.set(sx*.272,.68,-.55);d.rotation.y=sx>0?PI/2:-PI/2;fr.add(d);add(B(.01,.045,.62),RED,sx*.272,.58,-.5).rotation.x=.08;add(B(.01,.015,.62),0xf2f2f2,sx*.274,.54,-.5);});
+ /* mesin + cover CVT (kanan eSP/ kiri CVT) + pijakan penumpang */
+ add(B(.26,.22,.36),GR,0,.36,-.42);add(Y(.17,.17,.07,16),GL,.2,.38,-.5).rotation.z=PI/2;add(Y(.115,.115,.012,16),SIL,.24,.38,-.5).rotation.z=PI/2;add(Y(.17,.17,.07,16),BLK,-.2,.38,-.5).rotation.z=PI/2;[-1,1].forEach(sx=>{add(B(.05,.12,.4),GL,sx*.2,.48,-.4);add(B(.1,.02,.06),SIL,sx*.27,.44,-.55);});
+ /* knalpot: header + muffler hitam + heat shield + ujung */
+ add(Y(.03,.03,.5,8),SIL,.19,.28,-.3).rotation.x=PI/2;add(Y(.09,.08,.62,16),0x1d1e22,.22,.38,-.78).rotation.x=PI/2-.06;add(Y(.095,.095,.3,16),0x8f959d,.225,.43,-.72).rotation.x=PI/2-.06;add(Y(.06,.06,.03,12),0x3a3b40,.22,.39,-1.09).rotation.x=PI/2-.06;
+ /* shock belakang + per */
+ [-.2,.2].forEach(x=>{add(Y(.02,.02,.46,8),0x2a2a30,x,.62,-1.0).rotation.x=.2;add(Y(.034,.034,.26,10),0x1a1a1f,x,.58,-.99).rotation.x=.2;add(Y(.036,.036,.03,10),RED,x,.7,-1.02);});
+ /* leg shield, hidung, lampu LED miring sepasang, intake, sein depan, logo, dagu */
+ add(B(.52,.68,.12),BLK,0,.82,.58).rotation.x=-.32;add(B(.32,.14,.14),GL,0,1.12,.64).rotation.x=-.5;
+ [-1,1].forEach(sx=>{add(B(.2,.085,.05),GL,sx*.14,1.07,.7).rotation.set(-.25,sx*.25,-sx*.3);add(B(.17,.055,.052),0xeaf6ff,sx*.14,1.07,.72,fr,1).rotation.set(-.25,sx*.25,-sx*.3);});
+ add(B(.1,.04,.01),SIL,0,.97,.665).rotation.x=-.32;add(B(.18,.1,.03),GR,0,.86,.68).rotation.x=-.32;[-.25,.25].forEach(x=>add(B(.06,.05,.05),0xff9a1a,x,1.0,.65,fr,1));add(B(.3,.1,.2),BLK,0,.58,.76).rotation.x=.25;
+ /* roda cast 5 spoke */
+ const mkC=(par,x,y,z,drum)=>{const s=new THREE.Group();s.position.set(x,y,z);par.add(s);const t=new THREE.Mesh(new THREE.TorusGeometry(.3,.09,8,20),M(0x0c0c0c)),r=new THREE.Mesh(new THREE.TorusGeometry(.235,.02,6,20),M(SIL)),hb=new THREE.Mesh(Y(.06,.06,.12,10),M(GR));t.rotation.y=r.rotation.y=PI/2;hb.rotation.z=PI/2;t.castShadow=true;s.add(t,r,hb);
+  for(let k=0;k<5;k++){const sp=new THREE.Group();sp.rotation.x=k*2*PI/5;const m=new THREE.Mesh(B(.035,.22,.055),M(0x1a1a1f));m.position.y=.14;sp.add(m);s.add(sp);}
+  if(drum){const d=new THREE.Mesh(Y(.14,.14,.09,16),M(0x222226));d.rotation.z=PI/2;d.position.x=.02;s.add(d);}return s;};
+ /* swingarm, stang & garpu */
+ const swm=[-.12,.12].map(x=>add(B(.035,.05,.7),GR,x,.33,-.58));const rs=mkC(body,0,.33,-.85,1),fork=new THREE.Group();fork.position.set(0,.95,.5);body.add(fork);
+ const fkR=[-.1,.1].map(x=>{const f=new THREE.Mesh(Y(.022,.022,.7,8),M(SIL));f.userData.x=x;fork.add(f);return f;});
+ const fs=mkC(fork,0,-.62,.33);
+ add(B(.46,.14,.24),BLK,0,.12,0,fork);add(B(.2,.07,.12),GL,0,.2,.06,fork).rotation.x=-.3;add(B(.15,.04,.01),0x5cf0a0,0,.225,.115,fork,1).rotation.x=-.3;   /* panel speedometer digital */
+ add(B(.8,.03,.03),SIL,0,.1,-.12,fork);[-1,1].forEach(sx=>{add(Y(.022,.022,.14,8),0x111114,sx*.4,.1,-.12,fork).rotation.z=PI/2;add(B(.09,.01,.015),SIL,sx*.34,.08,0,fork);add(B(.06,.04,.05),GL,sx*.26,.1,-.1,fork);
+  add(Y(.008,.008,.3,6),SIL,sx*.31,.28,-.1,fork).rotation.z=-sx*.25;add(B(.14,.085,.015),0x9fb4c8,sx*.36,.44,-.1,fork).rotation.z=-sx*.25;});
+ /* spakbor depan (menempel ke garpu) + cakram + kaliper */
+ const fe=new THREE.Mesh(new THREE.TorusGeometry(.43,.05,6,16,PI),M(BLK));fe.scale.z=2.2;fe.rotation.y=PI/2;fe.position.set(0,-.62,.33);fe.userData.z=.33;fork.add(fe);
+ const dk=new THREE.Mesh(Y(.17,.17,.01,18),M(SIL));dk.rotation.z=PI/2;dk.position.set(.085,0,0);fs.add(dk);const cl=new THREE.Mesh(B(.04,.07,.1),M(GR));cl.position.set(.1,-.5,.45);cl.userData.z=.45;fork.add(cl);
+ sc.add(g);const api={g,body,fork,fs,rs,fr,x:0,z:0,h:0,i,drop:mkDrop(fr,body,rs,fs,swm,fkR,[cl,fe])};api.drop(0);return api;}
 const bikes=[];let av=null,HOUSES=[],npc=null,riz=null;
 
 /* ---- stage pembangunan (progres loading nyata) ---- */
@@ -167,7 +215,7 @@ function initAudio(){if(AC){AC.resume&&AC.resume();return;}try{AC=new(window.Aud
 function noise(vol,f){if(!AC||!S.snd)return;const s=AC.createBufferSource(),b=AC.createBiquadFilter(),g=AC.createGain();s.buffer=nb;b.type='bandpass';b.frequency.value=f;g.gain.value=vol;s.connect(b);b.connect(g);g.connect(AC.destination);s.start();}
 
 /* ---- state & input ---- */
-const P={x:S.x,z:S.z,h:S.h,v:0,s:0,look:0,thr:0,rpm:1500,pitch:0,m:-1,pg:0,pthr:0};
+const P={x:S.x,z:S.z,h:S.h,v:0,s:0,look:0,thr:0,rpm:1500,pitch:0,m:-1,pg:0,pthr:0,lg:0,gr:1};
 let jx=0,jy=0,gasB=0,brkB=0,revB=0,beepT=0,hy=0,hv=0,pLock=false,pGas=0,dayT=1.2,T=0,raceSt=0,raceT=0,cnt=0,npcV=0,npcT=0,plDone=0,dlgOpen=false,entered=false,act=null;const key={};
 const vmax=()=>BK[P.m].v*(1+.06*S.exh[P.m]),pwr=()=>BK[P.m].p*(1+.12*S.eng[P.m]);
 const joy=$('joy'),kn=$('knob');let jid=null;
@@ -176,7 +224,8 @@ joy.addEventListener('pointerdown',e=>{jid=e.pointerId;joy.setPointerCapture(jid
 const je=e=>{if(e.pointerId===jid){jid=null;jx=jy=0;kn.style.transform='';}};joy.addEventListener('pointerup',je);joy.addEventListener('pointercancel',je);
 const hold=(id,fn)=>{const b=$(id);b.addEventListener('pointerdown',e=>{b.setPointerCapture(e.pointerId);fn(1);});['pointerup','pointercancel'].forEach(t=>b.addEventListener(t,()=>fn(0)));};
 hold('gas',v=>{gasB=v;});hold('rev',v=>{revB=v;});hold('brk',v=>{if(v&&P.v>8)noise(.25,3500);brkB=v;});
-addEventListener('keydown',e=>{key[e.key.toLowerCase()]=1;if(e.key==='e')doAct();});addEventListener('keyup',e=>{key[e.key.toLowerCase()]=0;});
+addEventListener('keydown',e=>{key[e.key.toLowerCase()]=1;if(e.key==='e')doAct();if(e.key==='x')shift(1);if(e.key==='z')shift(-1);});
+$('gup').addEventListener('pointerdown',()=>shift(1));$('gdn').addEventListener('pointerdown',()=>shift(-1));$('bCall').onclick=()=>callBike();addEventListener('keyup',e=>{key[e.key.toLowerCase()]=0;});
 $('act').onclick=()=>doAct();$('home').onclick=()=>{save();cloudPush(1);location.href='index.html';};
 function doAct(){if(dlgOpen||!act)return;act.f();}
 const dl=$('dlg');
@@ -185,7 +234,7 @@ function goFS(){const e=document.documentElement,rq=e.requestFullscreen||e.webki
 addEventListener('pointerdown',()=>{if(entered&&!document.fullscreenElement&&!document.webkitFullscreenElement)goFS();});
 
 /* ---- aksi ---- */
-function mount(i){const b=bikes[i];P.m=i;S.bike=i;P.x=b.x;P.z=b.z;P.h=b.h;P.v=0;P.s=0;P.rpm=1500;P.pitch=0;b.body.add(av);av.position.set(0,.4-(S.mt[i]||0)*.05,-.45);av.rotation.set(.3,0,0);av.legL.rotation.x=av.legR.rotation.x=-1.3;av.armL.rotation.x=av.armR.rotation.x=-1.1;noise(.2,900);toast('🏍️ '+BK[i].n+' · mesin menyala');}
+function mount(i){const b=bikes[i];P.m=i;S.bike=i;P.x=b.x;P.z=b.z;P.h=b.h;P.v=0;P.s=0;P.rpm=1500;P.pitch=0;P.gr=1;P.lg=0;b.call=0;b.body.add(av);av.position.set(0,.4-(S.mt[i]||0)*.05,-.45);av.rotation.set(.3,0,0);av.legL.rotation.x=av.legR.rotation.x=-1.3;av.armL.rotation.x=av.armR.rotation.x=-1.1;noise(.2,900);toast('🏍️ '+BK[i].n+' · mesin menyala');}
 function dismount(){const b=bikes[P.m];b.x=P.x;b.z=P.z;b.h=P.h;sc.add(av);av.rotation.set(0,P.h,0);av.head.rotation.y=0;P.look=0;P.x=b.x-Math.cos(P.h)*1.1;P.z=b.z+Math.sin(P.h)*1.1;av.legL.rotation.x=av.legR.rotation.x=av.armL.rotation.x=av.armR.rotation.x=0;P.m=-1;P.v=0;b.fork.rotation.y=0;b.body.rotation.x=0;b.body.position.set(0,0,0);hy=0;hv=0;b.g.position.y=0;b.g.rotation.z=0;}
 function startRace(){raceSt=1;cnt=3.4;P.x=-2;P.z=46;P.h=0;P.v=0;P.s=0;npc.g.visible=true;npc.x=2;npc.z=46;npcV=0;npcT=0;plDone=0;npc.g.position.set(2,0,46);npc.g.rotation.y=0;toast('Tahan gas! Geber dulu 😎');}
 function endRace(win,t){raceSt=3;const rw=win?200:40;S.coins+=rw;if(!S.best||t<S.best)S.best=t;save();big((win?'🏆 MENANG! ':'😅 KALAH ')+t.toFixed(2)+'s\n+'+rw+' 💰',4500);setTimeout(()=>{raceSt=0;npc.g.visible=false;},4500);}
@@ -196,7 +245,7 @@ function shop(){const i=S.bike,c=BK[i],mk=(k,n,pr)=>{const lv=S[k][i];if(lv>=pr.
  const bs=[];BK.forEach((b,j)=>{if(!S.own[j])bs.push(['Beli '+b.n+' ('+b.price+' 💰)',()=>{if(S.coins<b.price)return toast('Koin kurang');S.coins-=b.price;S.own[j]=1;S.bike=j;save();shop();}]);});
  dlg('🛒 Toko Suku Cadang · Pak Joko','Koin: 💰 '+S.coins+'<br>Motor aktif: <b>'+c.n+'</b> · Mesin Lv'+S.eng[i]+' · Knalpot Lv'+S.exh[i]+' · Jengat Lv'+(S.wl[i]||0)+'/5 · Mounting Lv'+(S.mt[i]||0)+'/5'+((S.mt[i]||0)>=5?' (mesin nyentuh tanah!)':'')+'<br>Upgrade berlaku untuk motor yang terakhir kamu naiki.',[...[mk('eng','🔧 Mesin',[300,700,1500]),mk('exh','🔊 Knalpot',[250,600,1300]),mk('wl','🤸 Kopling Spontan (jengat & jemping)',[200,450,900,1600,2800]),mk('mt','⬇️ Mounting (makin ceper)',[150,350,700,1300,2200])].filter(Boolean),...bs,['Tutup']]);}
 function settings(){dlg('⚙️ Pengaturan','Rekor drag 200 m: <b>'+(S.best?S.best.toFixed(2)+' dtk':'-')+'</b><br>Rekor sirkuit: <b>'+S.bl.map((v,i)=>(i+1)+': '+(v?v.toFixed(1)+'s':'-')).join(' · ')+'</b><br>Grafik: Sedang = ringan, Tinggi = bayangan, Ultra = bayangan tajam + kota padat (anti-alias aktif setelah buka ulang).',[
- ['Grafik: '+QN[S.gfx],()=>{S.gfx=(S.gfx+1)%3;applyG();settings();}],['Suara: '+(S.snd?'ON':'OFF'),()=>{S.snd=S.snd?0:1;settings();}],['Tutup']]);}
+ ['Grafik: '+QN[S.gfx],()=>{S.gfx=(S.gfx+1)%3;applyG();settings();}],['Kamera: '+(S.uc?'Bebas (Unfollow)':'Ikuti pemain'),()=>{S.uc=S.uc?0:1;ucy=P.h;ucp=.35;toast(S.uc?'Kamera bebas: geser layar untuk memutar, 🔍 untuk zoom':'Kamera mengikuti pemain');settings();}],...(S.uc?[['🔍 Zoom +',()=>{ucd=clamp(ucd-2,3,16);settings();}],['🔎 Zoom −',()=>{ucd=clamp(ucd+2,3,16);settings();}]]:[]),['Suara: '+(S.snd?'ON':'OFF'),()=>{S.snd=S.snd?0:1;settings();}],['Tutup']]);}
 $('bSet').onclick=()=>{if(!dlgOpen)settings();};
 function findAct(){if(raceSt===1||raceSt===2||cr.st===1||cr.st===3)return null;if(cr.st===2)return{l:'✖ Batalkan balapan',f:crCancel};if(bonc)return{l:'⬇️ Turun',f:()=>leaveBonc(0)};
  if(P.m>=0){const ci=CIR.findIndex(c=>Math.abs(P.x-c.cx)<10&&Math.abs(P.z-(c.cz-c.R))<c.W/2+3);if(ci>=0&&P.v<4)return{l:'🏁 Balap '+CIR[ci].laps+' lap · '+CIR[ci].n,f:()=>startCr(ci)};const pn=PED.find(n=>!n.hide&&n.cd<=0&&(n.tp&2)&&Math.hypot(n.x-P.x,n.z-P.z)<4);if(pn&&P.v<4)return{l:'🏁 Ajak balap',f:()=>challenge(pn)};if(P.z>34&&P.z<60&&Math.abs(P.x)<5&&P.v<4)return{l:'🏁 Balap vs Rizal',f:startRace};return P.v<2?{l:'⬇️ Turun',f:dismount}:null;}
@@ -215,12 +264,13 @@ function collide(){const r=P.m>=0?.8:.4;let hit=0;for(const b of A)hit|=push(b,r
 function step(dt){
  const jX=clamp(jx+(key.d||key.arrowright?1:0)-(key.a||key.arrowleft?1:0),-1,1),jY=clamp(jy+(key.s||key.arrowdown?1:0)-(key.w||key.arrowup?1:0),-1,1);
  if(bonc){boncStep();}else if(P.m<0){P.h-=jX*2.4*dt;const sp=-jY*4.6;P.v=sp;P.x+=Math.sin(P.h)*sp*dt;P.z+=Math.cos(P.h)*sp*dt;collide();av.position.set(P.x,0,P.z);av.rotation.y=P.h;const w=Math.sin(T*9)*.8*Math.min(1,Math.abs(sp)/4);av.legL.rotation.x=w;av.legR.rotation.x=-w;av.armL.rotation.x=-w*.7;av.armR.rotation.x=w*.7;}
- else{const b=bikes[P.m],rev=(revB||key.r)?1:0,gas=(gasB||key.w||key.arrowup)?1:0,brk=(brkB||key.s||key.arrowdown)?1:0,vm=vmax(),locked=raceSt===1||cr.st===1;
-  const wl=S.wl[P.m]||0;P.thr+=(gas-P.thr)*Math.min(1,dt*(7+wl*6));
-  if(!locked&&P.thr>.02)P.v+=(pwr()*(1+.1*wl)+wl*3*Math.max(0,1-Math.max(0,P.v)/12))*P.thr*Math.max(0,1-Math.pow(Math.max(0,P.v)/vm,1.6))*dt;
+ else{const b=bikes[P.m],rev=(revB||key.r)?1:0,gas=(gasB||key.w||key.arrowup)?1:0,brk=(brkB||key.s||key.arrowdown)?1:0,vm=vmax(),locked=raceSt===1||cr.st===1,gm=BK[P.m].gear,lim=gm?glim(P.gr,vm):vm,r0=Math.max(0,P.v)/lim;
+  const wl=(gm&&P.gr>1)?0:(S.wl[P.m]||0);P.lg=Math.max(0,P.lg-dt*4.5);P.thr+=(gas-P.thr)*Math.min(1,dt*(7+wl*6));
+  if(!locked&&P.thr>.02)P.v+=(pwr()*(gm?GK[P.gr-1]*(P.gr===1?1:.4+.6*clamp(r0*3,0,1)):1)*(1+.1*wl)+wl*3*Math.max(0,1-Math.max(0,P.v)/12))*P.thr*Math.max(0,1-Math.pow(Math.max(0,P.v)/lim,1.6))*dt;
+  if(gm&&P.v>lim)P.v-=Math.min(P.v-lim,(12+(P.v-lim)*1.2)*dt);
   if(brk)P.v=P.v>0?Math.max(0,P.v-24*dt):Math.min(0,P.v+24*dt);
   if(rev&&!locked&&!gas&&!brk&&P.v<=.4)P.v+=(-3.4-P.v)*Math.min(1,dt*2.5);
-  else if(P.v>0)P.v-=(P.thr<.05?1.4+P.v*.035:.25+P.v*.004)*dt;else if(P.v<0)P.v=Math.min(0,P.v+8*dt);
+  else if(P.v>0)P.v-=(P.thr<.05?1.4+P.v*.035+(gm?(6-P.gr)*.5*r0:0):.25+P.v*.004)*dt;else if(P.v<0)P.v=Math.min(0,P.v+8*dt);
   if(locked)P.v=0;P.v=clamp(P.v,-3.5,vm*1.02);if(!isFinite(P.v))P.v=0;
   const lk=(rev&&!locked&&!gas)?1:0;P.look+=(lk-P.look)*Math.min(1,dt*6);
   if(P.v<-.2){beepT-=dt;if(beepT<=0){beepT=.7;noise(.12,2800);}}
@@ -228,13 +278,14 @@ function step(dt){
   P.x+=Math.sin(P.h)*P.v*dt;P.z+=Math.cos(P.h)*P.v*dt;if(collide()&&Math.abs(P.v)>2){P.v*=.55;noise(.3,500);}
   const vp=Math.max(0,P.v),g=Math.min(4,Math.floor(vp/vm*5)),fr=clamp((vp-g*vm/5)/(vm/5),0,1);let tg;
   if(P.thr>.05)tg=P.v<1.2?1500+P.thr*6700:2600+fr*5200*(.6+.4*P.thr);else tg=P.v<-.2?2300:1500+(vp/vm)*3200+(vp>.5?500:0);
-  P.rpm+=(tg-P.rpm)*Math.min(1,dt*(tg>P.rpm?6+wl*2:2.5));if(g>P.pg&&P.thr>.3)P.rpm-=1400;P.pg=g;P.rpm=clamp(P.rpm,1400,8300);if(!isFinite(P.rpm))P.rpm=1500;if(!isFinite(P.pitch))P.pitch=0;if(!isFinite(P.x)||!isFinite(P.z)){P.x=b.x;P.z=b.z;}
+  if(gm){const rr=clamp(vp/lim,0,1.15);tg=P.thr>.05?(P.v<.6?1500+P.thr*6700:1900+rr*6400):(P.v<-.2?2300:1500+rr*4600);}
+  P.rpm+=(tg-P.rpm)*Math.min(1,dt*(tg>P.rpm?6+wl*2:2.5));if(!gm&&g>P.pg&&P.thr>.3)P.rpm-=1400;P.pg=g;P.rpm=clamp(P.rpm,1400,8300);if(!isFinite(P.rpm))P.rpm=1500;if(!isFinite(P.pitch))P.pitch=0;if(!isFinite(P.x)||!isFinite(P.z)){P.x=b.x;P.z=b.z;}
   if(P.pthr>.7&&P.thr<.25&&P.rpm>5000)noise(.35,1200);P.pthr=P.thr;
   const wmax=Math.min(1.3,BK[P.m].w*(1+S.eng[P.m]*.15)+wl*.26),ww=14+wl*4,wt=wmax*((P.thr>.9&&P.v<ww&&!locked)?1:0)*Math.max(0,1-Math.max(0,P.v)/ww);P.pitch+=(wt-P.pitch)*Math.min(1,dt*(5+wl*2));
   if(wl>=3&&hy===0&&((pLock&&!locked&&gas)||(gas&&!pGas&&P.v<4&&!locked)))hv=3+wl*.6;pLock=locked;pGas=gas;
   if(hv!==0||hy>0){hv-=22*dt;hy+=hv*dt;if(hy<=0){if(hv<-3)noise(.25,220);hy=0;hv=0;}}
-  b.x=P.x;b.z=P.z;b.h=P.h;b.g.position.set(P.x,hy,P.z);b.g.rotation.y=P.h;b.g.rotation.z=P.s*Math.min(1,Math.abs(P.v)/15)*.45;b.body.rotation.x=-P.pitch;b.body.position.y=.85*Math.sin(P.pitch)+.33*(1-Math.cos(P.pitch));b.body.position.z=.85*(1-Math.cos(P.pitch))+.33*Math.sin(P.pitch);
-  b.fork.rotation.y=-P.s*.55;const pd=P.look*Math.sin(T*8)*Math.min(1,Math.abs(P.v)/1.5)*.35;av.head.rotation.y=P.look*2.2;av.rotation.y=P.look*.5;av.rotation.x=.3-P.look*.3-P.pitch*.5;av.legL.rotation.x=-1.3+P.look*.75+pd;av.legR.rotation.x=-1.3+P.look*.75-pd;b.fs.rotation.x+=P.v*dt/.38;b.rs.rotation.x+=P.v*dt/.38;
+  b.x=P.x;b.z=P.z;b.h=P.h;b.g.position.set(P.x,hy,P.z);b.g.rotation.y=P.h;b.g.rotation.z=P.s*Math.min(1,Math.abs(P.v)/15)*.45;b.body.rotation.x=-P.pitch;b.body.position.y=.85*Math.sin(P.pitch)+.33*(1-Math.cos(P.pitch));b.body.position.z=.85*(1-Math.cos(P.pitch))+.33*Math.sin(P.pitch)+P.lg*.12;
+  b.fork.rotation.y=-P.s*.55;const pd=P.look*Math.sin(T*8)*Math.min(1,Math.abs(P.v)/1.5)*.35;av.head.rotation.y=P.look*2.2;av.rotation.y=P.look*.5;av.rotation.x=.3-P.look*.3-P.pitch*.5+P.lg*.4;av.legL.rotation.x=-1.3+P.look*.75+pd;av.legR.rotation.x=-1.3+P.look*.75-pd;b.fs.rotation.x+=P.v*dt/.38;b.rs.rotation.x+=P.v*dt/.38;
   if(raceSt===2){raceT+=dt;npcV+=8.6*Math.max(0,1-Math.pow(npcV/38,1.6))*dt;npc.z+=npcV*dt;npc.g.position.z=npc.z;npc.fs.rotation.x+=npcV*dt/.38;npc.rs.rotation.x+=npcV*dt/.38;if(!npcT&&npc.z>=250)npcT=raceT;if(!plDone&&P.z>=250){plDone=raceT;endRace(!npcT,plDone);}}
   if(cr.st===2)crStep(dt);
  }
@@ -302,7 +353,7 @@ function challenge(n){if(n.cd>0)return toast('Dia masih capek, coba lagi nanti')
 function acceptRace(n){if(cr.st!==0||bonc)return;const mi=P.m>=0?P.m:(S.own[S.bike]?S.bike:0),b=bikes[mi],rs={mi,bx:b.x,bz:b.z,bh:b.h,px:P.x,pz:P.z,ph:P.h,mt:P.m>=0};
  cr={st:3};n.hide=1;n.g.visible=false;if(n.ic)n.ic.visible=false;$('fade').style.opacity=1;
  setTimeout(()=>{if(P.m<0)mount(mi);startCr(0,{lvl:n.lvl,bk:n.bk,co:n.co,rs,n,ch:1});$('fade').style.opacity=0;},800);}
-function npcStep(dt){const hid=raceSt>0||cr.st>0;
+function npcStep(dt){callStep(dt);const hid=raceSt>0||cr.st>0;
  PED.forEach(n=>{const g=n.g;if(n.cd>0)n.cd-=dt;if(n.hide)return;if(n.ic){n.ic.visible=true;n.ic.position.set(n.x,2.3,n.z);}
   if(n.tk>0){n.tk-=dt;g.rotation.y=Math.atan2(P.x-n.x,P.z-n.z);}
   if(n.w>0||n.tk>0){n.w-=dt;const wv=n.wave>0;if(wv)n.wave-=dt;g.armR.rotation.x=wv?-2.5+Math.sin(T*12)*.45:Math.sin(T*1.5)*.05;g.armL.rotation.x=Math.sin(T*1.5+1)*.05;g.legL.rotation.x=g.legR.rotation.x=0;g.position.y=0;if(n.w<=0&&n.tk<=0)pickT(n);return;}
@@ -352,6 +403,19 @@ function rpStep(dt){const now=performance.now();let cnt=1;for(const k in RP){con
  onlN=cnt;}
 function hudX(){const l=$('lap');if(cr.st===1||cr.st===2){l.style.display='block';l.textContent='🏁 LAP '+Math.min(cr.lap+1,CIR[cr.c].laps)+'/'+CIR[cr.c].laps+' · '+(cr.st===2?cr.t.toFixed(1):'0.0')+'s';}else l.style.display='none';$('onl').textContent=db?'👥 '+onlN:'';}
 
+/* ---- gigi manual (RX KING), kamera bebas, panggil motor ---- */
+const GK=[1.5,1.45,1.4,1.35,1.3],glim=(g,vm)=>g===1?15/3.6:vm*[0,.32,.52,.74,1][g-1];
+function shift(d){if(P.m<0||!BK[P.m].gear||dlgOpen)return;const n=clamp(P.gr+d,1,5);if(n===P.gr)return;const vm=vmax();if(d<0&&P.v>glim(n,vm)*1.35)return toast('⚠️ Gigi terlalu rendah, rpm kelewat tinggi!');P.gr=n;P.lg=1;P.rpm=clamp(P.rpm+(d>0?-1800:1500),1400,8300);if(d>0&&P.thr>.3)P.v+=.3;noise(.12,d>0?320:700);}
+let ucy=0,ucp=.35,ucd=7,ucId=null,ucX=0,ucY=0;const cvE=$('cv');
+cvE.addEventListener('pointerdown',e=>{if(!S.uc||dlgOpen||ucId!==null)return;ucId=e.pointerId;ucX=e.clientX;ucY=e.clientY;try{cvE.setPointerCapture(ucId);}catch(x){}});
+cvE.addEventListener('pointermove',e=>{if(e.pointerId!==ucId)return;ucy+=(e.clientX-ucX)*.006;ucp=clamp(ucp+(e.clientY-ucY)*.005,-.1,1.35);ucX=e.clientX;ucY=e.clientY;});
+['pointerup','pointercancel'].forEach(t=>cvE.addEventListener(t,e=>{if(e.pointerId===ucId)ucId=null;}));cvE.addEventListener('wheel',e=>{if(S.uc)ucd=clamp(ucd+e.deltaY*.01,3,16);},{passive:true});
+const freeAt=(x,z)=>{const hit=b=>x>b[0]-1.3&&x<b[1]+1.3&&z>b[2]-1.3&&z<b[3]+1.3;for(const b of A)if(hit(b))return 0;for(const b of HB)if(hit(b))return 0;if(z>34)for(let k=0;k<city.count;k++)if(hit(CITY[k]))return 0;return x>-380&&x<380&&z>-26&&z<325;};
+function callBike(){if(P.m>=0||bonc||cr.st||raceSt)return;const i=S.own[S.bike]?S.bike:0,b=bikes[i];if(b.call)return toast('Motor sedang menuju kamu 🏍️');
+ let sp=null;for(const R_ of [30,22,14])for(let k=0;k<16&&!sp;k++){const a=P.h+Math.PI+k*Math.PI/8,x=P.x+Math.sin(a)*R_,z=P.z+Math.cos(a)*R_;if(!freeAt(x,z))continue;let ok=1;for(let t=2.5;t<R_-2;t+=2.5)if(!freeAt(P.x+(x-P.x)*t/R_,P.z+(z-P.z)*t/R_)){ok=0;break;}if(ok)sp=[x,z];}
+ if(!sp){b.x=P.x-Math.cos(P.h)*2;b.z=P.z+Math.sin(P.h)*2;b.h=P.h;b.g.position.set(b.x,0,b.z);b.g.rotation.y=b.h;toast('🏍️ Motor sudah di sampingmu');return;}
+ b.x=sp[0];b.z=sp[1];b.h=Math.atan2(P.x-b.x,P.z-b.z);b.g.position.set(b.x,0,b.z);b.g.rotation.set(0,b.h,0);b.body.rotation.x=0;b.call=1;noise(.3,800);toast('📞 Motor dipanggil, sebentar lagi sampai…');}
+function callStep(dt){bikes.forEach(b=>{if(!b.call)return;const dx=P.x-b.x,dz=P.z-b.z,d=Math.hypot(dx,dz);if(d<2.4||P.m>=0){b.call=0;return;}const v=clamp(d*1.2,3,16);let a=Math.atan2(dx,dz)-b.h;a=Math.atan2(Math.sin(a),Math.cos(a));b.h+=a*Math.min(1,dt*5);b.x+=Math.sin(b.h)*v*dt;b.z+=Math.cos(b.h)*v*dt;b.g.position.set(b.x,0,b.z);b.g.rotation.y=b.h;b.g.rotation.z=-a*.25;b.fs.rotation.x+=v*dt/.38;b.rs.rotation.x+=v*dt/.38;b.fork.rotation.y=a*.4;if(d<3.6&&!b.hn){b.hn=1;noise(.15,1200);}if(d>=3.6)b.hn=0;});}
 /* ---- loop ---- */
 let acc=0,last=performance.now();
 function loop(now){requestAnimationFrame(loop);const dt=Math.min(.05,(now-last)/1000);last=now;
@@ -359,10 +423,11 @@ function loop(now){requestAnimationFrame(loop);const dt=Math.min(.05,(now-last)/
  const dn=.2+.8*((Math.sin(dayT)+1)/2);sc.background.setRGB(.1+.5*dn,.14+.6*dn,.28+.55*dn);sc.fog.color.copy(sc.background);HL.intensity=.3+.6*dn;sun.intensity=.1+.6*dn;
  sun.target.position.set(P.x,0,P.z);sun.position.set(P.x+40,80,P.z+30);
  HOUSES.forEach(h=>{h.roof.visible=!(Math.abs(P.x-h.hx)<3.4&&Math.abs(P.z-h.hz)<3.4);});
- const d=P.m>=0?6.2+P.v*.05:4.6,hg=P.m>=0?2.5:2.3;cam.position.lerp(new THREE.Vector3(P.x-Math.sin(P.h)*d,hg,P.z-Math.cos(P.h)*d),Math.min(1,dt*6));cam.lookAt(P.x+Math.sin(P.h)*2,1.2,P.z+Math.cos(P.h)*2);
+ const d=P.m>=0?6.2+P.v*.05:4.6,hg=P.m>=0?2.5:2.3;if(S.uc){const cp=Math.cos(ucp);cam.position.lerp(new THREE.Vector3(P.x-Math.sin(ucy)*cp*ucd,Math.max(.5,1.2+Math.sin(ucp)*ucd),P.z-Math.cos(ucy)*cp*ucd),Math.min(1,dt*10));cam.lookAt(P.x,1.2,P.z);}
+ else{cam.position.lerp(new THREE.Vector3(P.x-Math.sin(P.h)*d,hg,P.z-Math.cos(P.h)*d),Math.min(1,dt*6));cam.lookAt(P.x+Math.sin(P.h)*2,1.2,P.z+Math.cos(P.h)*2);}
  const fv=62+P.v*.3;if(Math.abs(cam.fov-fv)>.3){cam.fov=fv;cam.updateProjectionMatrix();}
  audioStep();acc+=dt;if(acc>.12){acc=0;act=dlgOpen?null:findAct();const a=$('act');a.style.display=act?'block':'none';if(act)a.textContent=act.l;
-  $('coins').textContent='💰 '+S.coins;hudX();const m=P.m>=0;$('pad').style.display=m?'flex':'none';$('spd').style.display=m?'block':'none';$('kmh').textContent=(P.v<-.1?'R ':'')+Math.abs(Math.round(P.v*3.6));$('rb').firstChild.style.width=clamp((P.rpm-1400)/6900*100,0,100)+'%';}
+  $('coins').textContent='💰 '+S.coins;hudX();const m=P.m>=0;$('pad').style.display=m?'flex':'none';$('spd').style.display=m?'block':'none';$('kmh').textContent=(P.v<-.1?'R ':'')+Math.abs(Math.round(P.v*3.6));const gb=m&&BK[P.m].gear;$('gtx').textContent=gb?'· G'+P.gr+' (maks '+Math.round(glim(P.gr,vmax())*3.6)+')':'';$('gear').style.display=gb?'flex':'none';$('bCall').style.display=(!m&&!bonc&&cr.st===0&&raceSt===0&&entered)?'block':'none';$('rb').firstChild.style.width=clamp((P.rpm-1400)/6900*100,0,100)+'%';}
  R.render(sc,cam);}
 setInterval(()=>{if(entered&&raceSt===0&&cr.st===0){S.x=P.x;S.z=P.z;S.h=P.h;S.bp=bikes.map(b=>[b.x,b.z,b.h]);save();}},5000);
 addEventListener('pagehide',()=>{S.x=P.x;S.z=P.z;S.h=P.h;S.bp=bikes.map(b=>[b.x,b.z,b.h]);save();cloudPush(1);try{mpR&&mpR.remove();}catch(e){}});
