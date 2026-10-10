@@ -436,7 +436,7 @@ if(typeof THREE==='undefined'){$('ltxt').textContent='Gagal memuat three.js — 
 /* ===== data game ===== */
 const SPEED_MULT=1;                       // ubah untuk mempercepat/menurunkan laju latihan treadmill
 const HT=[60,120,180,240,600,3600];       // 1m 2m 3m 4m 10m 1j
-const PENCAP=[24,36,50,70,100,150],PENCOST=[0,2e4,5e6,5e8,5e10,5e12],BAGMAX=36,FULLDET=32,NIGHT_HATCH=15;   /* malam: telur menetas 15× lebih cepat (otomatis) */
+const PENCAP=[24,36,50,70,100,150,300,500],PENCOST=[0,2e4,5e6,5e8,5e10,5e12,5e14,5e16],BAGMAX=36,FULLDET=32,NIGHT_HATCH=15;   /* malam: telur menetas 15× lebih cepat (otomatis) */
 const MAXPEN=PENCAP[PENCAP.length-1];
 let penLv=0;const penCap=()=>PENCAP[penLv];
 const ILAHI_SURGA=.12;   /* peluang tiap sarang Surga berisi telur Ilahi (10–15%) */
@@ -570,26 +570,26 @@ const KON_I=REG.findIndex(r=>r.n==='Konoha');
 let konohaOn=false,konHide=[],konWall=null;   /* Konoha terkunci sampai event mulai; setelah itu permanen (tersimpan di Firebase) */
 const worldEnd=()=>konohaOn||KON_I<0?WORLD_END:REGB[KON_I];
 const TREAD=[
- {n:'Biasa',r:1,p:0,c:0x8a8f98},{n:'Tidak Biasa',r:2,p:900,c:0x4fc36a},{n:'Langkah',r:5,p:9e4,c:0x3fa9f5},
- {n:'Epik',r:10,p:5e6,c:0xb44cf0},{n:'Legendaris',r:15,p:7e8,c:0xffa826},{n:'Mitik',r:100,p:1e10,c:0xff4f6d},   /* Epik 5M · Legendaris 700M · Mitik 10B */
- {n:'Jiwa Roh',r:300,p:1.35e11,c:0x9a4dff},
- {n:'Rahasia',r:1e4,p:4.5e11,c:0x20e0d0},{n:'Kosmik',r:5e4,p:4.5e12,c:0x6c63ff},{n:'Abadi',r:1e5,p:4.5e13,c:0xf2f2f2},{n:'Ilahi',r:1e6,p:4.5e14,c:0xffe066},
- {n:'Prismatic',r:2e7,p:2.25e16,c:0xff66cc},{n:'OG',r:2e8,p:4.5e17,c:0xff3b1a},
- {n:'GOOD',r:1e10,p:4.5e18,c:0xfff44d},
- {n:'Monster',r:1e18,p:9e19,c:0x8a1cff},
- {n:'Petir',r:1e23,p:9e23,c:0xdff6ff},
- {n:'Roh',r:7e23,p:1.8e43,c:0xb9a6ff},   /* Roh: 700Sp/d */
- {n:'Galaxy',r:9e26,p:1.8e49,c:0x8a3bff},   /* Galaxy: 900Sx/d */
- {n:'Kristal',r:5e27,p:2.7e55,c:0x7ef0ff},    /* 5Dc/d */
- {n:'Samudra',r:2.5e28,p:9e57,c:0x2f8fff},   /* 25Dc/d */
- {n:'Matahari',r:1.2e29,p:2.7e60,c:0xffb52e},  /* 120Dc/d */
- {n:'Waktu',r:6e29,p:9e62,c:0x5cf2c6},       /* 600Dc/d */
-  {n:'Dewa',r:3e30,p:4.5e65,c:0xffe066},        /* 3Dx/d */
- {n:'Badai',r:1.5e31,p:2e67,c:0x6fa8ff},       /* 15Dx/d, 20Dv */
- {n:'Aurora',r:8e31,p:1e69,c:0x6bffb0},        /* 80Dx/d, 1Tv */
- {n:'Naga',r:4e32,p:5e70,c:0xff6a3a},          /* 400Dx/d, 50Tv */
- {n:'Semesta',r:2e33,p:3e71,c:0xc08bff},       /* 2Ud/d, 300Tv */
- {n:'Takdir',r:1e34,p:2e72,c:0xffd94a}         /* 10Ud/d, 2Max */
+ {n:'Biasa',r:1,p:0,c:0x8a8f98},{n:'Tidak Biasa',r:2,p:675,c:0x4fc36a},{n:'Langkah',r:5,p:67500,c:0x3fa9f5},
+ {n:'Epik',r:10,p:3.75e6,c:0xb44cf0},{n:'Legendaris',r:15,p:5.25e8,c:0xffa826},{n:'Mitik',r:100,p:7.5e9,c:0xff4f6d},   /* Epik 5M · Legendaris 700M · Mitik 10B */
+ {n:'Jiwa Roh',r:300,p:1.0125e11,c:0x9a4dff},
+ {n:'Rahasia',r:1e4,p:3.375e11,c:0x20e0d0},{n:'Kosmik',r:5e4,p:3.375e12,c:0x6c63ff},{n:'Abadi',r:1e5,p:3.375e13,c:0xf2f2f2},{n:'Ilahi',r:1e6,p:3.375e14,c:0xffe066},
+ {n:'Prismatic',r:2e7,p:1.6875e16,c:0xff66cc},{n:'OG',r:2e8,p:3.375e17,c:0xff3b1a},
+ {n:'GOOD',r:1e10,p:3.375e18,c:0xfff44d},
+ {n:'Monster',r:1e18,p:6.75e19,c:0x8a1cff},
+ {n:'Petir',r:1e23,p:6.75e23,c:0xdff6ff},
+ {n:'Roh',r:7e23,p:1.35e43,c:0xb9a6ff},   /* Roh: 700Sp/d */
+ {n:'Galaxy',r:9e26,p:1e44,c:0x8a3bff},   /* Galaxy: 900Sx/d */
+ {n:'Kristal',r:5e27,p:2.025e55,c:0x7ef0ff},    /* 5Dc/d */
+ {n:'Samudra',r:2.5e28,p:6.75e57,c:0x2f8fff},   /* 25Dc/d */
+ {n:'Matahari',r:1.2e29,p:2.025e60,c:0xffb52e},  /* 120Dc/d */
+ {n:'Waktu',r:6e29,p:6.75e62,c:0x5cf2c6},       /* 600Dc/d */
+  {n:'Dewa',r:3e30,p:3.375e65,c:0xffe066},        /* 3Dx/d */
+ {n:'Badai',r:1.5e31,p:1.5e67,c:0x6fa8ff},       /* 15Dx/d, 20Dv */
+ {n:'Aurora',r:8e31,p:7.5e68,c:0x6bffb0},        /* 80Dx/d, 1Tv */
+ {n:'Naga',r:4e32,p:3.75e70,c:0xff6a3a},          /* 400Dx/d, 50Tv */
+ {n:'Semesta',r:2e33,p:2.25e71,c:0xc08bff},       /* 2Ud/d, 300Tv */
+ {n:'Takdir',r:1e34,p:1.5e72,c:0xffd94a}         /* 10Ud/d, 2Max */
 ];
 const pw=st=>Math.min(30,6+1.6*Math.log10(st+1));   // kecepatan lari dunia dari stat kecepatan
 
@@ -4088,16 +4088,15 @@ function tickGenjWorld(dt,t){
     if(genjMobs)genjMobs.children.forEach((m,i)=>{m.rotation.y+=dt*(m.userData.spin||.2);m.position.y=Math.sin(t*1.4+(m.userData.ph||0))*.15;});
   }else if(genjAmt<.02&&genjMobs)clearGenjMobs();
 }
+// HAPUS NOTIF SAAT MALAM
 function stopGenjutsu(){const pl=player;if(pl.state==='genjutsu'){pl.state='normal';pl.genT=0;pl.inv=.5;if(pl.gjTag)pl.gjTag.visible=false;endGenjutsuVisual();}}
 function startNight(){
   isNight=true;gateTarget=1;stopGenjutsu();   /* malam tiba → Genjutsu dihentikan */
   const dropped=releaseStolen();
-  toast('🌙 Malam tiba! Gerbang ditutup · telur menetas 2× lebih cepat',3500);
   nests.forEach(N=>{if(N.st==='chase'||N.st==='wake')N.st='return';});
   if(player.root.position.z<GATEZ){
     player.root.position.set(0,0,-16.5);player.state='normal';player.model.rotation.set(0,0,0);player.modelY=0;
-    toast(dropped?'🌙 Malam! Kamu dibawa ke zona aman & telur curianmu terlepas':'🌙 Malam! Kamu dibawa kembali ke zona aman',4200);
-  }else if(dropped)toast('🌙 Malam! Telur yang kamu bawa terlepas',4000);
+  }
 }
 let abWatch=false;
 let dbAbuseOn=false;
@@ -4327,7 +4326,7 @@ function startMorning(){
       else toast('⚡ Uangmu kurang untuk upkeep Khodam Zeus hari ini!',3000);
     }
   }
-  toast('☀️ Pagi! Gerbang dibuka · telur di semua wilayah di-reset',3500);
+  toast('Semua Telur Direset!',3500);
   announceRare();
 }
 const regionAt=z=>{if(z>GATEZ)return -1;for(let i=0;i<REG.length;i++)if(z>REG[i].bnd1||i===REG.length-1)return i;return REG.length-1;};
@@ -5093,7 +5092,7 @@ function updatePlayer(dt,t){
   if(isNight&&pos.z<GATEZ-.05){
     const dropped=releaseStolen();
     stopGenjutsu();pos.set(0,0,-16.5);pl.state='normal';pl.model.rotation.set(0,0,0);pl.modelY=0;
-    if(!pl.nightTP){pl.nightTP=true;toast(dropped?'🌙 Malam! Kamu dibawa ke zona aman & telur curianmu terlepas':'🌙 Malam! Kamu tembus ke area curi & dipaksa kembali ke zona aman',3200);}
+    pl.nightTP=true;
   }else if(pl.nightTP)pl.nightTP=false;
   pl.runAmt+=(runT-pl.runAmt)*Math.min(1,dt*9);
   pl.phase+=dt*freq*(.35+pl.runAmt*.65);
