@@ -91,7 +91,7 @@ R.shadowMap.enabled=true;Object.assign(sun.shadow.camera,{left:-36,right:36,top:
 let city=null;
 function applyG(){const g=S.gfx,d=devicePixelRatio||1;R.setPixelRatio([1,Math.min(d,1.5),Math.min(d,2)][g]);R.setSize(innerWidth,innerHeight,false);cam.aspect=innerWidth/innerHeight;cam.updateProjectionMatrix();
  sun.castShadow=g>0;sun.shadow.mapSize.set(g===2?2048:1024,g===2?2048:1024);if(sun.shadow.map){sun.shadow.map.dispose();sun.shadow.map=null;}
- sc.fog.far=[170,240,340][g];if(city)city.count=[70,140,260][g];sc.traverse(o=>{if(o.material)o.material.needsUpdate=true;});}
+ sc.fog.far=[170,240,340][g];if(city)city.count=Math.min(city.userData.n||0,[70,140,260][g]);sc.traverse(o=>{if(o.material)o.material.needsUpdate=true;});}
 addEventListener('resize',applyG);
 
 /* ---- helper dunia ---- */
@@ -208,7 +208,7 @@ const STG=[
  for(let zi=0;zi<6;zi++)for(let xi=0;xi<6;xi++){if(Math.random()<.1)continue;const z0=ZE[zi]+(zi?9:4),z1=ZE[zi+1]-(zi<5?9:4),x0=XE[xi]+(xi?9:4),x1=XE[xi+1]-(xi<5?9:4),bw=x1-x0,bd=z1-z0;if(bw<8||bd<8)continue;
   const k=Math.max(1,Math.floor((bw+3)/15)),w0=(bw-(k-1)*3)/k;
   for(let j=0;j<k&&n<N;j++){const w=w0*rnd(.8,1),dd=bd*rnd(.7,1),cx=x0+j*(w0+3)+w0/2,cz=z0+bd/2,h=rnd(6,40);d.position.set(cx,h/2,cz);d.scale.set(w,h,dd);d.updateMatrix();city.setMatrixAt(n,d.matrix);city.setColorAt(n,new THREE.Color(cs[n%cs.length]));CITY.push([cx-w/2,cx+w/2,cz-dd/2,cz+dd/2]);n++;}}
- city.count=n;city.frustumCulled=false;city.instanceColor.needsUpdate=true;sc.add(city);}],
+ city.count=n;city.userData.n=n;city.frustumCulled=false;city.instanceColor.needsUpdate=true;sc.add(city);}],
 ['Merakit motor drag',()=>{const dp=[[-6,-10],[0,-10],[6,-10]];for(let i=0;i<3;i++){const b=makeBike(i),p=S.bp&&S.bp[i]||[dp[i][0],dp[i][1],0];b.x=p[0];b.z=p[1];b.h=p[2];b.g.position.set(b.x,0,b.z);b.g.rotation.y=b.h;b.drop((S.mt[i]||0)*.05);bikes.push(b);label(BK[i].n,dp[i][0],2.6,dp[i][1]-.5,3.6,'#ffffff');}
  npc=makeBike(1);npc.g.visible=false;av=person(AVC);av.scale.setScalar(.85);}],
 ['Membangun sirkuit',buildCircuits],['Membangun masjid',buildMasjid],['Menata lampu & rumput',buildDeco],['Menempatkan warga kota',buildNpcs],['Menyetel mesin & suara',()=>{}]];
@@ -263,7 +263,7 @@ function findAct(){if(raceSt===1||raceSt===2||cr.st===1||cr.st===3)return null;i
 /* ---- fisika ---- */
 function push(b,r){const x=P.x,z=P.z;if(x>b[0]&&x<b[1]&&z>b[2]&&z<b[3]){const d=[x-b[0],b[1]-x,z-b[2],b[3]-z],m=Math.min(...d);if(m===d[0])P.x=b[0]-r;else if(m===d[1])P.x=b[1]+r;else if(m===d[2])P.z=b[2]-r;else P.z=b[3]+r;return 1;}
  const cx=clamp(x,b[0],b[1]),cz=clamp(z,b[2],b[3]),dx=x-cx,dz=z-cz,dd=Math.hypot(dx,dz);if(dd<r&&dd>1e-6){P.x=cx+dx/dd*r;P.z=cz+dz/dd*r;return 1;}return 0;}
-function collide(){const r=P.m>=0?.8:.4;let hit=0;for(const b of A)hit|=push(b,r);if(P.m>=0)for(const b of HB)hit|=push(b,r);if(P.z>34)for(let k=0;k<city.count;k++)hit|=push(CITY[k],r);P.x=clamp(P.x,-390,390);P.z=clamp(P.z,-29,330);return hit;}
+function collide(){const r=P.m>=0?.8:.4;let hit=0;for(const b of A)hit|=push(b,r);if(P.m>=0)for(const b of HB)hit|=push(b,r);if(P.z>34)for(let k=0,nc=Math.min(city.count,CITY.length);k<nc;k++)hit|=push(CITY[k],r);P.x=clamp(P.x,-390,390);P.z=clamp(P.z,-29,330);return hit;}
 function step(dt){
  const jX=clamp(jx+(key.d||key.arrowright?1:0)-(key.a||key.arrowleft?1:0),-1,1),jY=clamp(jy+(key.s||key.arrowdown?1:0)-(key.w||key.arrowup?1:0),-1,1);
  if(bonc){boncStep();}else if(P.m<0){let sp;if(S.uc){const mx=jX,my=-jY,l=Math.min(1,Math.hypot(mx,my));if(l>.08){const dx=Math.sin(ucy)*my-Math.cos(ucy)*mx,dz=Math.cos(ucy)*my+Math.sin(ucy)*mx;let a=Math.atan2(dx,dz)-P.h;a=Math.atan2(Math.sin(a),Math.cos(a));P.h+=a*Math.min(1,dt*10);P.v=l*4.6;}else P.v=0;sp=P.v;}else{P.h-=jX*2.4*dt;sp=-jY*4.6;P.v=sp;}P.x+=Math.sin(P.h)*sp*dt;P.z+=Math.cos(P.h)*sp*dt;collide();av.position.set(P.x,0,P.z);av.rotation.y=P.h;const w=Math.sin(T*9)*.8*Math.min(1,Math.abs(sp)/4);av.legL.rotation.x=w;av.legR.rotation.x=-w;av.armL.rotation.x=-w*.7;av.armR.rotation.x=w*.7;}
@@ -415,7 +415,7 @@ cvE.addEventListener('pointerdown',e=>{if(dlgOpen)return;ptr.set(e.pointerId,[e.
 cvE.addEventListener('pointermove',e=>{const q=ptr.get(e.pointerId);if(!q)return;const dx=e.clientX-q[0],dy=e.clientY-q[1];q[0]=e.clientX;q[1]=e.clientY;
  if(ptr.size>=2){const v=[...ptr.values()],d=Math.hypot(v[0][0]-v[1][0],v[0][1]-v[1][1]);if(pd0>0)zoomBy((pd0-d)*.03);pd0=d;}else if(S.uc){ucy-=dx*.006;ucp=clamp(ucp+dy*.005,-.1,1.35);}});
 ['pointerup','pointercancel'].forEach(t=>cvE.addEventListener(t,e=>{ptr.delete(e.pointerId);pd0=0;}));cvE.addEventListener('wheel',e=>zoomBy(e.deltaY*.01),{passive:true});
-const freeAt=(x,z)=>{const hit=b=>x>b[0]-1.3&&x<b[1]+1.3&&z>b[2]-1.3&&z<b[3]+1.3;for(const b of A)if(hit(b))return 0;for(const b of HB)if(hit(b))return 0;if(z>34)for(let k=0;k<city.count;k++)if(hit(CITY[k]))return 0;return x>-380&&x<380&&z>-26&&z<325;};
+const freeAt=(x,z)=>{const hit=b=>x>b[0]-1.3&&x<b[1]+1.3&&z>b[2]-1.3&&z<b[3]+1.3;for(const b of A)if(hit(b))return 0;for(const b of HB)if(hit(b))return 0;if(z>34)for(let k=0,nc=Math.min(city.count,CITY.length);k<nc;k++)if(hit(CITY[k]))return 0;return x>-380&&x<380&&z>-26&&z<325;};
 function callBike(){if(P.m>=0||bonc||cr.st||raceSt)return;const i=S.own[S.bike]?S.bike:0,b=bikes[i];if(b.call)return toast('Motor sedang menuju kamu 🏍️');
  let sp=null;for(const R_ of [30,22,14])for(let k=0;k<16&&!sp;k++){const a=P.h+Math.PI+k*Math.PI/8,x=P.x+Math.sin(a)*R_,z=P.z+Math.cos(a)*R_;if(!freeAt(x,z))continue;let ok=1;for(let t=2.5;t<R_-2;t+=2.5)if(!freeAt(P.x+(x-P.x)*t/R_,P.z+(z-P.z)*t/R_)){ok=0;break;}if(ok)sp=[x,z];}
  if(!sp){b.x=P.x-Math.cos(P.h)*2;b.z=P.z+Math.sin(P.h)*2;b.h=P.h;b.g.position.set(b.x,0,b.z);b.g.rotation.y=b.h;toast('🏍️ Motor sudah di sampingmu');return;}
@@ -507,7 +507,7 @@ function buildDeco(){const Q=[],ad=(x,z,ry)=>Q.push([x,z,ry]),PI=Math.PI;
 /* ---- loop ---- */
 let acc=0,last=performance.now();
 function loop(now){requestAnimationFrame(loop);const dt=Math.min(.05,(now-last)/1000);last=now;
- if(!dlgOpen)step(dt);else T+=dt;npcStep(dt);rpStep(dt);
+ try{if(!dlgOpen)step(dt);else T+=dt;npcStep(dt);rpStep(dt);}catch(e){if(!loop.er){loop.er=1;console.error(e);}}
  const dn=.2+.8*((Math.sin(dayT)+1)/2);sc.background.setRGB(.1+.5*dn,.14+.6*dn,.28+.55*dn);sc.fog.color.copy(sc.background);HL.intensity=.3+.6*dn;sun.intensity=.1+.6*dn;
  sun.target.position.set(P.x,0,P.z);sun.position.set(P.x+40,80,P.z+30);
  HOUSES.forEach(h=>{h.roof.visible=!(Math.abs(P.x-h.hx)<3.4&&Math.abs(P.z-h.hz)<3.4);});
