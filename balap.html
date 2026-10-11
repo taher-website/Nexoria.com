@@ -263,7 +263,7 @@ function push(b,r){const x=P.x,z=P.z;if(x>b[0]&&x<b[1]&&z>b[2]&&z<b[3]){const d=
 function collide(){const r=P.m>=0?.8:.4;let hit=0;for(const b of A)hit|=push(b,r);if(P.m>=0)for(const b of HB)hit|=push(b,r);if(P.z>34)for(let k=0;k<city.count;k++)hit|=push(CITY[k],r);P.x=clamp(P.x,-390,390);P.z=clamp(P.z,-29,330);return hit;}
 function step(dt){
  const jX=clamp(jx+(key.d||key.arrowright?1:0)-(key.a||key.arrowleft?1:0),-1,1),jY=clamp(jy+(key.s||key.arrowdown?1:0)-(key.w||key.arrowup?1:0),-1,1);
- if(bonc){boncStep();}else if(P.m<0){P.h-=jX*2.4*dt;const sp=-jY*4.6;P.v=sp;P.x+=Math.sin(P.h)*sp*dt;P.z+=Math.cos(P.h)*sp*dt;collide();av.position.set(P.x,0,P.z);av.rotation.y=P.h;const w=Math.sin(T*9)*.8*Math.min(1,Math.abs(sp)/4);av.legL.rotation.x=w;av.legR.rotation.x=-w;av.armL.rotation.x=-w*.7;av.armR.rotation.x=w*.7;}
+ if(bonc){boncStep();}else if(P.m<0){let sp;if(S.uc){const mx=jX,my=-jY,l=Math.min(1,Math.hypot(mx,my));if(l>.08){const dx=Math.sin(ucy)*my-Math.cos(ucy)*mx,dz=Math.cos(ucy)*my+Math.sin(ucy)*mx;let a=Math.atan2(dx,dz)-P.h;a=Math.atan2(Math.sin(a),Math.cos(a));P.h+=a*Math.min(1,dt*10);P.v=l*4.6;}else P.v=0;sp=P.v;}else{P.h-=jX*2.4*dt;sp=-jY*4.6;P.v=sp;}P.x+=Math.sin(P.h)*sp*dt;P.z+=Math.cos(P.h)*sp*dt;collide();av.position.set(P.x,0,P.z);av.rotation.y=P.h;const w=Math.sin(T*9)*.8*Math.min(1,Math.abs(sp)/4);av.legL.rotation.x=w;av.legR.rotation.x=-w;av.armL.rotation.x=-w*.7;av.armR.rotation.x=w*.7;}
  else{const b=bikes[P.m],rev=(revB||key.r)?1:0,gas=(gasB||key.w||key.arrowup)?1:0,brk=(brkB||key.s||key.arrowdown)?1:0,vm=vmax(),locked=raceSt===1||cr.st===1,gm=BK[P.m].gear,lim=gm?glim(P.gr,vm):vm,r0=Math.max(0,P.v)/lim;
   const wl=(gm&&P.gr>1)?0:(S.wl[P.m]||0);P.lg=Math.max(0,P.lg-dt*4.5);P.thr+=(gas-P.thr)*Math.min(1,dt*(7+wl*6));
   if(!locked&&P.thr>.02)P.v+=(pwr()*(gm?GK[P.gr-1]*(P.gr===1?1:.4+.6*clamp(r0*3,0,1)):1)*(1+.1*wl)+wl*3*Math.max(0,1-Math.max(0,P.v)/12))*P.thr*Math.max(0,1-Math.pow(Math.max(0,P.v)/lim,1.6))*dt;
@@ -408,7 +408,7 @@ const GK=[1.5,1.45,1.4,1.35,1.3],glim=(g,vm)=>g===1?15/3.6:vm*[0,.32,.52,.74,1][
 function shift(d){if(P.m<0||!BK[P.m].gear||dlgOpen)return;const n=clamp(P.gr+d,1,5);if(n===P.gr)return;const vm=vmax();if(d<0&&P.v>glim(n,vm)*1.35)return toast('⚠️ Gigi terlalu rendah, rpm kelewat tinggi!');P.gr=n;P.lg=1;P.rpm=clamp(P.rpm+(d>0?-1800:1500),1400,8300);if(d>0&&P.thr>.3)P.v+=.3;noise(.12,d>0?320:700);}
 let ucy=0,ucp=.35,ucd=7,ucId=null,ucX=0,ucY=0;const cvE=$('cv');
 cvE.addEventListener('pointerdown',e=>{if(!S.uc||dlgOpen||ucId!==null)return;ucId=e.pointerId;ucX=e.clientX;ucY=e.clientY;try{cvE.setPointerCapture(ucId);}catch(x){}});
-cvE.addEventListener('pointermove',e=>{if(e.pointerId!==ucId)return;ucy+=(e.clientX-ucX)*.006;ucp=clamp(ucp+(e.clientY-ucY)*.005,-.1,1.35);ucX=e.clientX;ucY=e.clientY;});
+cvE.addEventListener('pointermove',e=>{if(e.pointerId!==ucId)return;ucy-=(e.clientX-ucX)*.006;ucp=clamp(ucp+(e.clientY-ucY)*.005,-.1,1.35);ucX=e.clientX;ucY=e.clientY;});
 ['pointerup','pointercancel'].forEach(t=>cvE.addEventListener(t,e=>{if(e.pointerId===ucId)ucId=null;}));cvE.addEventListener('wheel',e=>{if(S.uc)ucd=clamp(ucd+e.deltaY*.01,3,16);},{passive:true});
 const freeAt=(x,z)=>{const hit=b=>x>b[0]-1.3&&x<b[1]+1.3&&z>b[2]-1.3&&z<b[3]+1.3;for(const b of A)if(hit(b))return 0;for(const b of HB)if(hit(b))return 0;if(z>34)for(let k=0;k<city.count;k++)if(hit(CITY[k]))return 0;return x>-380&&x<380&&z>-26&&z<325;};
 function callBike(){if(P.m>=0||bonc||cr.st||raceSt)return;const i=S.own[S.bike]?S.bike:0,b=bikes[i];if(b.call)return toast('Motor sedang menuju kamu 🏍️');
