@@ -432,8 +432,8 @@ function prayStop(done){if(!pray.on)return;const zz=pray.zz,ky=pray.key;pray.on=
 function azanStep(act,tt){if(act&&tt>=AZ0&&tt<AZ1){if(azK!==act.n){azK=act.n;toast('🔊 Azan '+act.n+' berkumandang… 🕌');azanPlay();}}else if(!act||tt<AZ0||tt>AZ1+30)azK=null;}
 function prayTick(dt,ix,iy){if(Math.abs(ix)>.4||Math.abs(iy)>.4){prayStop(0);return;}if(pray.jm){const a=JACT.act;if(!a||JACT.tt>=SEQS[pray.jr].tot){prayStop(1);return;}pray.q=JACT.tt<0?0:seqAt(SEQS[pray.jr],JACT.tt);return;}pray.t+=dt;if(pray.t>=pray.s[pray.i][1]){pray.t=0;pray.i++;if(pray.i>=pray.s.length){prayStop(1);return;}pray.q=pray.s[pray.i][0];}}
 /* ---- waktu dunia bersama (semua pemain siang/malam sama) ---- */
-/* SKALA WAKTU: 1 detik game = TIME_SLOW detik dunia nyata (ubah angka ini kalau mau lebih cepat; 1 = real-time 1:1) */
-const TIME_SLOW=1,HSEC=3600*TIME_SLOW;
+/* SKALA WAKTU: 1 menit jam game = MENIT_DETIK detik dunia nyata (4 = 1 jam game 4 menit real, 1 hari game 96 menit real; kecilkan angka untuk lebih cepat) */
+const MENIT_DETIK=4,HSEC=60*MENIT_DETIK;
 function gDay(){const t=(Date.now()+srvOff)/1000+wOff;return Math.floor((t/HSEC+7)/24);}
 function gHour(){const t=(Date.now()+srvOff)/1000+wOff;return (t/HSEC+7)%24;}
 function setWorldTime(tg){const t=(Date.now()+srvOff)/1000;const DY=24*HSEC;let w=((tg-7)*HSEC-t)%DY;if(w<0)w+=DY;wOff=w;if(db){try{db.ref('nexoria/balap/world/off').set(w);}catch(e){}}}
