@@ -1079,9 +1079,9 @@ function crPose(a,tt){const c=CIR[0],i=a.i;if(tt<a.ta-a.tr||tt>a.td+a.tr)return 
  if(ts<12||(!rr&&ts<47)){const s=crSlot(i,n);return[s.x,s.z,s.h,0,0];}
  if(ts<47){const sg=ts-12,q=pathAt(c,crRace(i,n,sg),off);return[q.x,q.z,q.h,sg<crTf(i,n)?1:0,0];}
  const u0=(ts-47)/13,u=u0*u0*(3-2*u0),f=rr?pathAt(c,crRace(i,n,35),off):crSlot(i,n),t=crSlot(i,n+1);return[f.x+(t.x-f.x)*u,f.z+(t.z-f.z)*u,t.h,0,1];}
-function buildNight(){const c=CIR[0],sk=['#f2c9a0','#e0ac82','#c68642','#8d5524'],hc=['#222222','#3b2a1a','#7a4a1a','#ccaa44'];
+function buildNight(){navBuild();const c=CIR[0],sk=['#f2c9a0','#e0ac82','#c68642','#8d5524'],hc=['#222222','#3b2a1a','#7a4a1a','#ccaa44'];
  /* 2 mobil patroli + polisi */
- [[[[0,120],[0,44],[-135,44],[-135,3,25],[-135,44],[0,44]],[21,127.2]],[[[0,120],[60,120],[60,160],[0,160],[0,200],[-60,200],[-60,120]],[39,127.2]]].forEach((q,i)=>{const car=makeCar(),pe=copPerson();pe.visible=false;car.position.set(q[1][0],0,q[1][1]);car.rotation.y=Math.PI/2;
+ [[[[0,120],[0,44],[-135,44],[-135,3,25],[-135,44],[0,44]],[26,126.8]],[[[0,120],[60,120],[60,160],[0,160],[0,200],[-60,200],[-60,120]],[34,126.8]]].forEach((q,i)=>{const car=makeCar(),pe=copPerson();pe.visible=false;car.position.set(q[1][0],0,q[1][1]);car.rotation.y=Math.PI/2;
   POL.push({car,pe,rt:q[0],wi:0,x:q[1][0],z:q[1][1],h:Math.PI/2,v:0,st:'park',park:q[1],q:[],dw:0,tm:0,tg:null,sn:0,i});});
  /* warga malam: 8 pembalap (motor) + 10 penonton */
  for(let i=0;i<8;i++){const b=makeBike(i%3),pe=person({skin:sk[i%4],hair:hc[(i*3)%4],shirt:'hsl('+(i*47+10)+',62%,48%)',pants:'#222233',shoe:'#111111'});b.body.add(pe);pe.scale.setScalar(CHS);sitPose(pe,SY,-.45,b.body);b.g.visible=false;
@@ -1103,8 +1103,40 @@ function crowdStep(dt,gh){const u=(gh-22+24)%24,tt=u>=23?(u-24)*HSEC:u*HSEC,on=t
    else{g.legL.rotation.x=g.legR.rotation.x=0;g.armR.rotation.x=a.i%3===0?-1.0+Math.sin(T*3+a.i)*.5:Math.sin(T*1.5)*.05;g.armL.rotation.x=Math.sin(T*1.5+1)*.05;g.head.rotation.y=Math.sin(T*.7+a.i)*.5;}}});}
 
 /* ---- polisi: patroli 22:00-03:00, kejar pembalap liar (NPC & pemain), tangkap + berbincang + denda 500 ---- */
-function polDrive(p,tx,tz,sp,dt,ac){const dx=tx-p.x,dz=tz-p.z,d=Math.hypot(dx,dz);let a=Math.atan2(dx,dz)-p.h;a=Math.atan2(Math.sin(a),Math.cos(a));p.h+=a*Math.min(1,dt*(p.v>18?2.4:3.6));
+function polDrive(p,tx,tz,sp,dt,ac){const dx=tx-p.x,dz=tz-p.z,d=Math.hypot(dx,dz);let a=Math.atan2(dx,dz)-p.h;a=Math.atan2(Math.sin(a),Math.cos(a));p.h+=a*Math.min(1,dt*(p.v>18?3.2:4.5));
  const tv=sp*(Math.abs(a)>1.1?.35:1);p.v+=Math.max(-34*dt,Math.min((ac||12)*dt,tv-p.v));p.x+=Math.sin(p.h)*p.v*dt;p.z+=Math.cos(p.h)*p.v*dt;return d;}
+
+/* ---- navigasi polisi: A* di grid 4 m, hanya lewat jalan (rumput = mahal), gedung & tembok dihindari; lewat rumput kalau targetnya di rumput ---- */
+const NVG={x0:-245,z0:-48,cs:4,w:0,h:0,blk:null,rd:null,G:null,par:null,stp:null,sc:0};
+function navRoad(x,z){for(const zr of ZH)if(Math.abs(z-zr)<=4.6&&x>=-152&&x<=(zr===160?302:152))return 1;for(const xr of XV)if(Math.abs(x-xr)<=4.6&&z>=(xr===0?30:85)&&z<=322)return 1;if(x>=230&&x<=240&&z>=162&&z<=182)return 1;if(Math.abs(z-34)<=4.6&&Math.abs(x)<=80)return 1;return 0;}
+function navBuild(){NVG.w=Math.ceil((325-NVG.x0)/NVG.cs);NVG.h=Math.ceil((338-NVG.z0)/NVG.cs);const n=NVG.w*NVG.h;NVG.blk=new Uint8Array(n);NVG.rd=new Uint8Array(n);NVG.G=new Float32Array(n);NVG.par=new Int32Array(n);NVG.stp=new Uint32Array(n);NVG.cl=new Uint32Array(n);
+ for(let j=0;j<NVG.h;j++)for(let i=0;i<NVG.w;i++){const x=NVG.x0+(i+.5)*NVG.cs,z=NVG.z0+(j+.5)*NVG.cs;let b=0;
+  for(const c of CITY)if(x>c[0]-3&&x<c[1]+3&&z>c[2]-3&&z<c[3]+3){b=1;break;}
+  if(!b)for(const c of A)if(x>c[0]-1.8&&x<c[1]+1.8&&z>c[2]-1.8&&z<c[3]+1.8){b=1;break;}
+  NVG.blk[j*NVG.w+i]=b;NVG.rd[j*NVG.w+i]=navRoad(x,z);}}
+const navCell=(x,z)=>[Math.min(NVG.w-1,Math.max(0,Math.floor((x-NVG.x0)/NVG.cs))),Math.min(NVG.h-1,Math.max(0,Math.floor((z-NVG.z0)/NVG.cs)))];
+function navFree(c){const i=c[0],j=c[1];if(!NVG.blk[j*NVG.w+i])return c;for(let r=1;r<=8;r++)for(let dj=-r;dj<=r;dj++)for(let di=-r;di<=r;di++){if(Math.max(Math.abs(di),Math.abs(dj))!==r)continue;const a=i+di,b=j+dj;if(a>=0&&b>=0&&a<NVG.w&&b<NVG.h&&!NVG.blk[b*NVG.w+a])return[a,b];}return c;}
+function navLos(x0,z0,x1,z1){const d=Math.hypot(x1-x0,z1-z0),n=Math.max(1,Math.ceil(d/2));let r0=-1;for(let k=0;k<=n;k++){const c=navCell(x0+(x1-x0)*k/n,z0+(z1-z0)*k/n),id=c[1]*NVG.w+c[0];if(NVG.blk[id])return false;const r=NVG.rd[id];if(r0<0)r0=r;else if(r!==r0)return false;}return true;}
+function navPath(sx,sz,tx,tz){if(!NVG.blk||navLos(sx,sz,tx,tz))return[[tx,tz]];
+ const W=NVG.w,s=navFree(navCell(sx,sz)),g=navFree(navCell(tx,tz)),gs=s[1]*W+s[0],gg=g[1]*W+g[0];if(gs===gg)return[[tx,tz]];
+ const st=++NVG.sc,G=NVG.G,par=NVG.par,stp=NVG.stp,heap=[],hf=[],gi=g[0],gj=g[1];
+ const hh=(i,j)=>{const dx=Math.abs(i-gi),dz=Math.abs(j-gj);return Math.max(dx,dz)+.414*Math.min(dx,dz);};
+ const push=(id,f)=>{let k=heap.length;heap.push(id);hf.push(f);while(k>0){const p=(k-1)>>1;if(hf[p]<=f)break;heap[k]=heap[p];hf[k]=hf[p];k=p;}heap[k]=id;hf[k]=f;};
+ const pop=()=>{const top=heap[0],li=heap.pop(),lf=hf.pop();if(heap.length){let k=0;const n=heap.length;for(;;){let c=2*k+1;if(c>=n)break;if(c+1<n&&hf[c+1]<hf[c])c++;if(hf[c]>=lf)break;heap[k]=heap[c];hf[k]=hf[c];k=c;}heap[k]=li;hf[k]=lf;}return top;};
+ G[gs]=0;par[gs]=-1;stp[gs]=st;push(gs,hh(s[0],s[1]));let found=false,cnt=0;
+ while(heap.length&&cnt++<20000){const cur=pop();if(cur===gg){found=true;break;}if(NVG.cl[cur]===st)continue;NVG.cl[cur]=st;const ci=cur%W,cj=(cur/W)|0;
+  for(let dj=-1;dj<=1;dj++)for(let di=-1;di<=1;di++){if(!di&&!dj)continue;const a=ci+di,b=cj+dj;if(a<0||b<0||a>=W||b>=NVG.h)continue;const id=b*W+a;if(NVG.blk[id])continue;
+   if(di&&dj&&(NVG.blk[cj*W+a]||NVG.blk[b*W+ci]))continue;const ng=G[cur]+((di&&dj)?1.414:1)*(NVG.rd[id]?1:4);
+   if(stp[id]!==st||ng<G[id]){G[id]=ng;par[id]=cur;stp[id]=st;push(id,ng+hh(a,b));}}}
+ if(!found)return[[tx,tz]];
+ const cells=[];for(let id=gg;id!==-1;id=par[id])cells.push([NVG.x0+((id%W)+.5)*NVG.cs,NVG.z0+(((id/W)|0)+.5)*NVG.cs]);cells.reverse();
+ const pts=[[sx,sz]].concat(cells.slice(1,-1),[[tx,tz]]),out=[];let i=0;
+ while(i<pts.length-1){let j=Math.min(pts.length-1,i+40);while(j>i+1&&!navLos(pts[i][0],pts[i][1],pts[j][0],pts[j][1]))j--;out.push(pts[j]);i=j;}
+ return out;}
+function polNav(p,tx,tz,sp,dt,ac){p.nt=(p.nt||0)-dt;if(p.nt<=0||Math.hypot(tx-(p.gx||0),tz-(p.gz||0))>10){p.nt=.7;p.gx=tx;p.gz=tz;p.path=navPath(p.x,p.z,tx,tz);p.pi=0;}
+ const pa=p.path;let wp=pa[p.pi];while(p.pi<pa.length-1&&Math.hypot(wp[0]-p.x,wp[1]-p.z)<(p.v>20?9:5)){p.pi++;wp=pa[p.pi];}
+ const w2=pa[p.pi+1];if(w2){const a1=Math.atan2(wp[0]-p.x,wp[1]-p.z),a2=Math.atan2(w2[0]-wp[0],w2[1]-wp[1]);const da=Math.abs(Math.atan2(Math.sin(a2-a1),Math.cos(a2-a1))),dd=Math.hypot(wp[0]-p.x,wp[1]-p.z);if(da>.5&&dd<p.v*1.3+6)sp=Math.min(sp,Math.max(13,24-da*6));}
+ polDrive(p,wp[0],wp[1],sp,dt,ac);return Math.hypot(tx-p.x,tz-p.z);}
 const polSee=(p,x,z,r)=>{const dx=x-p.x,dz=z-p.z,d=Math.hypot(dx,dz);return d<r&&(dx*Math.sin(p.h)+dz*Math.cos(p.h))/(d||1)>.1;};
 function polNear(p){let b=0,bd=1e9;p.rt.forEach((w,k)=>{const d=Math.hypot(w[0]-p.x,w[1]-p.z);if(d<bd){bd=d;b=k;}});return b;}
 function polStep(dt,gh){const on=gh>=22||gh<3;polT+=dt;if(polImm>0)polImm-=dt;
@@ -1112,16 +1144,16 @@ function polStep(dt,gh){const on=gh>=22||gh<3;polT+=dt;if(polImm>0)polImm-=dt;
  POL.forEach(p=>{const car=p.car,pe=p.pe;
   if(p.st==='park'){if(on){p.st='patrol';p.wi=0;p.q=[[p.park[0],121.2]];}}
   else if(!on&&(p.st==='patrol'||p.st==='dwell'))p.st='ret';
-  if(p.st==='patrol'||p.st==='ret'){const tg=p.q.length?p.q[0]:p.rt[p.wi],d=polDrive(p,tg[0],tg[1],p.q.length?9:11,dt,10);
+  if(p.st==='patrol'||p.st==='ret'){const tg=p.q.length?p.q[0]:p.rt[p.wi],d=polNav(p,tg[0],tg[1],p.q.length?10:14,dt,14);
    if(d<3.5){if(p.q.length)p.q.shift();else{if(p.st==='ret'&&p.wi===0){p.q=[[p.park[0],121.2],[p.park[0],p.park[1]]];p.st='home';}else{if(tg[2]&&p.st==='patrol'){p.st='dwell';p.dw=tg[2];}p.wi=(p.wi+1)%p.rt.length;}}}}
   else if(p.st==='dwell'){p.v=Math.max(0,p.v-12*dt);p.x+=Math.sin(p.h)*p.v*dt;p.z+=Math.cos(p.h)*p.v*dt;p.dw-=dt;if(p.dw<=0)p.st='patrol';}
-  else if(p.st==='home'){const tg=p.q[0],last=p.q.length===1,d=polDrive(p,tg[0],tg[1],last?5:8,dt,8);if(d<(last?1.2:3)){if(last){p.st='park';p.v=0;p.q=[];}else p.q.shift();}}
+  else if(p.st==='home'){const tg=p.q[0],last=p.q.length===1,d=polNav(p,tg[0],tg[1],last?6:12,dt,12);if(d<(last?1.2:3)){if(last){p.st='park';p.v=0;p.q=[];}else p.q.shift();}}
   else if(p.st==='park'){p.v=0;p.h+=Math.atan2(Math.sin(Math.PI/2-p.h),Math.cos(Math.PI/2-p.h))*Math.min(1,dt*3);}
   /* melihat pembalap liar */
   if(p.st==='patrol'||p.st==='dwell'){
    if(P.m>=0&&!BK[P.m].cyc&&P.v>20&&raceSt===0&&cr.st===0&&!ARR.on&&polImm<=0&&polSee(p,P.x,P.z,42)){p.st='chase';p.tg={k:'p'};toast('🚨 Polisi mengejar kamu!');}
    else if(crowdOn){for(const a of CRW){if(a.rd&&a.rc&&a.vis&&!a.frz&&polSee(p,a.x,a.z,40)&&Math.random()<dt*1.5){p.st='chase';p.tg={k:'n',a};if(Math.hypot(P.x-a.x,P.z-a.z)<90)toast('🚨 Polisi mengejar pembalap liar!');break;}}}}
-  if(p.st==='chase'){const t=p.tg,pl=t.k==='p',tx=pl?P.x:t.a.x,tz=pl?P.z:t.a.z,sp=pl?Math.min(75,Math.max(32,P.v*1.25)):34,d=polDrive(p,tx,tz,sp,dt,26);
+  if(p.st==='chase'){const t=p.tg,pl=t.k==='p',tx=pl?P.x:t.a.x,tz=pl?P.z:t.a.z,sp=pl?Math.min(90,Math.max(40,P.v*1.4)):42,d=polNav(p,tx,tz,sp,dt,45);
    if(d<5.5){p.st='arrest';p.tm=0;p.ar=t;if(pl){ARR.on=1;ARR.p=p;P.v=0;}else t.a.frz={x:t.a.x,z:t.a.z,h:t.a.h};pe.visible=true;}
    else if(d>170||(!pl&&(!t.a.vis||t.a.gone===crCn))){p.st='patrol';p.wi=polNear(p);if(pl){polImm=15;toast('😮‍💨 Kamu lolos dari polisi');}}}
   if(p.st==='arrest'){p.v=Math.max(0,p.v-30*dt);p.x+=Math.sin(p.h)*p.v*dt;p.z+=Math.cos(p.h)*p.v*dt;p.tm+=dt;const t=p.ar,pl=t.k==='p',tx=pl?P.x:t.a.x,tz=pl?P.z:t.a.z,m=p.tm;
