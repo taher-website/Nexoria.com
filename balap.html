@@ -468,7 +468,7 @@ const STG=[
  city.count=n;city.userData.n=n;city.frustumCulled=false;city.instanceColor.needsUpdate=true;sc.add(city);buildWindows(n);}],
 ['Merakit motor drag',()=>{['mt','eng','exh','wl'].forEach(k=>{S[k]=S[k]||[0,0,0];while(S[k].length<BK.length)S[k].push(0);});S.own=S.own||[1,0,0];while(S.own.length<BK.length)S.own.push(BK[S.own.length].price>0?0:1);const dp=[[-6,-10],[0,-10],[6,-10],[12,-10]];for(let i=0;i<BK.length;i++){const b=makeBike(i),p=S.bp&&S.bp[i]||[dp[i][0],dp[i][1],0];b.x=p[0];b.z=p[1];b.h=p[2];b.g.position.set(b.x,0,b.z);b.g.rotation.y=b.h;b.drop((S.mt[i]||0)*.05);if(b.setGear)b.setGear((S.gh|0)+1);{const hk=(S.hb||[])[i]|0;if(hk&&b.cyc)applyBars(b,hk);if(b.cyc&&(S.jk||[])[i])applyJok(b,1);}bikes.push(b);label(BK[i].n,dp[i][0],2.6,dp[i][1]-.5,3.6,'#ffffff');}
  npc=makeBike(1);npc.g.visible=false;av=person(AVC);av.scale.setScalar(CHS);}],
-['Membangun sirkuit',buildCircuits],['Membangun masjid',buildMasjid],['Membangun tempat wudhu',buildWudhu],['Membangun kantor polisi',buildPolice],['Membangun toko motor Bang Joko',buildToko],['Menata lampu & rumput',buildDeco],['Menempatkan warga kota',buildNpcs],['Memanggil polisi & warga malam',buildNight],['Menyiapkan balap ontel & pos ronda',()=>{buildOntel();buildRonda();}],['Menyetel mesin & suara',()=>{}]];
+['Membangun sirkuit',buildCircuits],['Membangun masjid',buildMasjid],['Membangun tempat wudhu',buildWudhu],['Membangun kantor polisi',buildPolice],['Membangun toko motor Bang Joko',buildToko],['Membangun NexoMarket',buildMarket],['Menata lampu & rumput',buildDeco],['Menempatkan warga kota',buildNpcs],['Memanggil polisi & warga malam',buildNight],['Menyiapkan balap ontel & pos ronda',()=>{buildOntel();buildRonda();}],['Menyetel mesin & suara',()=>{}]];
 let AC=null,o1,o2,lp,gn,nb,o3=null,lg3=null,audK=-9;
 function initAudio(){if(AC){AC.resume&&AC.resume();return;}try{AC=new(window.AudioContext||window.webkitAudioContext)();o1=AC.createOscillator();o2=AC.createOscillator();o1.type='sawtooth';o2.type='square';lp=AC.createBiquadFilter();lp.type='lowpass';gn=AC.createGain();gn.gain.value=0;const g2=AC.createGain();g2.gain.value=.45;
  o1.connect(lp);o2.connect(g2);g2.connect(lp);lp.connect(gn);gn.connect(AC.destination);o3=AC.createOscillator();lg3=AC.createGain();o3.frequency.value=10;lg3.gain.value=0;o3.connect(lg3);lg3.connect(gn.gain);o3.start();o1.start();o2.start();nb=AC.createBuffer(1,AC.sampleRate*.3|0,AC.sampleRate);const d=nb.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*(1-i/d.length);}catch(e){AC=null;}}
@@ -818,6 +818,7 @@ function findAct(){if(raceSt===1||raceSt===2||cr.st===1||cr.st===3)return null;i
  const ds=Math.hypot(16-P.x,14-P.z),dt2=Math.hypot(21-P.x,23.5-P.z),jc=(JK&&JK.away)?{l:'🔧 Tutup · Bang Joko sholat',f:()=>toast('Bang Joko sedang sholat di masjid, tunggu ya 🕌')}:(JK&&JK.sleep)?{l:'😴 Tutup · Bang Joko tidur',f:()=>toast('Bang Joko tidur di kamar toko. Buka lagi jam 06:30 ☀️')}:null;
  if(ds<3.8)c(ds,jc?Object.assign({},jc,{l:'🔧 Bengkel '+jc.l.slice(2)}):{l:'🔧 Bengkel Bang Joko',f:shop});
  if(dt2<4.2)c(dt2,jc?Object.assign({},jc,{l:'🏍️ Toko '+jc.l.slice(2)}):{l:'🏍️ Toko Motor Bang Joko',f:toko});
+ if(P.x>MK.x-4&&P.x<MK.x+9&&Math.abs(P.z-MK.z)<8)c(Math.hypot(P.x-MK.x-2,P.z-MK.z)*.5,{l:'🛒 NexoMarket · makanan & minuman',f:market});
  PED.forEach(n=>{if(n.dead&&!n.hide&&!n.carried&&!crowdOn){const cc=cbCenter(n),dd=Math.hypot(cc[0]-P.x,cc[1]-P.z);if(dd<2.4)c(dd-.3,{l:'🫳 Angkat tubuh '+(n.nmk?n.nm:''),f:()=>cbLift(n)});}if(n.hide||crowdOn||!n.tp||n.cb)return;const d=Math.hypot(n.x-P.x,n.z-P.z);if(d<2.6)c(d,{l:n.tp===1?'💬 Ngobrol':n.tp===2?'🏁 Ajak balap':'💬 Bicara',f:()=>n.tp===1?talk(n):n.tp===2?challenge(n):talkMenu(n)});});
  for(const k in RP){const o=RP[k],d=o.d;if(!d||!o.pe||!o.pe.visible||(d.m|0)<0||d.r)continue;const dd=Math.hypot(o.x-P.x,o.z-P.z);if(dd<3&&Math.abs(+d.v||0)<5&&!seatTaken(k))c(dd,{l:'🛵 Numpang bonceng · '+String(d.n||'?').slice(0,12),f:()=>boardBonc(k)});}
  HOUSES.forEach(h=>{const dd=Math.hypot(h.fx+h.ds*1.4-P.x,h.hz-P.z);if(!S.house[h.i]&&dd<3.6)c(dd,{l:'🏠 Beli rumah '+(h.i+1)+' (400 💰)',f:()=>buyHouse(h.i)});const db=Math.hypot(h.bed[0]-P.x,h.bed[1]-P.z);if(S.house[h.i]&&db<2.6)c(db-.5,prayPend()?{l:'🕌 Sholat dulu sebelum tidur',f:()=>toast('Belum sholat '+curPrayer(gHour()).n+' · sholat dulu, baru boleh tidur 🕌')}:{l:'😴 Tidur',f:sleep});});
@@ -1184,6 +1185,62 @@ function polStep(dt,gh){const pdy=gh>=22?gDay():gDay()-1,on=(gh>=22||gh<3)&&pdy%
   const fl=(p.st==='chase'||p.st==='arrest')?Math.floor(polT*6)%2:-1;car.userData.lr.color.setHex(fl===1?0xff2a2a:0x400808);car.userData.lb.color.setHex(fl===0?0x2a5cff:0x08122a);
   if(p.st==='chase'&&polT>p.sn){p.sn=polT+.4;const dd=Math.hypot(P.x-p.x,P.z-p.z);if(dd<90)noise(.06*(1-dd/100),(Math.floor(polT/.4)%2)?900:650);}});}
 function nightStep(dt,gh){copVis=copSee(gh)&&!crowdOn;crowdStep(dt,gh);polStep(dt,gh);gangStep(dt);ontStep(dt,gh);rondaStep(dt,gh);}
+
+/* ===== NEXOMARKET: minimarket di barat kota (ujung jalan z=160), jauh dari Base; jual makanan & minuman untuk memulihkan HP ===== */
+const MK={x:-222,z:160};
+const MKI=[['🥤 Air Mineral',5,10],['🧃 Teh Botol Dingin',8,15],['🍊 Es Jeruk',12,20],['☕ Kopi Susu',15,25],['⚡ Minuman Isotonik',20,35],['🍟 Keripik Kentang',10,15],['🍞 Roti Isi',15,25],['🍜 Mie Cup Panas',20,30],['🍱 Nasi Bungkus',30,50],['🥗 Paket Sehat Lengkap',60,100]];
+function market(){const hp=Math.ceil(CB.hp);
+ dlg('🛒 NexoMarket','Kebutuhan Harian • Camilan • Minuman<br>💰 '+S.coins+' · ❤️ HP: <b>'+hp+'/100</b>',[...MKI.map(q=>[q[0]+' · '+q[1]+'💰 · +'+q[2]+'❤️',()=>{
+  if(CB.dead)return;if(CB.hp>=99.5){toast('❤️ HP kamu sudah penuh');return market();}
+  if(S.coins<q[1]){toast('Koin kurang');return market();}
+  S.coins-=q[1];const b=CB.hp;CB.hp=Math.min(100,CB.hp+q[2]);CB.reg=Math.max(CB.reg,3);noise(.12,900);toast(q[0].split(' ')[0]+' HP +'+Math.round(CB.hp-b)+' ❤️ ('+Math.ceil(CB.hp)+'/100)');save();market();}]),['Tutup']]);}
+function buildMarket(){const PI=Math.PI,RED=0xd7262b,YEL=0xf5c400,BLU=0x1c3fa8,CRM=0xefe8d8,GLC=0x9fd0e8,DKG=0x2a2f3a,PAL=[0xd7262b,0xf5c400,0x1c3fa8,0x2fa84f,0xf28c28,0xffffff,0x8e44ad];
+ const bx=(w,h,d,c,x,y,z,o)=>{const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),(o&&o.bas)?new THREE.MeshBasicMaterial({color:c}):(o&&o.gl)?new THREE.MeshLambertMaterial({color:c,transparent:true,opacity:.35}):M(c));m.position.set(MK.x+x,y,MK.z+z);if(!(o&&o.ns))m.castShadow=true;m.receiveShadow=true;sc.add(m);return m;};
+ const col=(x0,x1,z0,z1)=>A.push([MK.x+x0,MK.x+x1,MK.z+z0,MK.z+z1]);
+ const face=(tx,w,h,x,y,z,ry)=>{const m=new THREE.Mesh(new THREE.PlaneGeometry(w,h),new THREE.MeshBasicMaterial({map:tx,transparent:true}));m.rotation.y=ry;m.position.set(MK.x+x,y,MK.z+z);sc.add(m);return m;};
+ /* jalan penghubung dari ujung barat jalan z=160 + halaman beton */
+ plane(60,RW,0x2b2f38,-180,.013,160);box(60,.03,.2,0xffd23a,-180,.03,160,1);plane(26,36,0x9aa0a8,MK.x+2,.02,MK.z);plane(8.6,13.6,0xe9e5da,MK.x,.035,MK.z);
+ /* dinding: krem + pita biru & garis kuning di bawah */
+ bx(.25,3.6,14,CRM,-4.5,1.8,0);bx(.27,1.1,14,BLU,-4.5,.55,0);bx(.27,.16,14,YEL,-4.5,1.18,0);
+ [-7,7].forEach(z=>{bx(9,3.6,.25,CRM,0,1.8,z);bx(9.02,1.1,.27,BLU,0,.55,z);bx(9.02,.16,.27,YEL,0,1.18,z);});
+ bx(.06,.9,3,0x1a1d24,-4.65,2.4,0);bx(3,.9,.06,0x1a1d24,-1.5,2.4,7.15);
+ col(-4.63,-4.37,-7.1,7.1);col(-4.5,4.5,-7.13,-6.87);col(-4.5,4.5,6.87,7.13);
+ /* etalase kaca depan (menghadap timur, ke jalan) + pintu terbuka di tengah */
+ [-7,7,-1.5,1.5].forEach(z=>bx(.5,3.6,.5,RED,4.5,1.8,z));
+ [-4.25,4.25].forEach(z=>{bx(.08,2.6,5,GLC,4.5,1.9,z,{gl:1});bx(.22,.6,5,BLU,4.5,.3,z);});
+ bx(.35,.8,14,BLU,4.5,3.2,0);bx(.37,.12,14.2,YEL,4.5,3.62,0);bx(1.2,.04,2.2,0x2a2d33,4.9,.04,0,{ns:1});
+ col(4.25,4.75,-7.1,-1.25);col(4.25,4.75,1.25,7.1);
+ /* atap berlapis biru-kuning-merah + kanopi depan bertiang merah */
+ bx(12.6,.18,15.2,BLU,1.2,3.7,0);bx(12.8,.16,15.4,YEL,1.2,3.87,0);bx(13.0,.3,15.6,RED,1.2,4.1,0);
+ [-6.8,-3.4,3.4,6.8].forEach(z=>{bx(.45,3.7,.45,RED,7.0,1.85,z);col(6.8,7.2,z-.22,z+.22);});
+ [-5,-2.5,2.5,5].forEach(z=>bx(.6,.04,.25,0xffffff,5.8,3.6,z,{bas:1,ns:1}));
+ /* papan nama besar di atas atap */
+ bx(.4,.25,7.4,RED,7.0,4.38,0);bx(.3,2.0,8.6,YEL,7.0,5.5,0);bx(.32,1.7,8.3,BLU,7.02,5.5,0);
+ face(cvT(1024,192,(g,w,h)=>{g.fillStyle='#1c3fa8';g.fillRect(0,0,w,h);g.textBaseline='middle';g.textAlign='left';g.font='80px sans-serif';g.fillStyle='#fff';g.fillText('🛒',34,72);g.font='900 92px Arial Black,Impact,sans-serif';g.fillStyle='#fff';g.fillText('Nexo',170,72);const nw=g.measureText('Nexo').width;g.fillStyle='#f5c400';g.fillText('Market',170+nw,72);g.fillStyle='#fff';g.font='700 38px Arial,sans-serif';g.fillText('Kebutuhan Harian • Camilan • Minuman',170,150);}),8.0,1.5,7.2,5.5,0,PI/2);
+ /* totem layanan di kiri depan */
+ bx(.7,4.6,1.5,BLU,7.2,2.3,-9.6);bx(.72,.4,1.52,RED,7.2,4.7,-9.6);col(6.8,7.6,-10.4,-8.8);
+ face(cvT(256,640,(g,w,h)=>{g.fillStyle='#1c3fa8';g.fillRect(0,0,w,h);g.fillStyle='#fff';g.textAlign='center';g.textBaseline='middle';g.font='900 36px Arial';g.fillText('🛒',w/2,48);g.font='900 30px Arial';g.fillText('NexoMarket',w/2,100);['Sembako','Minuman','Camilan','Alat Rumah','Pulsa & Top Up'].forEach((t,k)=>{g.fillStyle=k%2?'#f5c400':'#d7262b';g.fillRect(8,140+k*96,w-16,80);g.fillStyle=k%2?'#1c3fa8':'#fff';g.font='900 30px Arial';g.fillText(t,w/2,180+k*96);});}),1.4,3.5,7.57,2.4,-9.6,PI/2);
+ /* papan A di depan */
+ bx(.1,1.5,1.0,BLU,7.6,.75,6.0);col(7.4,7.8,5.4,6.6);
+ face(cvT(192,256,(g,w,h)=>{g.fillStyle='#1c3fa8';g.fillRect(0,0,w,h);g.fillStyle='#f5c400';g.textAlign='center';g.font='900 30px Arial';g.fillText('Camilan',w/2,70);g.fillStyle='#fff';g.fillText('Favoritmu!',w/2,110);g.font='70px sans-serif';g.fillText('🍟🥤',w/2,190);}),.9,1.2,7.67,.8,6.0,PI/2);
+ /* spanduk di dinding samping */
+ face(cvT(640,256,(g,w,h)=>{g.fillStyle='#1c3fa8';g.fillRect(0,0,w,h);g.textAlign='center';g.textBaseline='middle';g.fillStyle='#fff';g.font='900 64px Arial';g.fillText('🛒 NexoMarket',w/2,80);g.fillStyle='#f5c400';g.font='800 54px Arial';g.fillText('Lebih Dekat',w/2,150);g.fillText('Lebih Hemat',w/2,210);}),6,2.4,-.5,2.3,-7.2,PI);
+ face(cvT(640,256,(g,w,h)=>{g.fillStyle='#1c3fa8';g.fillRect(0,0,w,h);g.textAlign='center';g.textBaseline='middle';g.fillStyle='#fff';g.font='900 64px Arial';g.fillText('🛒 NexoMarket',w/2,80);g.fillStyle='#f5c400';g.font='800 46px Arial';g.fillText('Camilan • Minuman',w/2,150);g.fillText('Kebutuhan Harian',w/2,210);}),6,2.4,-.5,2.3,7.2,0);
+ /* taman kecil di sisi + tangki air, tangga & AC di belakang */
+ [-7.7,7.7].forEach(z=>{bx(8,.35,.7,0x7a7d83,0,.18,z);bx(7.8,.3,.6,0x2f7d3a,0,.5,z,{ns:1});});
+ {const t=new THREE.Mesh(new THREE.CylinderGeometry(1,1,1.6,16),M(0x1c3fa8));t.position.set(MK.x-3,5.1,MK.z-4);t.castShadow=true;sc.add(t);}
+ [-2.35,-1.65].forEach(z=>bx(.06,4.6,.06,0xb9bec6,-4.75,2.3,z));for(let k=0;k<13;k++)bx(.05,.05,.7,0xb9bec6,-4.75,.4+k*.33,-2,{ns:1});
+ bx(.4,.6,.9,0xeeeeee,-4.75,2.9,3.2);[[-5.4,5.6,BLU],[-5.4,6.5,RED],[-6.4,5.8,BLU]].forEach(q=>{bx(.8,.4,.6,q[2],q[0],.22,q[1]);});
+ /* isi toko: rak belakang, 2 rak pulau, 3 kulkas minuman, meja kasir + kasir, lampu */
+ bx(.7,2.1,10,0x3b3f46,-4.0,1.05,0);col(-4.4,-3.6,-5.1,5.1);
+ for(let r=0;r<4;r++)for(let k=0;k<10;k++)bx(.3,.34,.8,PAL[(k*3+r*5)%PAL.length],-3.62,.5+r*.5,-4.5+k*.95,{ns:1});
+ [-3.55,3.55].forEach(z=>{bx(.8,1.6,3.4,0x3b3f46,-1.2,.8,z);col(-1.65,-.75,z-1.75,z+1.75);const sg=z<0?-1:1;
+  for(let r=0;r<3;r++)for(let k=0;k<4;k++)[-.45,.45].forEach(o=>bx(.2,.32,.7,PAL[(k*2+r*3+(o>0?1:0))%PAL.length],-1.2+o,.5+r*.45,z+(k-1.5)*.85,{ns:1}));});
+ [-2.4,-.6,1.2].forEach(x=>{bx(1.5,2.1,.6,DKG,x,1.05,-6.55);bx(1.4,1.9,.05,GLC,x,1.05,-6.2,{gl:1});for(let r=0;r<4;r++)for(let j=0;j<4;j++)bx(.28,.3,.25,PAL[(j+r*2)%PAL.length],x-.5+j*.33,.4+r*.45,-6.45,{ns:1});});col(-3.2,1.95,-6.9,-6.1);
+ bx(1.1,1.1,3.0,BLU,3.0,.55,4.4);bx(1.2,.08,3.1,0xdddddd,3.0,1.14,4.4);bx(.03,.4,3.0,RED,3.57,.7,4.4);bx(.35,.3,.4,0x222222,3.0,1.35,3.9);bx(.05,.3,.42,0x15161a,2.85,1.5,3.9);col(2.4,3.6,2.9,5.9);
+ {const k=person({skin:'#e0ac82',hair:'#111111',shirt:'#1c3fa8',pants:'#222233',shoe:'#111111'});k.scale.setScalar(CHS);k.position.set(MK.x+2.0,0,MK.z+4.4);k.rotation.y=PI/2;}
+ for(const x of [-3,0,3])for(const z of [-4,0,4])bx(.9,.05,.35,0xffffff,x,3.52,z,{bas:1,ns:1});
+ label('🛒 NEXOMARKET',MK.x+7.2,7.0,MK.z,6,'#ffffff',1);}
 
 /* ===== TOKO MOTOR BANG JOKO (mini showroom + kamar tidur), stang custom, bangku duduk ===== */
 function buildToko(){const X0=18,X1=26,Z0=21.6,Z1=28.2,PI=Math.PI,WH=0xe8e6e1,RD=0xb3262a,DK=0x2a2d33,GL=0x7fb6d6;
