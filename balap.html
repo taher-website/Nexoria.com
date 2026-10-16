@@ -466,7 +466,7 @@ const STG=[
   const k=Math.max(1,Math.floor((bw+3)/15)),w0=(bw-(k-1)*3)/k;
   for(let j=0;j<k&&n<N;j++){if(zi===1&&xi===3&&j===1)continue;const w=w0*rnd(.8,1),dd=bd*rnd(.7,1),cx=x0+j*(w0+3)+w0/2,cz=z0+bd/2,h=rnd(6,40);d.position.set(cx,h/2,cz);d.scale.set(w,h,dd);d.updateMatrix();city.setMatrixAt(n,d.matrix);city.setColorAt(n,new THREE.Color(cs[n%cs.length]));CITY.push([cx-w/2,cx+w/2,cz-dd/2,cz+dd/2]);CITYH.push(h);n++;}}
  city.count=n;city.userData.n=n;city.frustumCulled=false;city.instanceColor.needsUpdate=true;sc.add(city);buildWindows(n);}],
-['Merakit motor drag',()=>{['mt','eng','exh','wl'].forEach(k=>{S[k]=S[k]||[0,0,0];while(S[k].length<BK.length)S[k].push(0);});S.own=S.own||[1,0,0];while(S.own.length<BK.length)S.own.push(BK[S.own.length].price>0?0:1);const dp=[[-6,-10],[0,-10],[6,-10],[12,-10]];for(let i=0;i<BK.length;i++){const b=makeBike(i),p=S.bp&&S.bp[i]||[dp[i][0],dp[i][1],0];b.x=p[0];b.z=p[1];b.h=p[2];b.g.position.set(b.x,0,b.z);b.g.rotation.y=b.h;b.drop((S.mt[i]||0)*.05);if(b.setGear)b.setGear((S.gh|0)+1);{const hk=(S.hb||[])[i]|0;if(hk&&b.cyc)applyBars(b,hk);}bikes.push(b);label(BK[i].n,dp[i][0],2.6,dp[i][1]-.5,3.6,'#ffffff');}
+['Merakit motor drag',()=>{['mt','eng','exh','wl'].forEach(k=>{S[k]=S[k]||[0,0,0];while(S[k].length<BK.length)S[k].push(0);});S.own=S.own||[1,0,0];while(S.own.length<BK.length)S.own.push(BK[S.own.length].price>0?0:1);const dp=[[-6,-10],[0,-10],[6,-10],[12,-10]];for(let i=0;i<BK.length;i++){const b=makeBike(i),p=S.bp&&S.bp[i]||[dp[i][0],dp[i][1],0];b.x=p[0];b.z=p[1];b.h=p[2];b.g.position.set(b.x,0,b.z);b.g.rotation.y=b.h;b.drop((S.mt[i]||0)*.05);if(b.setGear)b.setGear((S.gh|0)+1);{const hk=(S.hb||[])[i]|0;if(hk&&b.cyc)applyBars(b,hk);if(b.cyc&&(S.jk||[])[i])applyJok(b,1);}bikes.push(b);label(BK[i].n,dp[i][0],2.6,dp[i][1]-.5,3.6,'#ffffff');}
  npc=makeBike(1);npc.g.visible=false;av=person(AVC);av.scale.setScalar(CHS);}],
 ['Membangun sirkuit',buildCircuits],['Membangun masjid',buildMasjid],['Membangun tempat wudhu',buildWudhu],['Membangun kantor polisi',buildPolice],['Membangun toko motor Bang Joko',buildToko],['Menata lampu & rumput',buildDeco],['Menempatkan warga kota',buildNpcs],['Memanggil polisi & warga malam',buildNight],['Menyiapkan balap ontel & pos ronda',()=>{buildOntel();buildRonda();}],['Menyetel mesin & suara',()=>{}]];
 let AC=null,o1,o2,lp,gn,nb,o3=null,lg3=null,audK=-9;
@@ -708,7 +708,7 @@ function makeBmx(i){const g=new THREE.Group();g.rotation.order='YXZ';const body=
  const BB=[0,.27,-.14],HTt=[0,.64,.385],HTb=[0,.52,.355],STt=[0,.62,-.235],PT=[0,.675,-.245];
  link(BB,STt,.02,FRM);link(STt,PT,.015,CHR);link(STt,HTt,.021,FRM);link(BB,HTb,.025,FRM);link(HTb,HTt,.027,FRM);link([0,.562,.3655],[0,.602,.3755],.0285,GRN);
  [-1,1].forEach(s=>{link([s*.07,.27,-.14],[s*.07,.30,-.50],.014,FRM);link([s*.05,.60,-.235],[s*.07,.30,-.50],.011,FRM);});
- box(.15,.05,.26,BLK,0,.705,-.30);box(.07,.04,.12,BLK,0,.70,-.14);
+ const jok=[box(.15,.05,.26,BLK,0,.705,-.30),box(.07,.04,.12,BLK,0,.70,-.14)];
  
  const dT=cvT(512,128,(g,w,h)=>{g.clearRect(0,0,w,h);g.fillStyle='#0a0d0a';g.beginPath();g.moveTo(14,86);g.quadraticCurveTo(10,30,60,20);g.lineTo(w-70,14);g.quadraticCurveTo(w-8,18,w-16,60);g.quadraticCurveTo(w-30,112,w-130,114);g.lineTo(70,116);g.quadraticCurveTo(24,116,14,86);g.fill();g.save();g.translate(w/2,h/2+4);g.transform(1,0,-.22,1,0,0);g.font='italic 900 74px Arial Black,Impact,sans-serif';g.textAlign='center';g.textBaseline='middle';g.lineWidth=5;g.strokeStyle='#0b4d12';g.strokeText('UNITED',0,0);g.fillStyle='#37ff45';g.fillText('UNITED',0,0);g.restore();}),
   cT=cvT(256,48,(g,w,h)=>{g.clearRect(0,0,w,h);g.fillStyle='#111';g.font='italic 900 34px Arial Black,Impact,sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText('UNITED',w/2,h/2+2);}),
@@ -741,14 +741,14 @@ function makeBmx(i){const g=new THREE.Group();g.rotation.order='YXZ';const body=
    if(lv>=3){const L=Math.hypot(q[1][1]-q[0][1],q[1][2]-q[0][2]),n=Math.round(L/.042);for(let j=1;j<n;j++){const u=j/n,bm=box(.018,.013+.0008*k,.016,gl?CCs[k]:RC[Math.max(0,k-1)],q[0][0],q[0][1]+(q[1][1]-q[0][1])*u,q[0][2]+(q[1][2]-q[0][2])*u,fr);if(gl)bm.material=mkM(CCs[k],1);gm.push({m:bm,p:fr});}}});
   body.userData.gl=lv;};
  setGear(1);
- body.userData.grips=[-1,1].map(s=>{const o=new THREE.Object3D();o.position.set(s*.195,.294,-.043);fork.add(o);return o;});body.userData.seat={y:.76-HIP*CHS,z:-.3};
+ body.userData.grips=[-1,1].map(s=>{const o=new THREE.Object3D();o.position.set(s*.195,.294,-.043);fork.add(o);return o;});body.userData.seat={y:.76-HIP*CHS,z:-.3};body.userData.jok=jok;
  sc.add(g);return{g,body,fork,fs,rs,fr,x:0,z:0,h:0,i,cyc:1,crank,ped,ph:0,sb:0,setGear,drop:()=>{}};}
 function cycRider(e,b,stand,look,dt){b.sb+=((stand?1:0)-b.sb)*Math.min(1,dt*7);const sb=b.sb,Ik=(b.idle||0)*(1-sb),hipY=.76+.24*sb,zs=-.30+.1*sb,sway=stand?Math.sin(b.ph)*.06:0;
  e.position.set(sway-.03*Ik,hipY-HIP*CHS,zs);e.rotation.set(0,look*.5,0);e.up.rotation.x=.42+.4*sb;e.head.rotation.set(-.3-.25*sb,look*2.2,0);b.g.updateMatrixWorld(true);
  for(let i=0;i<2;i++){const s=i?1:-1,L=i?e.legR:e.legL;b.ped[1-i].getWorldPosition(IKV[7]);e.worldToLocal(IKV[7]);IKV[7].y+=.074;IKV[7].z-=.05;POLE.set(s*.12,.25,1);limbApply(L,HPC[i],IKV[7],POLE,1,.45,.34,null);L.kn.foot.quaternion.copy(L.quaternion).multiply(L.kn.quaternion).invert();}
  idleLeg(e,b,Ik,hy);
  gripIK(e,b.body);}
-function cycStep(dt,b,gas,brk,rev,locked,jX){P.gt=(gas&&!locked)?(P.gt||0)+dt:0;P.stand=P.gt>.25?1:0;const st=P.stand,gh=S.gh|0,mx=27.8;
+function cycStep(dt,b,gas,brk,rev,locked,jX){P.gt=(gas&&!locked)?(P.gt||0)+dt:0;P.stand=(P.gt>.25||b.nj)?1:0;const st=P.stand,gh=S.gh|0,mx=27.8;
  {const idl=(!locked&&!gas&&Math.abs(P.v)<.35&&hy===0)?1:0;b.idle=(b.idle||0)+(idl-(b.idle||0))*Math.min(1,dt*4);}
  if(jmpQ){if(hy<=0&&!locked){hv=6.4;noise(.12,650);}jmpQ=0;}if(hv!==0||hy>0){hv-=22*dt;hy+=hv*dt;if(hy<=0){if(hv<-3)noise(.22,240);hy=0;hv=0;}}
  P.thr+=(gas-P.thr)*Math.min(1,dt*6);P.rpm=1500;fhStep(!gas&&!locked&&hy===0,P.v);
@@ -785,6 +785,7 @@ function shop(){const i=S.bike,c=BK[i],mk=(k,n,pr)=>{const lv=S[k][i];if(lv>=pr.
  const applyMt=j=>{const d=(S.mt[j]||0)*.05;bikes[j].drop(d);if(P.m===j){av.position.y=SY-d;av.userData.by=SY-d;}};
  const hbs=[];if(c.cyc){S.hb=S.hb||[];S.hbo=S.hbo||[0,0,0];const cur=S.hb[i]|0,HN=['Standar','M','Lontong'];
   [1,2].forEach(k=>{if(cur===k)hbs.push(['✅ Stang '+HN[k]+' terpasang · lepas (balik standar)',()=>{S.hb[i]=0;applyBars(bikes[i],0);save();shop();}]);else if(S.hbo[k])hbs.push(['🔩 Pasang Stang '+HN[k],()=>{S.hb[i]=k;applyBars(bikes[i],k);save();shop();}]);else hbs.push(['🔩 Beli Stang '+HN[k]+' (100 💰)'+(k===1?' · lagi viral':''),()=>{if(S.coins<100)return toast('Koin kurang');S.coins-=100;S.hbo[k]=1;S.hb[i]=k;applyBars(bikes[i],k);toast('🔩 Stang '+HN[k]+' terpasang!');save();shop();}]);});}
+ if(c.cyc){S.jk=S.jk||[];S.jko=S.jko||[];const rj=S.jk[i]|0;hbs.push(rj?['✅ Jok dilepas · pasang lagi (gratis)',()=>{S.jk[i]=0;applyJok(bikes[i],0);toast('💺 Jok terpasang lagi');save();shop();}]:S.jko[i]?['🔧 Lepas Jok',()=>{S.jk[i]=1;applyJok(bikes[i],1);toast('🔧 Jok dilepas · kamu bersepeda berdiri');save();shop();}]:['🔧 Lepas Jok (100 💰)',()=>{if(S.coins<100)return toast('Koin kurang');S.coins-=100;S.jko[i]=1;S.jk[i]=1;applyJok(bikes[i],1);toast('🔧 Jok dilepas!');save();shop();}]);}
  const bi=BK.findIndex(q=>q.cyc),gh=S.gh|0,GP=[120,200,300,430,600,820,1100,1450,1900],gbtn=(bi<0||!S.own[bi]||!c.cyc)?null:(gh>=9?['⚙️ Gear HT BMX MAX (Lv 10) 🏆',()=>{toast('Gear HT BMX sudah Lv 10 (MAX)');shop();}]:['⚙️ Gear HT BMX Lv'+(gh+1)+' → Lv'+(gh+2)+' ('+GP[gh]+' 💰)',()=>{if(S.coins<GP[gh])return toast('Koin kurang');S.coins-=GP[gh];S.gh=gh+1;const bm=bikes[bi];if(bm&&bm.setGear)bm.setGear(S.gh+1);toast('⚙️ Gear HT BMX naik ke Lv '+(S.gh+1)+(S.gh>=9?' (MAX!)':' · gigi & rantai makin keren'));save();shop();}]);
  dlg('🔧 Bengkel Bang Joko','💰 '+S.coins+' · <b>'+c.n+'</b>'+(c.cyc&&bi>=0?'<br>🚲 Gear HT BMX: <b>Lv '+(gh+1)+'/10</b> · makin tinggi gigi & rantai makin bagus, kayuhan makin kencang':''),[...(c.cyc?[]:[mk('eng','🔧 Mesin',[300,700,1500]),mk('exh','🔊 Knalpot',[250,600,1300]),mk('wl','🤸 Kopling Spontan (jengat & jemping)',[200,450,900,1600,2800]),mk('mt','⬇️ Mounting (makin ceper)',[150,350,700,1300,2200])]).filter(Boolean),...(gbtn?[gbtn]:[]),...hbs,['Tutup']]);}
 
@@ -973,7 +974,7 @@ function rpStep(dt){const now=performance.now();let cnt=1;for(const k in RP){con
   if(hs){o.lb.position.set(hs.x,2.9,hs.z);continue;}
   if(o.bk){const b=o.bk,pt=+d.p||0,yy=+d.y||0;if(b.cyc&&o.hbk!==(d.hb|0)){o.hbk=d.hb|0;applyBars(b,o.hbk);}if(o.dw!==(d.w|0)){o.dw=d.w|0;b.drop(.05*o.dw);o.pe.position.y=SY-.05*o.dw;}o.p+=(pt-o.p)*Math.min(1,dt*14);o.y+=(yy-o.y)*Math.min(1,dt*18);
    b.g.position.set(o.x,o.y,o.z);b.g.rotation.y=o.h;b.g.rotation.z=sv*Math.min(1,Math.abs(v)/15)*.45;b.fork.rotation.y=-sv*.55;b.fs.rotation.x+=v*dt/.38;b.rs.rotation.x+=v*dt/.38;
-   b.body.rotation.x=-o.p;b.body.position.y=.85*Math.sin(o.p)+.33*(1-Math.cos(o.p));b.body.position.z=.85*(1-Math.cos(o.p))+.33*Math.sin(o.p);if(o.bk.cyc){o.bk.ph=(o.bk.ph||0)+(v>.3?Math.max(v/.31/2.3,2.2):v<-.3?-1.6:0)*dt;o.bk.crank.rotation.x=o.bk.ph;o.bk.ped[0].rotation.x=o.bk.ped[1].rotation.x=-o.bk.ph;cycRider(o.pe,o.bk,0,0,dt);}else{o.pe.rotation.x=.3-o.p*.5;gripIK(o.pe,o.bk.body);}}
+   b.body.rotation.x=-o.p;b.body.position.y=.85*Math.sin(o.p)+.33*(1-Math.cos(o.p));b.body.position.z=.85*(1-Math.cos(o.p))+.33*Math.sin(o.p);if(o.bk.cyc){o.bk.ph=(o.bk.ph||0)+(v>.3?Math.max(v/.31/2.3,2.2):v<-.3?-1.6:0)*dt;o.bk.crank.rotation.x=o.bk.ph;o.bk.ped[0].rotation.x=o.bk.ped[1].rotation.x=-o.bk.ph;cycRider(o.pe,o.bk,o.bk.nj?1:0,0,dt);}else{o.pe.rotation.x=.3-o.p*.5;gripIK(o.pe,o.bk.body);}}
   else{const e=o.pe,w=Math.sin(T*9)*.8*(Math.hypot(d.x-o.x,d.z-o.z)>.15?1:0),pa=poseStep(e,d.q|0,dt);e.position.set(o.x,pa?e.pz.dy*e.scale.x:0,o.z);e.rotation.y=o.h;if(!pa){e.legL.rotation.x=w;e.legR.rotation.x=-w;e.armL.rotation.x=-w*.7;e.armR.rotation.x=w*.7;}}
   o.lb.position.set(o.x,o.bk?2.6:2.3,o.z);}
  onlN=cnt;}
@@ -1219,10 +1220,25 @@ function toko(){const bs=[];BK.forEach((b,j)=>{if(!S.own[j])bs.push(['Beli '+b.n
 function applyBars(b,k){if(!b||!b.cyc)return;const bd=b.body,fk=b.fork;if(b.hbx){fk.remove(b.hbx);b.hbx=null;}(bd.userData.bars||[]).forEach(m=>{m.visible=!k;});if(!k||!bd.userData.grips)return;
  const g=new THREE.Group();fk.add(g);b.hbx=g;const gp=bd.userData.grips[1].position,gx=gp.x,gy=gp.y,gz=gp.z,CH=M(0xc6cbd3),BL=M(0x15151a),UP=new THREE.Vector3(0,1,0),T30=Math.tan(Math.PI/6);
  const tube=(a,c,r,mat)=>{const d=new THREE.Vector3(c[0]-a[0],c[1]-a[1],c[2]-a[2]),L=d.length(),m=new THREE.Mesh(new THREE.CylinderGeometry(r,r,L,10),mat);m.position.set((a[0]+c[0])/2,(a[1]+c[1])/2,(a[2]+c[2])/2);m.quaternion.setFromUnitVectors(UP,d.normalize());m.castShadow=true;g.add(m);return m;};
- if(k===1){[-1,1].forEach(sx=>{const out=[sx*(gx+.045),gy+.045*T30,gz],inn=[sx*(gx-.16),gy-.16*T30,gz+.012],g1=[sx*(gx-.045),gy-.045*T30,gz];tube(inn,out,.011,CH);tube(g1,out,.0165,BL);
-   const cb=new THREE.Mesh(new THREE.BoxGeometry(.05,.04,.05),BL);cb.position.set(inn[0],inn[1]-.005,inn[2]);g.add(cb);});}
- else{const m=new THREE.Mesh(new THREE.CylinderGeometry(.03,.03,.26,12),CH);m.rotation.z=Math.PI/2;m.scale.x=.5;m.position.set(0,.31,-.01);m.castShadow=true;g.add(m);
-  [-1,1].forEach(sx=>{tube([sx*.06,.15,.03],[sx*.1,.31,-.01],.02,CH);tube([sx*.12,.31,-.01],[sx*(gx-.045),gy,gz],.012,CH);tube([sx*(gx-.045),gy,gz],[sx*(gx+.045),gy-.006,gz-.012],.0165,BL);});}}
+ if(k===1){/* Stang M (ref. Strummer BMX): grip lurus, tekuk turun jadi kaki-kaki bentuk M/trapesium, palang atas bentuk V dangkal, palang bawah menumpu di stem */
+  const BM=M(0x0c0c11),SL=M(0xb9bec6),r=.0148,J=(q,x)=>[x*q[0],q[1],q[2]],
+   B=[.125,gy-.014,gz+.025],Lb=[.058,gy-.116,gz+.055],Br=[.036,gy-.129,gz+.069],CE=[.1065,gy-.0395,gz+.0325],Cc=[0,gy-.0635,gz+.057],Gi=[gx-.045,gy,gz],
+   ball=q=>{const m=new THREE.Mesh(new THREE.SphereGeometry(r,10,8),BM);m.position.set(q[0],q[1],q[2]);m.castShadow=true;g.add(m);};
+  [-1,1].forEach(sx=>{const b=J(B,sx),l=J(Lb,sx),br=J(Br,sx),ce=J(CE,sx),gi=J(Gi,sx),go=[sx*(gx+.045),gy-.006,gz-.012];
+   tube(gi,b,r,BM);tube(b,l,r,BM);tube(l,br,r,BM);tube(ce,Cc,r*.85,BM);tube(gi,go,.0195,BL);
+   tube([b[0],b[1],b[2]+.0135],[gi[0],gi[1],gi[2]+.0135],.0036,SL);tube([b[0],b[1],b[2]+.0135],[l[0],l[1],l[2]+.0135],.0036,SL);
+   ball(b);ball(l);ball(br);ball(ce);});
+  tube([-Br[0],Br[1],Br[2]],[Br[0],Br[1],Br[2]],r,BM);tube([-.03,Br[1],Br[2]],[.03,Br[1],Br[2]],.0175,BL);}
+ else{/* Stang Lontong (ref. foto): grip lurus, kaki turun ke U di bawah, palang datar lebar di atas + logo merah */
+  const BM=M(0x121215),RD=M(0xc8202a),r=.0115,J=(q,x)=>[x*q[0],q[1],q[2]],
+   B=[.106,gy-.008,gz+.02],Lb=[.06,gy-.09,gz+.05],Ub=[.034,gy-.109,gz+.065],Uc=[0,gy-.112,gz+.069],Gi=[gx-.045,gy,gz],
+   ball=q=>{const m=new THREE.Mesh(new THREE.SphereGeometry(r,10,8),BM);m.position.set(q[0],q[1],q[2]);m.castShadow=true;g.add(m);};
+  [-1,1].forEach(sx=>{const b=J(B,sx),l=J(Lb,sx),u=J(Ub,sx),gi=J(Gi,sx),go=[sx*(gx+.045),gy-.006,gz-.012];
+   tube(gi,b,r,BM);tube(b,l,r,BM);tube(l,u,r,BM);tube(u,Uc,r,BM);tube(gi,go,.0165,BL);ball(b);ball(l);ball(u);});
+  const t=.17,cx=B[0]+t*(Lb[0]-B[0]),cz=B[2]+t*(Lb[2]-B[2]),pl=new THREE.Mesh(new THREE.BoxGeometry(cx*2,.017,.012),BM);pl.position.set(0,gy-.022,cz);pl.castShadow=true;g.add(pl);
+  const lg=new THREE.Mesh(new THREE.BoxGeometry(.034,.011,.0025),RD);lg.position.set(-cx+.035,gy-.022,cz+.0075);g.add(lg);}}
+
+function applyJok(b,on){if(!b||!b.cyc)return;b.nj=on?1:0;(b.body.userData.jok||[]).forEach(m=>{m.visible=!on;});}
 
 /* ---- bangku di base (rumah pojok kiri): 6 dudukan, maks 5 pemain karena 1 dipakai Bg Ardi; terlihat saat mabar ---- */
 const SEATX=[-10,-9.2,-8.4,-7.6,-6.8,-6],SEATZ=-22.45;
@@ -1566,7 +1582,7 @@ function cbStart(){if(!db)return;
  setInterval(cbSend,110);}
 function cbSend(){if(!cbRef||!entered||document.hidden)return;const fh=[];
  PED.forEach(n=>{if(n.cbm==='help'&&!n.dead&&fh.length<4)fh.push([+n.x.toFixed(1),+n.z.toFixed(1),+n.g.rotation.y.toFixed(2),n.pt>0?1:0,String((n.co&&n.co.shirt)||'#4a7').slice(0,24)]);});
- const o={hp:Math.round(CB.hp),ko:CB.dead?1:0,pc:CB.pc,cy:CB.carry?1:0,fh:fh.length?fh:0},sg=JSON.stringify(o),t=performance.now();
+ const o={hp:Math.round(CB.hp),ko:CB.dead?1:0,pc:CB.pc,cy:CB.carry?1:0,jk:(P.m>=0&&BK[P.m].cyc&&S.jk&&S.jk[P.m])?1:0,fh:fh.length?fh:0},sg=JSON.stringify(o),t=performance.now();
  if(sg===cbSig&&t-cbLast<5000)return;cbSig=sg;cbLast=t;try{o.c=++cbC;cbRef.set(o);}catch(e){}}
 function cbKillR(o){rmv(o.bar);if(o.fg)o.fg.forEach(q=>rmv(q));rmv(o.cg);}
 function cbRemote(dt,now){for(const k in RP){const o=RP[k],d=o.d,c=CBR[k];
@@ -1574,6 +1590,7 @@ function cbRemote(dt,now){for(const k in RP){const o=RP[k],d=o.d,c=CBR[k];
   const e=o.pe,foot=(d.m|0)<0&&!d.r,ko=!!(c&&c.ko&&foot);
   if(c){if(o.pc0===undefined)o.pc0=c.pc;else if(c.pc!==o.pc0){o.pc0=c.pc;o.pt=.36;}}
   if(o.pt>0)o.pt-=dt;
+  if(o.bk&&o.bk.cyc){const j=c&&c.jk?1:0;if((o.bk.nj|0)!==j)applyJok(o.bk,j);}
   if(ko){e.rotation.x=-CBPI/2;e.position.y=.2;e.legL.rotation.x=e.legR.rotation.x=0;e.armL.rotation.x=e.armR.rotation.x=0;o.lay=1;cbApply(e,0,0);}
   else{if(o.lay){o.lay=0;e.rotation.x=0;e.position.y=0;}
    if(foot){if(o.pt>0)cbApply(e,1,o.pt);else if(c&&c.cy)cbApply(e,3,0);else cbApply(e,0,0);}else cbApply(e,0,0);}
