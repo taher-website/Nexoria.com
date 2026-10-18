@@ -6,18 +6,32 @@
   var user='';try{user=(localStorage.getItem('nexoria_user')||'').trim();}catch(e){}
   if(!/^[A-Za-z0-9_]{3,16}$/.test(user)){try{user=(new URLSearchParams(location.search).get('u')||'').trim();}catch(e){}}
   if(!/^[A-Za-z0-9_]{3,16}$/.test(user))return;
-  var key=user.toLowerCase(),db=null,pend=0,rate=.5,incWatch=false,lastAct=Date.now(),lastFlush=Date.now();
+  var key=user.toLowerCase(),db=null,pend=0,rate=.5,incWatch=false,banned=false,lastAct=Date.now(),lastFlush=Date.now();
   function load(src,cb){var s=document.createElement('script');s.src=src;s.onload=cb;s.onerror=function(){};document.head.appendChild(s);}
   function ready(){
     try{
       if(typeof firebase==='undefined'||typeof firebase.database!=='function')return false;
       if(!firebase.apps.length)firebase.initializeApp(window.NEXORIA_FB||CFG);
-      db=firebase.database();watchRate();return true;
+      db=firebase.database();auth();watchRate();watchBan();return true;
     }catch(e){return false;}
+  }
+  /* login anonim (sesi dipakai bersama launcher di domain yang sama) — dibutuhkan oleh rules database */
+  function auth(){
+    try{
+      if(typeof firebase.auth==='function'){
+        var a=firebase.auth(),un=a.onAuthStateChanged(function(u){un();if(!u)a.signInAnonymously().catch(function(){});});
+      }else if(!auth.t){auth.t=1;load('https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js',function(){auth.t=0;if(typeof firebase.auth==='function')auth();});}
+    }catch(e){}
+  }
+  /* akun yang diblokir admin tidak mendapat koin */
+  function watchBan(){
+    try{db.ref('nexoria/bans/'+key).on('value',function(sn){var b=sn.val();banned=!!(b&&(+b.until||0)>Date.now());},function(){});}catch(e){}
   }
   if(!ready()){
     load('https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js',function(){
-      load('https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js',ready);
+      load('https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js',function(){
+        load('https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js',ready);
+      });
     });
   }
   /* penghasilan per detik: Lv0 0,5/d · Lv1 5/d · Lv2 10/d · Lv3 20/d … (dibeli di Shop Nexoria, disimpan di incomeLv) */
@@ -29,12 +43,12 @@
   ['pointerdown','pointermove','touchstart','touchmove','keydown','wheel'].forEach(function(e){addEventListener(e,act,{passive:true});});
   function flush(){
     var n=Math.floor(pend);
-    if(n<=0||!db)return;
+    if(n<=0||!db||banned)return;
     pend-=n;lastFlush=Date.now();
     try{db.ref('nexoria/users/'+key+'/coins').set(firebase.database.ServerValue.increment(n)).catch(function(){pend+=n;});}catch(e){pend+=n;}
   }
   setInterval(function(){
-    if(!document.hidden&&Date.now()-lastAct<8000)pend+=rate*2;
+    if(!banned&&!document.hidden&&Date.now()-lastAct<8000)pend+=rate*2;
     if(pend>=5||(pend>=1&&Date.now()-lastFlush>12000))flush();
   },2000);
   addEventListener('pagehide',flush);

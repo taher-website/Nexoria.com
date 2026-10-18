@@ -230,6 +230,7 @@ footer{color:var(--mute2);font-size:12px;text-align:center;padding:14px 0 30px}
     </div>
     <div class="err" id="err" role="alert"></div>
     <button class="btn" id="goBtn">MASUK</button>
+    <p class="hint" style="text-align:center;margin-top:14px">build 18-okt-d</p>
   </div>
 </section>
 
@@ -282,6 +283,7 @@ footer{color:var(--mute2);font-size:12px;text-align:center;padding:14px 0 30px}
 
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script>
 (function(){
 'use strict';
@@ -314,7 +316,6 @@ const FB_CFG={
 };
 
 const LS_USER='nexoria_user',LS_RECENT='nexoria_recent',LS_FAV='nexoria_favs',LS_PLAYS='nexoria_plays';
-const LS_PWH='nexoria_pwh';
 const $=id=>document.getElementById(id);
 /* SHA-256 murni JS (tetap jalan walau halaman bukan HTTPS) */
 function sha256(str){
@@ -344,7 +345,39 @@ function hashPw(key,pw){
   for(let i=0;i<2000;i++)x=sha256(x+'|'+key);
   return x;
 }
-function saveLocalPw(h){try{if(h)localStorage.setItem(LS_PWH,h);else localStorage.removeItem(LS_PWH);}catch(e){}}
+/* login anonim Firebase: tiap HP punya uid sendiri, dipakai rules untuk tahu siapa pemilik akun */
+let AUTHP=null,AUTHERR='',CLAIMERR='';
+function authReady(){
+  if(AUTHP)return AUTHP;
+  AUTHP=new Promise(res=>{
+    let done=false,un=null,tried=false;
+    const fin=u=>{if(done)return;done=true;try{if(un)un();}catch(e){}res(u);};
+    const fail=e=>{AUTHERR=(e&&(e.code||e.message))||'gagal';AUTHP=null;fin(null);};
+    try{
+      if(!getDB()||typeof firebase.auth!=='function'){AUTHERR='script-auth-tidak-termuat';AUTHP=null;fin(null);return;}
+      const a=firebase.auth();
+      /* coba login anonim biasa; kalau gagal (mis. penyimpanan browser diblokir aplikasi), coba lagi tanpa penyimpanan */
+      const sign=()=>{
+        if(tried)return;tried=true;
+        a.signInAnonymously().then(c=>fin(c&&c.user)).catch(e1=>{
+          a.setPersistence(firebase.auth.Auth.Persistence.NONE)
+            .then(()=>a.signInAnonymously()).then(c=>fin(c&&c.user))
+            .catch(e2=>fail(e1&&e1.code?e1:e2));
+        });
+      };
+      un=a.onAuthStateChanged(u=>{if(u)fin(u);else sign();},fail);
+      setTimeout(()=>{if(!done)sign();},4000);
+      setTimeout(()=>{if(!done){AUTHERR=AUTHERR||'timeout';AUTHP=null;fin(null);}},12000);
+    }catch(e){fail(e);}
+  });
+  return AUTHP;
+}
+/* klaim akun: berhasil kalau tanpa sandi, atau bukti (hash) cocok dengan sandi rahasia di server */
+async function claimOwner(key,proof){
+  const d=getDB(),u=await authReady();if(!d||!u)return false;
+  try{await withTimeout(d.ref('nexoria/users/'+key+'/owners/'+u.uid).set(proof),10000);return true;}
+  catch(e){CLAIMERR=(e&&(e.code||e.message))||'?';return false;}
+}
 const valid=n=>/^[A-Za-z0-9_]{3,16}$/.test(n);
 let db=null,USER='',FILTER='all';
 
@@ -497,7 +530,7 @@ function setUserUI(){
 }
 function showApp(){
   $('splash').hidden=true;$('app').hidden=false;
-  setUserUI();renderGames($('search').value);watchCoins();watchHero();watchFriends();
+  setUserUI();renderGames($('search').value);watchBan();watchCoins();watchHero();watchFriends();
   let rec='curitelur';try{rec=localStorage.getItem(LS_RECENT)||'curitelur';}catch(e){}
   const g=GAMES.find(x=>x.id===rec)||GAMES[1];
   closeDrawer();window.scrollTo(0,0);
@@ -519,7 +552,7 @@ $('navProfile').addEventListener('click',()=>{closeDrawer();showProfile();});
 $('navPw').addEventListener('click',()=>{closeDrawer();changePw();});
 $('navLogout').addEventListener('click',()=>{
   closeDrawer();
-  try{localStorage.removeItem(LS_USER);}catch(e){}saveLocalPw('');
+  try{localStorage.removeItem(LS_USER);}catch(e){}
   USER='';showSplash();
 });
 $('search').addEventListener('input',e=>renderGames(e.target.value));
@@ -541,35 +574,55 @@ function askConfirm(title,text,yes,no){
     });
   });
 }
+function banMsg(b){const u=+b.until||0;return 'Akun diblokir '+(u>=9e12?'permanen':'sampai '+new Date(u).toLocaleString('id-ID'))+(b.reason?'. Alasan: '+b.reason:'')+'.';}
+const isBanned=b=>!!(b&&(+b.until||0)>Date.now()+srvOff);
+let banRef=null;
+function watchBan(){
+  const d=getDB();if(!d||!USER)return;
+  if(banRef)banRef.off();
+  banRef=d.ref('nexoria/bans/'+USER.toLowerCase());
+  banRef.on('value',sn=>{const b=sn.val();
+    if(isBanned(b)){try{localStorage.removeItem(LS_USER);}catch(e){}USER='';showSplash();$('err').textContent=banMsg(b);}
+  },()=>{});
+}
 async function changePw(){
   const d=getDB();if(!d){status('Belum terhubung ke server','err');return;}
-  const key=USER.toLowerCase(),ref=d.ref('nexoria/users/'+key+'/pw');
-  let cur='';
-  try{const s=await withTimeout(ref.once('value'),8000);cur=s.exists()?String(s.val()||''):'';}
+  const au=await authReady();if(!au){status('Gagal autentikasi ke server','err');return;}
+  const key=USER.toLowerCase(),uref=d.ref('nexoria/users/'+key),sref=d.ref('nexoria/secrets/'+key+'/pw');
+  let has=false;
+  try{const sn=await withTimeout(uref.child('hasPw').once('value'),8000);has=sn.val()===true;}
   catch(e){status('Gagal memuat data akun','err');return;}
   const inp='style="width:100%;margin-bottom:10px" maxlength="999" autocomplete="off" type="password"';
-  modal('<h3>🔒 Ubah Sandi</h3><p>'+(cur?'Akunmu memakai sandi.':'Akunmu belum memakai sandi.')+' Kosongkan sandi baru untuk '+(cur?'menghapus sandi.':'tetap tanpa sandi.')+'</p>'
-    +(cur?'<input id="pwOld" class="search" '+inp+' placeholder="Sandi lama">':'')
+  modal('<h3>🔒 Ubah Sandi</h3><p>'+(has?'Akunmu memakai sandi.':'Akunmu belum memakai sandi.')+' Kosongkan sandi baru untuk '+(has?'menghapus sandi.':'tetap tanpa sandi.')+'</p>'
+    +(has?'<input id="pwOld" class="search" '+inp+' placeholder="Sandi lama">':'')
     +'<input id="pwNew" class="search" '+inp+' placeholder="Sandi baru">'
     +'<div class="err" id="pwErr" style="min-height:18px;margin-bottom:8px"></div>'
     +'<div class="row"><button class="btn ghost" id="pwNo">Batal</button><button class="btn" id="pwOk">Simpan</button></div>',c=>{
     c.querySelector('#pwNo').onclick=closeModal;
     const ok=c.querySelector('#pwOk'),er=c.querySelector('#pwErr');
     ok.onclick=async()=>{
-      er.textContent='';
-      if(cur){
-        const o=c.querySelector('#pwOld').value;
-        if(hashPw(key,o)!==cur){er.textContent='Sandi lama salah.';return;}
-      }
-      const nv=c.querySelector('#pwNew').value;
-      ok.disabled=true;
+      er.textContent='';ok.disabled=true;
       try{
-        if(nv){const h=hashPw(key,nv);await withTimeout(ref.set(h),10000);saveLocalPw(h);status('🔒 Sandi disimpan','ok');}
-        else{await withTimeout(ref.remove(),10000);saveLocalPw('');status('🔓 Sandi dihapus','ok');}
+        if(has){
+          const o=c.querySelector('#pwOld').value;
+          if(!(await claimOwner(key,hashPw(key,o)))){er.textContent='Sandi lama salah.';ok.disabled=false;return;}
+        }
+        const nv=c.querySelector('#pwNew').value;
+        if(nv){
+          const h=hashPw(key,nv);
+          await withTimeout(sref.set(h),10000);
+          /* perangkat lain dicabut aksesnya, harus login ulang pakai sandi baru */
+          await withTimeout(uref.update({hasPw:true,owners:{[au.uid]:h}}),10000);
+          status('🔒 Sandi disimpan','ok');
+        }else{
+          await withTimeout(uref.update({hasPw:false,owners:{[au.uid]:'1'}}),10000);
+          await withTimeout(sref.remove(),10000);
+          status('🔓 Sandi dihapus','ok');
+        }
         closeModal();
       }catch(e){er.textContent='Gagal menyimpan. Coba lagi.';ok.disabled=false;}
     };
-    setTimeout(()=>{try{c.querySelector(cur?'#pwOld':'#pwNew').focus();}catch(e){}},60);
+    setTimeout(()=>{try{c.querySelector(has?'#pwOld':'#pwNew').focus();}catch(e){}},60);
   });
 }
 async function showProfile(){
@@ -595,33 +648,45 @@ async function submitName(){
   const d=getDB();
   if(!d){err.textContent='Tidak bisa terhubung ke server. Periksa internet lalu coba lagi.';return;}
   btn.disabled=true;btn.textContent='MEMERIKSA…';
+  let step='auth';
   try{
+    const au=await authReady();
+    if(!au){const hint=/admin-restricted|operation-not-allowed/.test(AUTHERR)?' Aktifkan Anonymous lalu tekan Save di Firebase Authentication.':(/network|timeout/.test(AUTHERR)?' Cek koneksi internet.':'');
+    err.textContent='Gagal login anonim ['+(AUTHERR||'?')+'].'+hint;btn.disabled=false;btn.textContent='MASUK';return;}
+    step='baca-akun';
     const key=name.toLowerCase(),ref=d.ref('nexoria/users/'+key);
+    const bsn=await withTimeout(d.ref('nexoria/bans/'+key).once('value'),8000);
+    if(isBanned(bsn.val())){err.textContent=banMsg(bsn.val());btn.disabled=false;btn.textContent='MASUK';return;}
     const snap=await withTimeout(ref.once('value'),10000);
     let finalName=name;
     if(snap.exists()){
       const v=snap.val()||{};finalName=v.name||name;
-      if(v.pw){
-        const typed=$('upw').value;
-        if(!typed){err.textContent='Akun ini memakai sandi. Masukkan sandi untuk masuk.';btn.disabled=false;btn.textContent='MASUK';return;}
-        if(hashPw(key,typed)!==String(v.pw)){err.textContent='Sandi salah.';btn.disabled=false;btn.textContent='MASUK';return;}
-        saveLocalPw(String(v.pw));
-      }else saveLocalPw('');
+      const typed=$('upw').value;
+      step='klaim-akun';CLAIMERR='';
+      if(!(await claimOwner(key,typed?hashPw(key,typed):'1'))){
+        err.textContent=v.hasPw===true?(typed?'Sandi salah.':'Akun ini memakai sandi. Masukkan sandi untuk masuk.'):'Gagal masuk ke akun ini ('+CLAIMERR+'). Coba lagi.';
+        btn.disabled=false;btn.textContent='MASUK';return;
+      }
+      step='konfirmasi';
       const ok=await askConfirm('Username sudah terdaftar','"'+finalName+'" sudah ada di NEXORIA. Masuk ke akun ini?','Masuk','Batal');
       if(!ok){btn.disabled=false;btn.textContent='MASUK';return;}
+      step='simpan-login';
       await withTimeout(ref.update({lastLogin:Date.now()}),10000);
     }else{
-      const nu={name:name,createdAt:Date.now(),lastLogin:Date.now()};
       const pw0=$('upw').value;
-      if(pw0){nu.pw=hashPw(key,pw0);saveLocalPw(nu.pw);}else saveLocalPw('');
+      const nu={name:name,createdAt:Date.now(),lastLogin:Date.now(),hasPw:!!pw0,owners:{[au.uid]:'1'}};
+      step='buat-akun';
       await withTimeout(ref.set(nu),10000);
+      step='simpan-sandi';
+      if(pw0)await withTimeout(d.ref('nexoria/secrets/'+key+'/pw').set(hashPw(key,pw0)),10000);
     }
     USER=finalName;
     try{localStorage.setItem(LS_USER,USER);}catch(e){}
     status('Selamat datang, '+USER+'!','ok');
     showApp();tickLoginStreak();
   }catch(e){
-    err.textContent=(e&&e.message==='timeout')?'Server tidak merespons. Coba lagi.':'Gagal terhubung ke server (cek koneksi atau aturan database).';
+    console.error('login gagal di langkah',step,e);
+    err.textContent=(e&&e.message==='timeout')?'Server tidak merespons (langkah: '+step+'). Coba lagi.':'Gagal di langkah '+step+': '+((e&&(e.code||e.message))||'?');
     btn.disabled=false;btn.textContent='MASUK';
   }
 }
@@ -906,7 +971,7 @@ function claimGift(){
 $('navShop').addEventListener('click',()=>{closeDrawer();openShop();});
 $('navGift').addEventListener('click',()=>{closeDrawer();openGift();});
 /* ---------- REDEEM CODE: tiap kode hanya 1× per akun ---------- */
-const CODES={'NEXO2026':5000,'TAHERSAE':5000,'NEXTUPTD':5000,'RAHASIA1':15000};
+/* kode redeem sekarang disimpan di server (nexoria/codes), dikelola lewat Disguise.html */
 function openRedeem(){
   openMdl('🎟️ Redeem Code',body=>{
     body.innerHTML='<input id="rdIn" class="field-in" maxlength="24" placeholder="Masukkan kode" autocomplete="off" autocapitalize="characters" spellcheck="false" style="width:100%;height:46px;border-radius:12px;border:1px solid var(--line);background:#ffffff0a;color:var(--ink);padding:0 14px;font:700 16px var(--font-b);letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px">'
@@ -914,11 +979,12 @@ function openRedeem(){
     $('rdGo').onclick=redeemCode;$('rdIn').addEventListener('keydown',e=>{if(e.key==='Enter')redeemCode();});
   });
 }
-function redeemCode(){
+async function redeemCode(){
   const d=getDB();if(!d||!USER){status('Belum terhubung ke server','err');return;}
   const code=($('rdIn').value||'').trim().toUpperCase().replace(/[^A-Z0-9]/g,'');
   if(!code){status('Masukkan kode dulu','err');return;}
-  const amt=CODES[code];if(!amt){status('Kode tidak valid','err');return;}
+  let amt=0;try{amt=+((await withTimeout(d.ref('nexoria/codes/'+code).once('value'),8000)).val())||0;}catch(e){}
+  if(!(amt>0)){status('Kode tidak valid','err');return;}
   if(buying)return;buying=true;
   const K='nexoria/users/'+USER.toLowerCase();
   d.ref(K+'/redeemed/'+code).transaction(cur=>cur===null?1:undefined).then(r=>{
@@ -1008,20 +1074,24 @@ function friendInfo(k){
     USER=saved;showApp();
     const d=getDB();
     if(d){
-      withTimeout(d.ref('nexoria/users/'+USER.toLowerCase()).once('value'),10000).then(s=>{
-        if(!s.exists()){
-          try{localStorage.removeItem(LS_USER);}catch(e){}
-          USER='';showSplash();status('Akun tidak ditemukan, silakan daftar ulang','err');
-        }else{
-          const v=s.val()||{};
-          let lp='';try{lp=localStorage.getItem(LS_PWH)||'';}catch(e){}
-          if(v.pw&&lp!==String(v.pw)){
-            try{localStorage.removeItem(LS_USER);}catch(e){}
-            USER='';showSplash();status('Akun ini memakai sandi, silakan masuk lagi','err');return;
-          }
-          if(v.name&&v.name!==USER){USER=v.name;try{localStorage.setItem(LS_USER,USER);}catch(e){}setUserUI();}
-          d.ref('nexoria/users/'+USER.toLowerCase()+'/lastLogin').set(Date.now());tickLoginStreak();
+      const key=USER.toLowerCase();
+      withTimeout((async()=>{
+        const u=await authReady();
+        const sn=await d.ref('nexoria/users/'+key).once('value');
+        let own=false;
+        if(u&&sn.exists())own=(await d.ref('nexoria/users/'+key+'/owners/'+u.uid).once('value')).exists();
+        return {sn,own,u};
+      })(),15000).then(async({sn,own,u})=>{
+        const kick=msg=>{try{localStorage.removeItem(LS_USER);}catch(e){}USER='';showSplash();status(msg,'err');};
+        if(!sn.exists()){kick('Akun tidak ditemukan, silakan daftar ulang');return;}
+        const v=sn.val()||{};
+        if(!u){status('Gagal autentikasi, data tidak bisa disimpan','err');return;}
+        if(!own){
+          /* akun tanpa sandi: perangkat ini diklaim otomatis; akun bersandi: harus login ulang */
+          if(v.hasPw===true||!(await claimOwner(key,'1'))){kick('Silakan masuk lagi'+(v.hasPw===true?' dengan sandi':''));return;}
         }
+        if(v.name&&v.name!==USER){USER=v.name;try{localStorage.setItem(LS_USER,USER);}catch(e){}setUserUI();}
+        d.ref('nexoria/users/'+key+'/lastLogin').set(Date.now()).catch(()=>{});tickLoginStreak();
       }).catch(()=>{});
     }
   }else showSplash();

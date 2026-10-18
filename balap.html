@@ -66,6 +66,7 @@ window.addEventListener('unhandledrejection',function(e){var r=e.reason;sh(Strin
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script>
 (()=>{
 const $=id=>document.getElementById(id),clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),rnd=(a,b)=>a+Math.random()*(b-a);
@@ -77,7 +78,9 @@ try{Object.assign(S,JSON.parse(localStorage.getItem(KEY)||'{}'));}catch(e){}
 if(!S.inv||typeof S.inv!=='object'||Array.isArray(S.inv))S.inv={};
 const FBC={apiKey:"AIzaSyBp4P3nv9w1xYEH_9wNPxq2E-no292ugDM",authDomain:"server-taher.firebaseapp.com",databaseURL:"https://server-taher-default-rtdb.firebaseio.com",projectId:"server-taher",storageBucket:"server-taher.firebasestorage.app",messagingSenderId:"79596136495",appId:"1:79596136495:web:93779c3b3983376253beda"};
 const SK=USER.toLowerCase().replace(/[.#$\[\]\/]/g,'_');let db=null,cpT=0;
-function initCloud(){try{if(typeof firebase==='undefined'||typeof firebase.database!=='function')return;if(!firebase.apps.length)firebase.initializeApp(FBC);db=firebase.database();try{db.ref('.info/serverTimeOffset').on('value',sn=>{srvOff=+sn.val()||0;});db.ref('nexoria/balap/world/off').on('value',sn=>{const v=sn.val();if(typeof v==='number')wOff=v;});}catch(e){}}catch(e){db=null;}}
+function initCloud(){try{if(typeof firebase==='undefined'||typeof firebase.database!=='function')return;if(!firebase.apps.length)firebase.initializeApp(FBC);
+try{if(typeof firebase.auth==='function'){const au=firebase.auth();const un=au.onAuthStateChanged(u=>{un();if(!u)au.signInAnonymously().catch(()=>{});});}}catch(e){}
+db=firebase.database();try{db.ref('.info/serverTimeOffset').on('value',sn=>{srvOff=+sn.val()||0;});db.ref('nexoria/balap/world/off').on('value',sn=>{const v=sn.val();if(typeof v==='number')wOff=v;});}catch(e){}}catch(e){db=null;}}
 function cloudPush(now){if(!db)return;clearTimeout(cpT);const go=()=>{try{db.ref('nexoria/users/'+SK+'/balap').set({coins:S.coins,own:S.own,bike:S.bike,eng:S.eng,exh:S.exh,wl:S.wl,mt:S.mt,gh:S.gh|0,ms:S.ms||0,gp:S.gp|0,gr:S.gr|0,mr:S.mr,house:S.house,best:S.best||0,bl:S.bl,ts:S.ts,inv:S.inv||{}});}catch(e){}};if(now)go();else cpT=setTimeout(go,1500);}
 async function cloudLoad(){if(!db)return;try{const sn=await Promise.race([db.ref('nexoria/users/'+SK+'/balap').once('value'),new Promise((_,j)=>setTimeout(j,4500))]),r=sn.val();if(!r)return;
  const mx=(a,b)=>a.map((v,i)=>Math.max(+v||0,+(b&&b[i])||0));if((+r.ts||0)>(+S.ts||0)){S.coins=+r.coins||0;S.bike=(r.bike|0);if(r.inv&&typeof r.inv==='object'){const iv={};for(const k in r.inv){const n=+r.inv[k]|0;if(n>0)iv[k]=n;}S.inv=iv;}}
