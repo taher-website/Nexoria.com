@@ -749,11 +749,13 @@ function makeBmx(i){const g=new THREE.Group();g.rotation.order='YXZ';const body=
  setGear(1);
  body.userData.grips=[-1,1].map(s=>{const o=new THREE.Object3D();o.position.set(s*.195,.294,-.043);fork.add(o);return o;});body.userData.seat={y:.76-HIP*CHS,z:-.3};body.userData.jok=jok;
  sc.add(g);return{g,body,fork,fs,rs,fr,x:0,z:0,h:0,i,cyc:1,crank,ped,ph:0,sb:0,setGear,drop:()=>{}};}
-function cycRider(e,b,stand,look,dt){b.sb+=((stand?1:0)-b.sb)*Math.min(1,dt*7);const sb=b.sb,Ik=(b.idle||0)*(1-sb),hipY=.76+.24*sb,zs=-.30+.1*sb,sway=stand?Math.sin(b.ph)*.06:0;
- e.position.set(sway-.03*Ik,hipY-HIP*CHS,zs);e.rotation.set(0,look*.5,0);e.up.rotation.x=.42+.4*sb;e.head.rotation.set(-.3-.25*sb,look*2.2,0);b.g.updateMatrixWorld(true);
+function cycRider(e,b,stand,look,dt){b.sb+=((stand?1:0)-b.sb)*Math.min(1,dt*7);const sb=b.sb,nj=b.nj?1:0,Ik=(b.idle||0)*(1-sb);b.sd=(b.sd||0)+((nj?(b.idle||0):0)-(b.sd||0))*Math.min(1,dt*6);const sd=b.sd,hipY=(.76+.24*sb)*(1-sd)+.83*sd,zs=(-.30+(.1+.08*nj)*sb)*(1-sd)-.02*sd,sway=stand?Math.sin(b.ph)*.06*(1-sd):0;
+ e.position.set(sway-.03*Ik,hipY-HIP*CHS,zs);e.rotation.set(0,look*.5,0);e.up.rotation.x=.42+.4*sb-.22*sd;e.head.rotation.set(-.3-.25*sb,look*2.2,0);b.g.updateMatrixWorld(true);
  for(let i=0;i<2;i++){const s=i?1:-1,L=i?e.legR:e.legL;b.ped[1-i].getWorldPosition(IKV[7]);e.worldToLocal(IKV[7]);IKV[7].y+=.074;IKV[7].z-=.05;POLE.set(s*.12,.25,1);limbApply(L,HPC[i],IKV[7],POLE,1,.45,.34,null);L.kn.foot.quaternion.copy(L.quaternion).multiply(L.kn.quaternion).invert();}
- idleLeg(e,b,Ik,hy);
+ idleLeg(e,b,Ik,hy);if(sd>.02)strLeg(e,b,sd,hy,zs);
  gripIK(e,b.body);}
+/* jok dilepas & sepeda diam: berdiri ngangkang di kedua sisi rangka, dua kaki menapak tanah, pantat maju ke batang */
+function strLeg(e,b,w,gy,zs){b.g.updateMatrixWorld(true);for(let i=0;i<2;i++){const s=i?1:-1,L=i?e.legR:e.legL;IKV[7].set(s*.3,0,zs+.07);b.g.localToWorld(IKV[7]);IKV[7].y=gy+.08;e.worldToLocal(IKV[7]);POLE.set(s*.2,.25,1);limbApply(L,HPC[i],IKV[7],POLE,Math.min(1,w*1.3),.45,.34,null);FQ.copy(L.quaternion).multiply(L.kn.quaternion).invert();L.kn.foot.quaternion.slerp(FQ,w);}}
 function cycStep(dt,b,gas,brk,rev,locked,jX){P.gt=(gas&&!locked)?(P.gt||0)+dt:0;P.stand=(P.gt>.25||b.nj)?1:0;const st=P.stand,gh=S.gh|0,mx=27.8;
  {const idl=(!locked&&!gas&&Math.abs(P.v)<.35&&hy===0)?1:0;b.idle=(b.idle||0)+(idl-(b.idle||0))*Math.min(1,dt*4);}
  if(jmpQ){if(hy<=0&&!locked){hv=6.4;noise(.12,650);}jmpQ=0;}if(hv!==0||hy>0){hv-=22*dt;hy+=hv*dt;if(hy<=0){if(hv<-3)noise(.22,240);hy=0;hv=0;}}
@@ -1414,7 +1416,7 @@ function toko(){const bs=[];BK.forEach((b,j)=>{if(!S.own[j])bs.push(['Beli '+b.n
  dlg('🏍️ Toko Motor Bang Joko','💰 '+S.coins+'<br>'+(bs.length?'Pilih motor impianmu. Modifikasi & stang ada di Bengkel Bang Joko 🔧':'Semua motor sudah kamu beli 👏<br>Modifikasi & stang ada di Bengkel Bang Joko 🔧'),[...bs,['Tutup']]);}
 
 /* ---- stang custom khusus SEPEDA: 1 = Stang M (belah dua, tiap sisi miring 30° ke bawah ke arah tengah), 2 = Stang Lontong (penyangga atas besar & agak gepeng) ---- */
-function applyBars(b,k){if(!b||!b.cyc)return;const bd=b.body,fk=b.fork;if(b.hbx){fk.remove(b.hbx);b.hbx=null;}(bd.userData.bars||[]).forEach(m=>{m.visible=!k;});(bd.userData.clampM||[]).forEach(m=>{m.visible=k!==1;});const gs=bd.userData.grips;if(gs){if(!gs.o)gs.o=gs.map(o=>o.position.clone());gs.forEach((o,i)=>o.position.copy(gs.o[i]));}if(!k||!gs)return;
+function applyBars(b,k){if(!b||!b.cyc)return;const bd=b.body,fk=b.fork;if(b.hbx){fk.remove(b.hbx);b.hbx=null;}(bd.userData.bars||[]).forEach(m=>{m.visible=!k;});(bd.userData.clampM||[]).forEach(m=>{m.visible=!k;});const gs=bd.userData.grips;if(gs){if(!gs.o)gs.o=gs.map(o=>o.position.clone());gs.forEach((o,i)=>o.position.copy(gs.o[i]));}if(!k||!gs)return;
  const g=new THREE.Group();fk.add(g);b.hbx=g;const gp=gs.o[1],gx=gp.x,gy=gp.y,gz=gp.z,CH=M(0xc6cbd3),BL=M(0x15151a),UP=new THREE.Vector3(0,1,0),T30=Math.tan(Math.PI/6);
  const tube=(a,c,r,mat)=>{const d=new THREE.Vector3(c[0]-a[0],c[1]-a[1],c[2]-a[2]),L=d.length(),m=new THREE.Mesh(new THREE.CylinderGeometry(r,r,L,10),mat);m.position.set((a[0]+c[0])/2,(a[1]+c[1])/2,(a[2]+c[2])/2);m.quaternion.setFromUnitVectors(UP,d.normalize());m.castShadow=true;g.add(m);return m;};
  if(k===1){/* Stang M (ref. Strummer BMX): grip lurus, tekuk turun jadi kaki-kaki bentuk M/trapesium, palang atas bentuk V dangkal, palang bawah menumpu di stem */
@@ -1426,17 +1428,19 @@ function applyBars(b,k){if(!b||!b.cyc)return;const bd=b.body,fk=b.fork;if(b.hbx)
    tube([b[0],b[1],b[2]+.0135],[gi[0],gi[1],gi[2]+.0135],.0036,SL);tube([b[0],b[1],b[2]+.0135],[l[0],l[1],l[2]+.0135],.0036,SL);
    ball(b);ball(l);ball(br);ball(ce);});
   tube([-Br[0],Br[1],Br[2]],[Br[0],Br[1],Br[2]],r,BM);
-  /* diperbesar 18% dan diturunkan: palang bawah masuk ke klem stem (titik tumpu A), grip + tangan ikut turun */
-  const A=[0,.15,.03],SM=1.18,DN=.03;g.scale.setScalar(SM);g.position.set(A[0]*(1-SM),A[1]*(1-SM)-DN,A[2]*(1-SM));
-  gs.forEach((o,i)=>{const q=gs.o[i];o.position.set(A[0]+SM*(q.x-A[0]),A[1]+SM*(q.y-A[1])-DN,A[2]+SM*(q.z-A[2]));});}
+  }
  else{/* Stang Lontong (ref. foto): grip lurus, kaki turun ke U di bawah, palang datar lebar di atas + logo merah */
   const BM=M(0x121215),RD=M(0xc8202a),r=.0115,J=(q,x)=>[x*q[0],q[1],q[2]],
    B=[.106,gy-.008,gz+.02],Lb=[.06,gy-.09,gz+.05],Ub=[.034,gy-.109,gz+.065],Uc=[0,gy-.112,gz+.069],Gi=[gx-.045,gy,gz],
    ball=q=>{const m=new THREE.Mesh(new THREE.SphereGeometry(r,10,8),BM);m.position.set(q[0],q[1],q[2]);m.castShadow=true;g.add(m);};
   [-1,1].forEach(sx=>{const b=J(B,sx),l=J(Lb,sx),u=J(Ub,sx),gi=J(Gi,sx),go=[sx*(gx+.045),gy-.006,gz-.012];
    tube(gi,b,r,BM);tube(b,l,r,BM);tube(l,u,r,BM);tube(u,Uc,r,BM);tube(gi,go,.0165,BL);ball(b);ball(l);ball(u);});
-  const t=.17,cx=B[0]+t*(Lb[0]-B[0]),cz=B[2]+t*(Lb[2]-B[2]),pl=new THREE.Mesh(new THREE.BoxGeometry(cx*2,.017,.012),BM);pl.position.set(0,gy-.022,cz);pl.castShadow=true;g.add(pl);
-  const lg=new THREE.Mesh(new THREE.BoxGeometry(.034,.011,.0025),RD);lg.position.set(-cx+.035,gy-.022,cz+.0075);g.add(lg);}}
+  const t=.17,cx=B[0]+t*(Lb[0]-B[0]),cz=B[2]+t*(Lb[2]-B[2]),PR=.021,py=gy-.022;
+  tube([-cx,py,cz],[cx,py,cz],PR,BM);[-1,1].forEach(sx=>{const bl=new THREE.Mesh(new THREE.SphereGeometry(PR,12,10),BM);bl.position.set(sx*cx,py,cz);bl.castShadow=true;g.add(bl);});
+  const lg=new THREE.Mesh(new THREE.BoxGeometry(.04,.016,.0025),RD);lg.position.set(-cx+.045,py,cz+PR+.0005);g.add(lg);}
+ /* diperbesar 18% dan diturunkan (M & Lontong): palang bawah masuk ke klem stem (titik tumpu A), grip + tangan ikut turun */
+ {const A=[0,.15,.03],SM=1.18,DN=.03;g.scale.setScalar(SM);g.position.set(A[0]*(1-SM),A[1]*(1-SM)-DN,A[2]*(1-SM));
+  gs.forEach((o,i)=>{const q=gs.o[i];o.position.set(A[0]+SM*(q.x-A[0]),A[1]+SM*(q.y-A[1])-DN,A[2]+SM*(q.z-A[2]));});}}
 
 function applyJok(b,on){if(!b||!b.cyc)return;b.nj=on?1:0;(b.body.userData.jok||[]).forEach(m=>{m.visible=!on;});}
 
