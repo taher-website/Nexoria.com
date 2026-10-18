@@ -3,8 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>NEXORIA</title>
+<title>Nexoria By TaherJs</title>
 <meta name="theme-color" content="#050308">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;800;900&family=Sora:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -17,6 +19,8 @@
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#050308}}
 :root[data-theme="dark"]{--bg:#050308}
+html,body{overscroll-behavior:none;-webkit-user-select:none;user-select:none}
+input,textarea{-webkit-user-select:text;user-select:text}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-family:var(--font-b)}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
@@ -220,6 +224,10 @@ footer{color:var(--mute2);font-size:12px;text-align:center;padding:14px 0 30px}
       <input id="uname" type="text" maxlength="16" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="contoh: Budi_123">
       <p class="hint">3–16 karakter: huruf, angka, atau garis bawah (_).</p>
     </div>
+    <div class="field" style="margin-top:12px">
+      <label for="upw">Sandi (opsional)</label>
+      <input id="upw" type="password" maxlength="999" autocomplete="off" spellcheck="false" placeholder="Kosongkan jika tidak pakai sandi">
+    </div>
     <div class="err" id="err" role="alert"></div>
     <button class="btn" id="goBtn">MASUK</button>
   </div>
@@ -239,13 +247,13 @@ footer{color:var(--mute2);font-size:12px;text-align:center;padding:14px 0 30px}
     <div class="nav">
       <button id="navHome" class="on">🏠 Beranda</button>
       <button id="navGames">🎮Semua Game</button>
-      <button id="navAvatar">🎨 Avatar</button>
+      <button id="navAvatar"> 👕 Avatar</button>
       <button id="navShop">🛒 Shop</button>
       <button id="navGift">🎁 Hadiah Harian</button>
       <button id="navRedeem">🎟️ Redeem Code</button>
       <button id="navProfile">👤 Profil</button>
     </div>
-    <div class="d-foot"><div class="nav"><button class="out" id="navLogout">⛔ Logout</button></div></div>
+    <div class="d-foot"><div class="nav"><button id="navPw">🔒 Ubah Sandi</button><button class="out" id="navLogout">⛔ Logout</button></div></div>
   </aside>
 
   <main id="home">
@@ -265,7 +273,7 @@ footer{color:var(--mute2);font-size:12px;text-align:center;padding:14px 0 30px}
     </div>
     <div class="grid" id="grid"></div>
     <div class="empty" id="none" hidden>Game tidak ditemukan.</div>
-    <footer>NEXORIA · semua game terhubung ke satu akun</footer>
+    <footer>NEXORIA · ©by Taherjs</footer>
   </main>
 </div>
 
@@ -289,8 +297,8 @@ const GAMES=[
   {id:'curitelur',name:'Curi Telur',file:'stealanegg.html',img:'stealanegg.jpg',tag:'Mabar 4 pemain',
    desc:'Curi telur dari penjaga, kabur ke zona aman, tetaskan di kandangmu.',
    art:{a:'#062a3a',b:'#39f4ff',emoji:'🥚'}},
-  {id:'balap',name:'Naik Dan Jelajahi',file:'balap.html',img:'balap.png',tag:'Tahap Pengembangan',
-   desc:'Naik motor drag, balap lurus lawan Bang Ardi, upgrade di toko suku cadang, punya rumah dan jalan-jalan ke kota.',
+  {id:'balap',name:'Naik Dan Jelajahi',file:'balap.html',img:'balap.png',tag:'versi 3.2',
+   desc:'Menjelajahi kota tanpa batas dan mencari sensasi kehidupan yang damai dan tenang.',
    art:{a:'#2a0f05',b:'#ff7a1a',emoji:'🏍️'}}
 ];
 
@@ -306,7 +314,37 @@ const FB_CFG={
 };
 
 const LS_USER='nexoria_user',LS_RECENT='nexoria_recent',LS_FAV='nexoria_favs',LS_PLAYS='nexoria_plays';
+const LS_PWH='nexoria_pwh';
 const $=id=>document.getElementById(id);
+/* SHA-256 murni JS (tetap jalan walau halaman bukan HTTPS) */
+function sha256(str){
+  const K=[0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2];
+  const b=Array.from(new TextEncoder().encode(str)),l=b.length*8;
+  b.push(0x80);while(b.length%64!==56)b.push(0);
+  for(let i=7;i>=0;i--)b.push(i>3?0:(l>>>(i*8))&255);
+  let h=[0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19];
+  const r=(x,n)=>(x>>>n)|(x<<(32-n));
+  for(let o=0;o<b.length;o+=64){
+    const w=new Array(64);
+    for(let i=0;i<16;i++)w[i]=(b[o+i*4]<<24)|(b[o+i*4+1]<<16)|(b[o+i*4+2]<<8)|b[o+i*4+3];
+    for(let i=16;i<64;i++){const s0=r(w[i-15],7)^r(w[i-15],18)^(w[i-15]>>>3),s1=r(w[i-2],17)^r(w[i-2],19)^(w[i-2]>>>10);w[i]=(w[i-16]+s0+w[i-7]+s1)|0;}
+    let [a,c,d,e,f,g,hh,j]=h;
+    for(let i=0;i<64;i++){
+      const S1=r(f,6)^r(f,11)^r(f,25),ch=(f&g)^(~f&hh),t1=(j+S1+ch+K[i]+w[i])|0;
+      const S0=r(a,2)^r(a,13)^r(a,22),mj=(a&c)^(a&d)^(c&d),t2=(S0+mj)|0;
+      j=hh;hh=g;g=f;f=(e+t1)|0;e=d;d=c;c=a;a=(t1+t2)|0;
+    }
+    h=[(h[0]+a)|0,(h[1]+c)|0,(h[2]+d)|0,(h[3]+e)|0,(h[4]+f)|0,(h[5]+g)|0,(h[6]+hh)|0,(h[7]+j)|0];
+  }
+  return h.map(x=>('00000000'+(x>>>0).toString(16)).slice(-8)).join('');
+}
+/* hash sandi: digarami dengan username, diputar 2000x supaya sulit ditebak */
+function hashPw(key,pw){
+  let x='nx1|'+key+'|'+pw;
+  for(let i=0;i<2000;i++)x=sha256(x+'|'+key);
+  return x;
+}
+function saveLocalPw(h){try{if(h)localStorage.setItem(LS_PWH,h);else localStorage.removeItem(LS_PWH);}catch(e){}}
 const valid=n=>/^[A-Za-z0-9_]{3,16}$/.test(n);
 let db=null,USER='',FILTER='all';
 
@@ -466,7 +504,7 @@ function showApp(){
 }
 function showSplash(){
   $('app').hidden=true;$('splash').hidden=false;
-  $('uname').value='';$('err').textContent='';$('goBtn').disabled=false;$('goBtn').textContent='MASUK';
+  $('uname').value='';$('upw').value='';$('err').textContent='';$('goBtn').disabled=false;$('goBtn').textContent='MASUK';
   setTimeout(()=>{try{$('uname').focus();}catch(e){}},80);
 }
 
@@ -478,9 +516,10 @@ $('scrim').addEventListener('click',closeDrawer);
 $('navHome').addEventListener('click',()=>{closeDrawer();window.scrollTo({top:0,behavior:'smooth'});});
 $('navGames').addEventListener('click',()=>{closeDrawer();$('gamesTop').scrollIntoView({behavior:'smooth',block:'start'});});
 $('navProfile').addEventListener('click',()=>{closeDrawer();showProfile();});
+$('navPw').addEventListener('click',()=>{closeDrawer();changePw();});
 $('navLogout').addEventListener('click',()=>{
   closeDrawer();
-  try{localStorage.removeItem(LS_USER);}catch(e){}
+  try{localStorage.removeItem(LS_USER);}catch(e){}saveLocalPw('');
   USER='';showSplash();
 });
 $('search').addEventListener('input',e=>renderGames(e.target.value));
@@ -500,6 +539,37 @@ function askConfirm(title,text,yes,no){
       c.querySelector('#mYes').onclick=()=>{closeModal();res(true);};
       c.querySelector('#mNo').onclick=()=>{closeModal();res(false);};
     });
+  });
+}
+async function changePw(){
+  const d=getDB();if(!d){status('Belum terhubung ke server','err');return;}
+  const key=USER.toLowerCase(),ref=d.ref('nexoria/users/'+key+'/pw');
+  let cur='';
+  try{const s=await withTimeout(ref.once('value'),8000);cur=s.exists()?String(s.val()||''):'';}
+  catch(e){status('Gagal memuat data akun','err');return;}
+  const inp='style="width:100%;margin-bottom:10px" maxlength="999" autocomplete="off" type="password"';
+  modal('<h3>🔒 Ubah Sandi</h3><p>'+(cur?'Akunmu memakai sandi.':'Akunmu belum memakai sandi.')+' Kosongkan sandi baru untuk '+(cur?'menghapus sandi.':'tetap tanpa sandi.')+'</p>'
+    +(cur?'<input id="pwOld" class="search" '+inp+' placeholder="Sandi lama">':'')
+    +'<input id="pwNew" class="search" '+inp+' placeholder="Sandi baru">'
+    +'<div class="err" id="pwErr" style="min-height:18px;margin-bottom:8px"></div>'
+    +'<div class="row"><button class="btn ghost" id="pwNo">Batal</button><button class="btn" id="pwOk">Simpan</button></div>',c=>{
+    c.querySelector('#pwNo').onclick=closeModal;
+    const ok=c.querySelector('#pwOk'),er=c.querySelector('#pwErr');
+    ok.onclick=async()=>{
+      er.textContent='';
+      if(cur){
+        const o=c.querySelector('#pwOld').value;
+        if(hashPw(key,o)!==cur){er.textContent='Sandi lama salah.';return;}
+      }
+      const nv=c.querySelector('#pwNew').value;
+      ok.disabled=true;
+      try{
+        if(nv){const h=hashPw(key,nv);await withTimeout(ref.set(h),10000);saveLocalPw(h);status('🔒 Sandi disimpan','ok');}
+        else{await withTimeout(ref.remove(),10000);saveLocalPw('');status('🔓 Sandi dihapus','ok');}
+        closeModal();
+      }catch(e){er.textContent='Gagal menyimpan. Coba lagi.';ok.disabled=false;}
+    };
+    setTimeout(()=>{try{c.querySelector(cur?'#pwOld':'#pwNew').focus();}catch(e){}},60);
   });
 }
 async function showProfile(){
@@ -531,11 +601,20 @@ async function submitName(){
     let finalName=name;
     if(snap.exists()){
       const v=snap.val()||{};finalName=v.name||name;
+      if(v.pw){
+        const typed=$('upw').value;
+        if(!typed){err.textContent='Akun ini memakai sandi. Masukkan sandi untuk masuk.';btn.disabled=false;btn.textContent='MASUK';return;}
+        if(hashPw(key,typed)!==String(v.pw)){err.textContent='Sandi salah.';btn.disabled=false;btn.textContent='MASUK';return;}
+        saveLocalPw(String(v.pw));
+      }else saveLocalPw('');
       const ok=await askConfirm('Username sudah terdaftar','"'+finalName+'" sudah ada di NEXORIA. Masuk ke akun ini?','Masuk','Batal');
       if(!ok){btn.disabled=false;btn.textContent='MASUK';return;}
       await withTimeout(ref.update({lastLogin:Date.now()}),10000);
     }else{
-      await withTimeout(ref.set({name:name,createdAt:Date.now(),lastLogin:Date.now()}),10000);
+      const nu={name:name,createdAt:Date.now(),lastLogin:Date.now()};
+      const pw0=$('upw').value;
+      if(pw0){nu.pw=hashPw(key,pw0);saveLocalPw(nu.pw);}else saveLocalPw('');
+      await withTimeout(ref.set(nu),10000);
     }
     USER=finalName;
     try{localStorage.setItem(LS_USER,USER);}catch(e){}
@@ -548,6 +627,7 @@ async function submitName(){
 }
 $('goBtn').addEventListener('click',submitName);
 $('uname').addEventListener('keydown',e=>{if(e.key==='Enter')submitName();});
+$('upw').addEventListener('keydown',e=>{if(e.key==='Enter')submitName();});
 
 /* ---------- musik latar: music.mp3 (mulai setelah sentuhan pertama, browser melarang autoplay) ---------- */
 (function bgm(){
@@ -787,7 +867,7 @@ function buyIncome(){
   if(COINS<cost){status('Koin kurang: kamu punya 💵 '+nf(COINS)+', butuh 💵 '+nf(cost),'err');return;}
   const K='nexoria/users/'+USER.toLowerCase(),cref=d.ref(K+'/coins');buying=true;
   cref.transaction(cur=>{if(cur===null)return 0;cur=Math.floor(+cur||0);return cur>=cost?cur-cost:undefined;}).then(r=>{
-    if(!r.committed){status('Koin kurang: kamu punya 💵 '+nf(COINS)+', butuh 💵 '+nf(cost),'err');return;}
+    if(!r.committed){status('Koin kurang','err');return;}
     return d.ref(K+'/incomeLv').set(lv+1).then(()=>{INC=lv+1;status('⬆ Penghasilan naik jadi '+fmtR(incRate(INC))+'/d!','ok');refreshUI();})
       .catch(e=>{cref.set(firebase.database.ServerValue.increment(cost)).catch(()=>{});status('Gagal menyimpan upgrade, koin dikembalikan'+(e&&e.code?' ('+e.code+')':''),'err');});
   }).catch(e=>status('Upgrade gagal'+(e&&e.code?' ('+e.code+')':''),'err')).then(()=>{buying=false;});
@@ -802,8 +882,8 @@ function openGift(){
       cells+='<div class="gf'+(done?' done':'')+(cur?' cur':'')+(i===7?' big':'')+'"><small>Hari '+i+'</small><div>'+(i===7?'🎁':'💵')+'</div><b>'+fmtC(GIFT[i-1][0])+'–'+fmtC(GIFT[i-1][1])+'</b>'+(done?'<em>✔</em>':'')+'</div>';
     }
     body.innerHTML='<div class="gf-grid">'+cells+'</div>'
-      +(ds.today?'<button class="btn" disabled>Sudah diambil hari ini · kembali besok</button>':'<button class="btn" id="gfBtn">🎁 Ambil Hadiah Hari '+next+'</button>')
-      +'<p class="hint" style="text-align:center">Login tiap hari tanpa putus. Kalau terlewat sehari, hitungan kembali ke Hari 1.</p>';
+      +(ds.today?'<button class="btn" disabled>Sudah diambil hari ini </button>':'<button class="btn" id="gfBtn">🎁 Ambil Hadiah Hari '+next+'</button>')
+      +'<p class="hint" style="text-align:center">Kalau terlewat sehari, hitungan kembali ke Hari 1.</p>';
     const bt=$('gfBtn');if(bt)bt.onclick=claimGift;
   });
 }
@@ -826,7 +906,7 @@ function claimGift(){
 $('navShop').addEventListener('click',()=>{closeDrawer();openShop();});
 $('navGift').addEventListener('click',()=>{closeDrawer();openGift();});
 /* ---------- REDEEM CODE: tiap kode hanya 1× per akun ---------- */
-const CODES={'NEXO2026':5000,'TAHERSAE':5000,'NEXTUPTD':5000};
+const CODES={'NEXO2026':5000,'TAHERSAE':5000,'NEXTUPTD':5000,'RAHASIA1':15000};
 function openRedeem(){
   openMdl('🎟️ Redeem Code',body=>{
     body.innerHTML='<input id="rdIn" class="field-in" maxlength="24" placeholder="Masukkan kode" autocomplete="off" autocapitalize="characters" spellcheck="false" style="width:100%;height:46px;border-radius:12px;border:1px solid var(--line);background:#ffffff0a;color:var(--ink);padding:0 14px;font:700 16px var(--font-b);letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px">'
@@ -934,6 +1014,11 @@ function friendInfo(k){
           USER='';showSplash();status('Akun tidak ditemukan, silakan daftar ulang','err');
         }else{
           const v=s.val()||{};
+          let lp='';try{lp=localStorage.getItem(LS_PWH)||'';}catch(e){}
+          if(v.pw&&lp!==String(v.pw)){
+            try{localStorage.removeItem(LS_USER);}catch(e){}
+            USER='';showSplash();status('Akun ini memakai sandi, silakan masuk lagi','err');return;
+          }
           if(v.name&&v.name!==USER){USER=v.name;try{localStorage.setItem(LS_USER,USER);}catch(e){}setUserUI();}
           d.ref('nexoria/users/'+USER.toLowerCase()+'/lastLogin').set(Date.now());tickLoginStreak();
         }
@@ -941,6 +1026,48 @@ function friendInfo(k){
     }
   }else showSplash();
 })();
+})();
+</script>
+<script>
+/* ---------- 🖥️ FULLSCREEN OTOMATIS: cek tiap 0,2 detik, masuk lagi kalau lepas ---------- */
+(function fsKeeper(){
+  'use strict';
+  const de=document.documentElement;
+  const isFS=()=>!!(document.fullscreenElement||document.webkitFullscreenElement);
+  let busy=false;
+  function lockKeys(){
+    try{if(navigator.keyboard&&navigator.keyboard.lock)navigator.keyboard.lock(['Escape']).catch(()=>{});}catch(e){}
+  }
+  function enter(){
+    if(busy||isFS()||document.hidden)return;
+    const f=de.requestFullscreen||de.webkitRequestFullscreen||de.msRequestFullscreen;
+    if(!f)return;
+    busy=true;
+    try{
+      const p=f.call(de,{navigationUI:'hide'});
+      if(p&&p.then)p.then(lockKeys).catch(()=>{}).then(()=>{busy=false;});
+      else{busy=false;lockKeys();}
+    }catch(e){busy=false;}
+  }
+  /* 1) detektor: tiap 200 ms */
+  setInterval(enter,200);
+  /* 2) begitu fullscreen lepas (mis. tombol back), langsung masuk lagi */
+  ['fullscreenchange','webkitfullscreenchange'].forEach(ev=>document.addEventListener(ev,()=>{if(!isFS())enter();}));
+  /* 3) setiap sentuhan/klik/tombol = izin dari browser, jadi dipakai untuk masuk fullscreen */
+  ['pointerup','touchend','click','keydown'].forEach(ev=>document.addEventListener(ev,enter,true));
+  /* 4) kembali ke tab/aplikasi, keyboard HP muncul/hilang, rotasi layar */
+  ['visibilitychange','focus','pageshow','resize','orientationchange'].forEach(ev=>window.addEventListener(ev,enter));
+  document.addEventListener('visibilitychange',enter);
+  /* 5) tombol back tidak keluar dari halaman: ditahan lalu fullscreen lagi */
+  try{
+    history.replaceState({nx:0},'',location.href);
+    history.pushState({nx:1},'',location.href);
+    window.addEventListener('popstate',()=>{
+      try{history.pushState({nx:1},'',location.href);}catch(e){}
+      enter();
+    });
+  }catch(e){}
+  enter();
 })();
 </script>
 </body>
