@@ -21,7 +21,7 @@ button{cursor:pointer}.pri{background:var(--cy);color:#000;border:0;font-weight:
 <button data-k="1">1</button><button data-k="2">2</button><button data-k="3">3</button><button data-k="+">+</button>
 <button data-k="0">0</button><button data-k=".">.</button><button data-k="=" style="grid-column:span 2">=</button></div></div>
 
-<div id="login" hidden><b>Masuk</b><input id="em" type="email" placeholder="Email" autocomplete="off"><input id="pw" type="password" placeholder="Sandi"><button class="pri" id="go">MASUK</button><div class="bad" id="lerr"></div></div>
+<div id="login" hidden><b>Masuk</b><input id="em" type="email" placeholder="Email" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false"><input id="pw" type="password" placeholder="Sandi" autocomplete="new-password" autocapitalize="off" autocorrect="off" spellcheck="false"><label style="justify-content:flex-start"><input type="checkbox" id="sh" style="width:auto"> Tampilkan sandi</label><button class="pri" id="go">MASUK</button><div class="bad" id="lerr"></div></div>
 
 <div id="app" hidden>
 <div class="tabs"><button data-t="mon" class="on">Pantau</button><button data-t="usr">User</button><button data-t="ban">Blokir</button><button data-t="cod">Kode</button><button data-t="set">Atur</button></div>
@@ -62,7 +62,8 @@ const app=firebase.initializeApp(FB,'adm'),db=app.database(),au=app.auth();
 let off=0;db.ref('.info/serverTimeOffset').on('value',s=>off=+s.val()||0);const now=()=>Date.now()+off;
 let S={on:true,min:50000,win:5,ab:0,rv:false,bal:200000},ready=false,timer=0,LOGS=[],BANS={},CODES={};const U={};
 function openLogin(){$('calc').hidden=true;$('login').hidden=false;const un=au.onAuthStateChanged(u=>{un();if(u)verify();});}
-$('go').onclick=()=>{$('lerr').textContent='';au.signInWithEmailAndPassword($('em').value.trim(),$('pw').value).then(verify).catch(e=>$('lerr').textContent=e.code||'gagal');};
+$('sh').onchange=()=>{$('pw').type=$('sh').checked?'text':'password';};
+$('go').onclick=()=>{$('lerr').textContent='';au.signInWithEmailAndPassword($('em').value.trim(),$('pw').value).then(verify).catch(e=>$('lerr').textContent=(/invalid-credential|wrong-password|user-not-found/.test(e.code||'')?'Email atau sandi salah, atau akun belum dibuat di project ini. ':'')+'['+(e.code||'gagal')+']');};
 function verify(){db.ref('nexoria/admin/settings').once('value').then(s=>start(s.val())).catch(()=>{au.signOut();$('lerr').textContent='Bukan akun admin (UID belum dipasang di rules).';});}
 function rate(l){l=Math.max(0,Math.min(25,Math.floor(+l||0)));return l<=0?.5:5*Math.pow(2,l-1);}
 const pth=(k,f)=>'nexoria/users/'+k+(f==='bc'?'/balap/coins':f==='lv'?'/incomeLv':'/coins');
@@ -99,7 +100,7 @@ function render(){
  $('p-mon').innerHTML=LOGS.slice().sort((a,b)=>b.t-a.t).slice(0,60).map(e=>'<div class="row"><b>'+esc(e.u)+'</b> <span class="bad">+'+nf(e.d)+'</span> '+(e.f==='bc'?'koin balap':e.f==='lv'?'level penghasilan':'koin')+'<br><small>'+tm(e.t)+' · '+nf(e.from)+' → '+nf(e.to)+' · '+esc(e.act)+'</small><div class="a"><button data-a="ban" data-u="'+esc(e.u)+'">Blokir</button><button data-a="rev" data-u="'+esc(e.u)+'" data-f="'+esc(e.f)+'" data-v="'+esc(e.from)+'">Kembalikan</button></div></div>').join('')||'<div class="st">Belum ada kejadian mencurigakan.</div>';
  const q=($('q').value||'').toLowerCase();
  $('ul').innerHTML=Object.keys(U).filter(k=>!q||k.includes(q)).sort((a,b)=>U[b].c-U[a].c).slice(0,50).map(k=>{const o=U[k],b=BANS[k]&&BANS[k].until>now();
-  return '<div class="row"><b>'+esc(o.n)+'</b> '+(b?'<span class="bad">🚫 '+left(BANS[k].until)+'</span>':'')+'<br><small>💵 '+nf(o.c)+' · balap '+nf(o.bc)+' · Lv '+o.inc+(o.ll?' · masuk '+tm(o.ll):'')+'</small><div class="a">'+(b?'<button data-a="unban" data-u="'+esc(k)+'">Buka blokir</button>':'<button data-a="ban" data-u="'+esc(k)+'">Blokir</button>')+'<button data-a="setc" data-u="'+esc(k)+'">Ubah koin</button></div></div>';}).join('');
+  return '<div class="row"><b>'+esc(o.n)+'</b> '+(b?'<span class="bad">🚫 '+left(BANS[k].until)+'</span>':'')+'<br><small>💵 '+nf(o.c)+' · balap '+nf(o.bc)+' · Lv '+o.inc+(o.ll?' · masuk '+tm(o.ll):'')+'</small><div class="a">'+(b?'<button data-a="unban" data-u="'+esc(k)+'">Buka blokir</button>':'<button data-a="ban" data-u="'+esc(k)+'">Blokir</button>')+'<button data-a="setc" data-u="'+esc(k)+'">Ubah koin</button><button data-a="setn" data-u="'+esc(k)+'">Pulihkan nama</button></div></div>';}).join('');
  $('p-ban').innerHTML=Object.keys(BANS).filter(k=>BANS[k]&&BANS[k].until>now()).map(k=>'<div class="row"><b>'+esc(BANS[k].n||k)+'</b> · '+left(BANS[k].until)+'<br><small>'+esc(BANS[k].by||'')+' · '+esc(BANS[k].reason||'-')+'</small><div class="a"><button data-a="unban" data-u="'+esc(k)+'">Buka blokir</button></div></div>').join('')||'<div class="st">Tidak ada akun diblokir.</div>';
  $('cl').innerHTML=Object.keys(CODES).map(k=>'<div class="row"><b>'+esc(k)+'</b> · 💵 '+nf(CODES[k])+'<div class="a"><button class="bad" data-a="delc" data-u="'+esc(k)+'">Hapus</button></div></div>').join('')||'<div class="st">Belum ada kode.</div>';}
 document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tabs button').forEach(x=>x.classList.toggle('on',x===b));['mon','usr','ban','cod','set'].forEach(t=>$('p-'+t).hidden=t!==b.dataset.t);});
@@ -109,6 +110,7 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(!b
  else if(a==='unban')db.ref('nexoria/bans/'+u).remove();
  else if(a==='rev')db.ref(pth(u,b.dataset.f)).set(+b.dataset.v);
  else if(a==='setc'){const v=prompt('Koin baru untuk '+u+':');if(v!==null&&v.trim()!==''&&+v>=0)db.ref(pth(u,'coins')).set(+v);}
+ else if(a==='setn'){const v=prompt('Nama asli untuk akun '+u+' (huruf besar-kecil bebas, harus sama dengan '+u+'):');if(v&&v.toLowerCase()===u)db.ref('nexoria/users/'+u+'/name').set(v);else if(v)alert('Nama harus sama dengan username (selain huruf besar/kecil).');}
  else if(a==='addc'){const c=$('cc').value.trim().toUpperCase().replace(/[^A-Z0-9]/g,''),m=+$('ca').value;if(c&&m>0){db.ref('nexoria/codes/'+c).set(m);$('cc').value='';$('ca').value='';}}
  else if(a==='delc')db.ref('nexoria/codes/'+u).remove();
  else if(a==='imp')db.ref('nexoria/codes').update({NEXO2026:5000,TAHERSAE:5000,NEXTUPTD:5000,RAHASIA1:15000});
