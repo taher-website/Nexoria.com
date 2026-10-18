@@ -660,7 +660,7 @@ async function submitName(){
     const snap=await withTimeout(ref.once('value'),10000);
     let finalName=name;
     if(snap.exists()){
-      const v=snap.val()||{};finalName=v.name||name;
+      const v=snap.val()||{};finalName=(v.name&&String(v.name).toLowerCase()===key)?v.name:name;
       const typed=$('upw').value;
       step='klaim-akun';CLAIMERR='';
       if(!(await claimOwner(key,typed?hashPw(key,typed):'1'))){
@@ -1090,7 +1090,7 @@ function friendInfo(k){
           /* akun tanpa sandi: perangkat ini diklaim otomatis; akun bersandi: harus login ulang */
           if(v.hasPw===true||!(await claimOwner(key,'1'))){kick('Silakan masuk lagi'+(v.hasPw===true?' dengan sandi':''));return;}
         }
-        if(v.name&&v.name!==USER){USER=v.name;try{localStorage.setItem(LS_USER,USER);}catch(e){}setUserUI();}
+        if(v.name&&v.name!==USER&&String(v.name).toLowerCase()===key){USER=v.name;try{localStorage.setItem(LS_USER,USER);}catch(e){}setUserUI();}
         d.ref('nexoria/users/'+key+'/lastLogin').set(Date.now()).catch(()=>{});tickLoginStreak();
       }).catch(()=>{});
     }
