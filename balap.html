@@ -663,31 +663,45 @@ function ptAt(pts,s){let L=0;for(let k=0;k<pts.length-1;k++){const a=pts[k],b=pt
 const spL=(j,x,z,y)=>j.lab.position.set(x,y,z);
 /* ---- tempat sholat: siapa cepat dia dapat. Kalau karpet jatah NPC sudah dipakai player (duduk menunggu imam) saat NPC tiba, NPC pindah ke karpet kosong terdekat. Kalau NPC lebih dulu duduk, player tidak bisa menempati karpet itu ---- */
 const SOAK=(x,z,cx,cz)=>Math.abs(x-cx)<.7&&Math.abs(z-cz)<.85;
-function jmClaim(o){return o.alt||(o.slot?[MJ.x+o.slot[0],MJ.z+o.slot[1]]:null);}
-function jmSeatTaken(x,z){for(const o of JM){if(!o.sa||!o.pe||!o.pe.visible)continue;const c=jmClaim(o);if(c&&SOAK(x,z,c[0],c[1]))return 1;}return 0;}
-function plSeated(x,z){return !!(pray.on&&!pray.wd&&!pray.gy&&P.m<0&&SOAK(P.x,P.z,x,z));}
-function jmFree(j,sw){const tk=[];JM.forEach(o=>{if(o===j||!o.sa)return;const c=jmClaim(o);if(c)tk.push(c);});
- for(const k in RP){const o=RP[k];if(o&&o.pe&&o.pe.visible)tk.push([o.x,o.z]);}
- let best=null,bd=1e9;
- for(const m of MATS){if(m[1]<6.3||m[1]>10.5)continue;const x=MJ.x+m[0],z=MJ.z+m[1];if(SOAK(x,z,sw[0],sw[1]))continue;if(plSeated(x,z))continue;if(tk.some(t=>SOAK(x,z,t[0],t[1])))continue;
-  const d=Math.hypot(x-sw[0],z-sw[1])+(z>sw[1]+.1?4:0);if(d<bd){bd=d;best=[x,z];}}
- return best;}
-function jmSeat(j,st,dt){if(!j.slot||j.role==='sleeper2')return st;const sw=[MJ.x+j.slot[0],MJ.z+j.slot[1]],at=!st.mv&&Math.abs(st.x-sw[0])<.03&&Math.abs(st.z-sw[1])<.03;
- if(at&&!j.sa){j.sa=1;j.w=0;j.alt=plSeated(sw[0],sw[1])?jmFree(j,sw):null;}
- if(!j.sa)return st;
- if(!j.alt){if(st.mv)j.sa=0;return st;}
- const D=[j.alt[0]-sw[0],j.alt[1]-sw[1]],Ln=Math.hypot(D[0],D[1])||1;
- if(at)j.w=Math.min(1,(j.w||0)+dt*2.4/Ln);else if(st.mv)j.w=Math.max(0,(j.w||0)-dt*4/Ln);
- if(!at&&st.mv&&j.w<=0){j.sa=0;j.alt=null;return st;}
- const w=j.w||0,o=Object.assign({},st,{x:st.x+D[0]*w,z:st.z+D[1]*w});
- if(at&&w<1){o.mv=1;o.m='w';o.hd=Math.atan2(D[0],D[1]);o.v=2.4;o.run=0;}
- return o;}
+/* ---- SAF DINAMIS: tiap jamaah NPC (termasuk polisi) memilih karpet kosong sendiri. Isi saf depan dulu dari tengah (belakang imam), tutup lubang di barisan, lalu melebar seimbang kiri-kanan; saf penuh (15 orang) → buka saf belakangnya. Player asli & pemain mabar dihitung sebagai penghuni karpet. Dicek ulang tiap 0,5 dtk sejak wudhu, saat masuk, sampai duduk menunggu imam ---- */
+let SR=null;
+function jmRows(){if(SR)return SR;SR=[];for(let r=5;r>=2;r--){const rz=.7+r*1.9;SR.push(MATS.filter(m=>Math.abs(m[1]-rz)<.1).map(m=>({c:Math.round(m[0]/1.05),x:MJ.x+m[0],z:MJ.z+m[1]})));}return SR;}
+function jmOcc(ex,phys){const a=[];JM.forEach(o=>{if(o===ex||!o.tg||!o.cl)return;if(phys&&!o.sa)return;a.push(o.tg);});
+ if(pray.on&&!pray.wd&&!pray.gy&&P.m<0&&onRug())a.push([P.x,P.z]);
+ for(const k in RP){const o=RP[k],d=o&&o.d;if(!d||!o.pe||!o.pe.visible||(d.m|0)>=0||d.r)continue;const q=d.q|0;if(q>=1&&q<=11)a.push([o.x,o.z]);}
+ return a;}
+function jmPick(j,fx,fz,own){const oc=jmOcc(j,0),R=jmRows();let best=null,bs=1e9,os=1e9;
+ for(let ri=0;ri<R.length;ri++){const row=R[ri],tk=new Set();let lo=0,hi=0;
+  row.forEach(s=>{if(oc.some(o=>SOAK(o[0],o[1],s.x,s.z))){tk.add(s.c);lo=Math.min(lo,s.c);hi=Math.max(hi,s.c);}});
+  if(tk.size>=15)continue;
+  for(const s of row){if(tk.has(s.c))continue;let sc=ri*100;
+   if(s.c>=lo&&s.c<=hi)sc+=Math.abs(s.c)*.1;else{if(s.c<lo-1||s.c>hi+1)continue;sc+=20+Math.abs(s.c);}
+   sc+=Math.hypot(s.x-fx,s.z-fz)*.03;if(own&&SOAK(own[0],own[1],s.x,s.z))os=sc;if(sc<bs){bs=sc;best=[s.x,s.z];}}}
+ return{b:best,s:bs,o:os};}
+function jmSeatTaken(x,z){for(const o of JM){if(!o.sa||!o.tg||!o.pe||!o.pe.visible)continue;if(SOAK(x,z,o.tg[0],o.tg[1]))return 1;}return 0;}
+function jmSeat(j,st,dt,act,tt){if(!j.slot||j.role==='sleeper2'||j.role==='imam'||!act||!st)return st;
+ if(st.m==='u')j.cl=1;if(!j.cl)return st;
+ const tot=SEQS[act.r].tot,fx=j.dyn?j.px:(j.sa&&j.tg?j.tg[0]:st.x),fz=j.dyn?j.pz:(j.sa&&j.tg?j.tg[1]:st.z);
+ j.re=(j.re||0)-dt;
+ if(j.re<=0&&!(j.sa&&tt>-5)){j.re=.5;const R=jmPick(j,fx,fz,j.tg),oc=jmOcc(j,0),bad=!j.tg||oc.some(o=>SOAK(o[0],o[1],j.tg[0],j.tg[1]));
+  if(R.b&&(bad||R.s+12<R.o)){if(j.sa){j.sa=0;j.dyn=1;j.px=j.tg[0];j.pz=j.tg[1];j.sv=2.4;}j.tg=R.b;j.p2=0;}}
+ if(!j.tg)return st;
+ if(!j.sa&&!j.dyn&&st.mv&&tt<tot*.5&&Math.abs(st.x-MJ.x)<23&&st.z-MJ.z>-14.6&&st.z-MJ.z<15&&(j.role!=='waiter'||tt>=-9)){j.dyn=1;j.px=st.x;j.pz=st.z;j.sv=st.v||2.4;j.p2=0;}
+ if(j.dyn){const tg=j.tg;let dx=tg[0]-j.px,dz=(j.p2?tg[1]:tg[1]-.95)-j.pz,d=Math.hypot(dx,dz);
+  if(!j.p2&&d<.12){j.p2=1;dx=tg[0]-j.px;dz=tg[1]-j.pz;d=Math.hypot(dx,dz);}
+  const sp=j.sv||2.4,hd=d>.001?Math.atan2(dx,dz):0;if(d>.001){const q=Math.min(d,sp*dt)/d;j.px+=dx*q;j.pz+=dz*q;}
+  jmOcc(j,1).forEach(o=>{const ex=j.px-o[0],ez=j.pz-o[1],e=Math.hypot(ex,ez);if(e<.46&&e>.001){const k=(.46-e)/e;j.px+=ex*k;j.pz+=ez*k;}});
+  if(j.p2&&Math.hypot(tg[0]-j.px,tg[1]-j.pz)<.06){j.dyn=0;j.sa=1;j.w=1;}else return{x:j.px,z:j.pz,hd,m:'w',mv:1,v:sp,run:sp>3};}
+ if(j.sa){if(st.mv&&tt>0){const sl=MW(j.slot[0],j.slot[1]),ox=j.tg[0]-sl[0],oz=j.tg[1]-sl[1],L=Math.hypot(ox,oz)||1;j.w=Math.max(0,(j.w==null?1:j.w)-dt*4/L);
+   if(j.w<=0){j.sa=0;j.cl=0;j.tg=null;return st;}return Object.assign({},st,{x:st.x+ox*j.w,z:st.z+oz*j.w});}
+  j.w=1;const m=(st.m==='w'||st.m==='c'||st.m==='u')?(tt<-4?9:0):st.m;return Object.assign({},st,{x:j.tg[0],z:j.tg[1],hd:0,m,mv:0});}
+ return st;}
 function spStep(j,st,dt,act,tt){const e=j.pe;if(arRace&&j===AR){e.visible=false;if(RZL)RZL.visible=false;return;}
  if(st){j.away=1;j.fs='trip';
   if(st.m==='r'){if(e.parent!==j.veh.body){j.veh.body.add(e);poseReset(e);sitPose(e,SY,-.45,j.veh.body);}j.veh.g.visible=true;j.veh.g.position.set(st.x,0,st.z);j.veh.g.rotation.y=st.hd;j.veh.fs.rotation.x+=st.v*dt/.38;j.veh.rs.rotation.x+=st.v*dt/.38;e.visible=true;spL(j,st.x,st.z,2.9);return;}
   if(e.parent!==sc){sc.add(e);e.rotation.set(0,st.hd,0);poseReset(e);}
   const pl=jPlan(j,act.r),pk=tt>=pl.pin&&tt<pl.pout;j.veh.g.visible=pk;if(pk){j.veh.g.position.set(pl.pk[0],0,pl.pk[1]);j.veh.g.rotation.y=pl.pkh;}
-  e.visible=true;jmApply(j,e,jmSeat(j,st,dt),dt,act,tt);spL(j,e.position.x,e.position.z,2.5);return;}
+  e.visible=true;jmApply(j,e,jmSeat(j,st,dt,act,tt),dt,act,tt);spL(j,e.position.x,e.position.z,2.5);return;}
  if(j.away){j.away=0;if(e.parent!==sc){sc.add(e);poseReset(e);}j.veh.g.visible=false;j.fs='home';j.fp=0;j.ft=rnd(8,16);e.position.set(j.home[0],0,j.home[1]);e.rotation.set(0,j.home[2],0);}
  j.veh.g.visible=false;e.visible=true;j.local(j,dt);}
 function joLocal(j,dt){const gh=gHour(),sl=gh>=22.5||gh<6.5;j.sleep=sl;if(sl){jmApply(j,j.pe,{x:24.7,z:27.4,hd:Math.PI/2,m:10,mv:0},dt,null,0);j.pe.position.y+=.5;spL(j,24.7,27.4,1.5);}else{jmApply(j,j.pe,{x:j.home[0],z:j.home[1],hd:j.home[2],m:0,mv:0},dt,null,0);spL(j,j.home[0],j.home[1],2.5);}}
@@ -711,9 +725,9 @@ function buildJamaah(){const pk=a=>a[Math.random()*a.length|0],SHC=['#f4f1e8','#
  const mk=(pe,lab,home,bi,route,slot,dx,local,we,wsl)=>{const veh=makeBike(bi);veh.g.visible=false;const j={sp:1,pe,lab,home,veh,route,role:'guest',slot,dx,pl:{},ph:rnd(0,6),fs:'home',f:0,ft:rnd(8,16),fp:0,away:0,local,we,wsl};JM.push(j);return j;};
  if(riz&&RZL)AR=mk(riz,RZL,[8.8,47,-1.2],2,[[8.8,47],[2.2,47],[2.2,161.8],[MJ.x-3,161.8],[MJ.x-3,MJ.z-36]],[-4.2,10.2],-2.2,arLocal,-41,10);
  if(JKP&&JKL)JK=mk(JKP,JKL,[24.6,23.4,-1.57],0,[[17,24.9],[2.2,24.9],[2.2,161.8],[MJ.x+3,161.8],[MJ.x+3,MJ.z-36]],[4.2,10.2],2.2,joLocal,-44,9);}
-function jmStep(dt,gh){let act=null,tt=0;for(const p of PRT){const t=(gh-p.t)*HSEC;if(t>=-110&&t<=SEQS[p.r].tot+PEND){act=p;tt=t;break;}}JACT.act=act;JACT.tt=tt;if(!act)JM.forEach(o=>{o.sa=0;o.alt=null;o.w=0;});azanStep(act,tt);
+function jmStep(dt,gh){let act=null,tt=0;for(const p of PRT){const t=(gh-p.t)*HSEC;if(t>=-110&&t<=SEQS[p.r].tot+PEND){act=p;tt=t;break;}}JACT.act=act;JACT.tt=tt;if(!act)JM.forEach(o=>{o.sa=0;o.cl=0;o.tg=null;o.dyn=0;o.w=0;o.re=0;});azanStep(act,tt);
  if(act&&tt<AZ0&&tt>-100){const kk=act.n+':'+gDay();if(wuRem!==kk){wuRem=kk;if(!S.wd&&!pray.on&&entered)toast('💧 Sebentar lagi azan '+act.n+' · berwudhu dulu di tempat wudhu seberang jalan masjid');}}
- JM.forEach(j=>{const st=act?jEval(j,tt,act.r):null;if(j.sp)spStep(j,st,dt,act,tt);else if(!st)j.pe.visible=false;else{j.pe.visible=true;jmApply(j,j.pe,st,dt,act,tt);}});wuStep();}
+ JM.forEach(j=>{const st=act?jEval(j,tt,act.r):null;if(j.sp)spStep(j,st,dt,act,tt);else if(!st)j.pe.visible=false;else{j.pe.visible=true;jmApply(j,j.pe,jmSeat(j,st,dt,act,tt),dt,act,tt);}});wuStep();}
 /* ---- jendela kota (kaca di siang hari, menyala kuning saat malam) ---- */
 function buildWindows(n){const MX=18000,wd=new THREE.Object3D(),wc=[0],wl=[0],gl=[[.30,.42,.56],[.38,.5,.64],[.26,.36,.5],[.45,.56,.68]],lc=[[1,.86,.5],[1,.78,.42],[1,.93,.7],[.95,.9,.8]],NV=[[0,1],[0,-1],[1,0],[-1,0]],PI=Math.PI;
  const WM=new THREE.MeshLambertMaterial({color:0xffffff,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2}),LM=new THREE.MeshBasicMaterial({color:0x000000,polygonOffset:true,polygonOffsetFactor:-3,polygonOffsetUnits:-3}),
