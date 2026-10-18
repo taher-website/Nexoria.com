@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Kalkulator</title>
+<style>
+:root{--bg:#0b0b12;--c:#161626;--l:#ffffff1f;--t:#eee;--m:#9a9ab8;--ok:#33f2a0;--bad:#ff4d6a;--cy:#39f4ff}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--t);font:14px system-ui,sans-serif;padding:max(10px,env(safe-area-inset-top)) 10px 20px}
+[hidden]{display:none!important}button,input,select{font:inherit;color:var(--t);background:var(--c);border:1px solid var(--l);border-radius:10px;padding:9px 11px}
+button{cursor:pointer}.pri{background:var(--cy);color:#000;border:0;font-weight:700}.bad{color:var(--bad)}
+#calc{max-width:320px;margin:30px auto}#disp{background:#000;border-radius:12px;padding:20px 14px;text-align:right;font-size:34px;min-height:76px;overflow:hidden}
+#calc .g{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}#calc button{padding:18px 0;font-size:20px}
+#login{max-width:320px;margin:60px auto;display:grid;gap:10px}
+.tabs{display:flex;gap:6px;overflow-x:auto;margin-bottom:8px}.tabs button.on{background:var(--cy);color:#000}
+.bar{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}.bar input{flex:1;min-width:110px}
+.row{background:var(--c);border:1px solid var(--l);border-radius:12px;padding:10px;margin-bottom:8px}.row small{color:var(--m)}
+.row .a{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}.row .a button{padding:6px 10px;font-size:13px}
+.st{color:var(--m);font-size:12px;margin:4px 0 10px}label{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px}label input,label select{width:140px}
+</style></head><body>
+<div id="calc"><div id="disp">0</div><div class="g">
+<button data-k="C">C</button><button data-k="(">(</button><button data-k=")">)</button><button data-k="/">÷</button>
+<button data-k="7">7</button><button data-k="8">8</button><button data-k="9">9</button><button data-k="*">×</button>
+<button data-k="4">4</button><button data-k="5">5</button><button data-k="6">6</button><button data-k="-">−</button>
+<button data-k="1">1</button><button data-k="2">2</button><button data-k="3">3</button><button data-k="+">+</button>
+<button data-k="0">0</button><button data-k=".">.</button><button data-k="=" style="grid-column:span 2">=</button></div></div>
+
+<div id="login" hidden><b>Masuk</b><input id="em" type="email" placeholder="Email" autocomplete="off"><input id="pw" type="password" placeholder="Sandi"><button class="pri" id="go">MASUK</button><div class="bad" id="lerr"></div></div>
+
+<div id="app" hidden>
+<div class="tabs"><button data-t="mon" class="on">Pantau</button><button data-t="usr">User</button><button data-t="ban">Blokir</button><button data-t="cod">Kode</button><button data-t="set">Atur</button></div>
+<div class="bar"><select id="dur"><option value="1">1 menit</option><option value="10">10 menit</option><option value="60">1 jam</option><option value="1440" selected>1 hari</option><option value="10080">7 hari</option><option value="43200">30 hari</option><option value="-1">Permanen</option></select><input id="why" placeholder="Alasan blokir (opsional)"></div>
+<div class="st" id="stat"></div>
+<div id="p-mon"></div>
+<div id="p-usr" hidden><div class="bar"><input id="q" placeholder="Cari username…"></div><div id="ul"></div></div>
+<div id="p-ban" hidden></div>
+<div id="p-cod" hidden><div class="bar"><input id="cc" placeholder="KODE"><input id="ca" type="number" placeholder="Jumlah koin"><button class="pri" data-a="addc">Tambah</button><button data-a="imp">Impor kode lama</button></div><div id="cl"></div></div>
+<div id="p-set" hidden>
+<label>Pantau otomatis <input type="checkbox" id="sOn"></label>
+<label>Lonjakan koin minimal <input type="number" id="sMin"></label>
+<label>Jendela deteksi (detik) <input type="number" id="sWin"></label>
+<label>Lonjakan koin balap <input type="number" id="sBal"></label>
+<label>Tindakan otomatis <select id="sAb"><option value="0">Tandai saja</option><option value="60">Blokir 1 jam</option><option value="1440">Blokir 1 hari</option><option value="10080">Blokir 7 hari</option><option value="43200">Blokir 30 hari</option><option value="-1">Blokir permanen</option></select></label>
+<label>Kembalikan koin otomatis <input type="checkbox" id="sRv"></label>
+<button class="pri" data-a="save">Simpan</button> <button data-a="out">Keluar</button>
+</div></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script>
+(function(){'use strict';
+const FB={apiKey:"AIzaSyBp4P3nv9w1xYEH_9wNPxq2E-no292ugDM",authDomain:"server-taher.firebaseapp.com",databaseURL:"https://server-taher-default-rtdb.firebaseio.com",projectId:"server-taher",appId:"1:79596136495:web:93779c3b3983376253beda"};
+const SECRET='1357924'; /* ketik ini lalu tekan = di kalkulator. Ganti sesukamu. Ini hanya penyamaran, keamanan asli = login admin */
+const $=id=>document.getElementById(id),esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),nf=n=>Number(n||0).toLocaleString('id-ID');
+/* kalkulator penyamar */
+let ex='';
+document.querySelectorAll('#calc button').forEach(b=>b.onclick=()=>{const k=b.dataset.k;
+ if(k==='C')ex='';
+ else if(k==='='){if(ex===SECRET){ex='';$('disp').textContent='0';openLogin();return;}
+  try{if(ex&&/^[0-9+\-*\/.() ]+$/.test(ex))ex=String(Function('"use strict";return ('+ex+')')());}catch(e){ex='Error';}}
+ else ex=(ex==='Error'?'':ex)+k;
+ $('disp').textContent=ex||'0';});
+/* firebase (sesi terpisah dari game) */
+const app=firebase.initializeApp(FB,'adm'),db=app.database(),au=app.auth();
+let off=0;db.ref('.info/serverTimeOffset').on('value',s=>off=+s.val()||0);const now=()=>Date.now()+off;
+let S={on:true,min:50000,win:5,ab:0,rv:false,bal:200000},ready=false,timer=0,LOGS=[],BANS={},CODES={};const U={};
+function openLogin(){$('calc').hidden=true;$('login').hidden=false;const un=au.onAuthStateChanged(u=>{un();if(u)verify();});}
+$('go').onclick=()=>{$('lerr').textContent='';au.signInWithEmailAndPassword($('em').value.trim(),$('pw').value).then(verify).catch(e=>$('lerr').textContent=e.code||'gagal');};
+function verify(){db.ref('nexoria/admin/settings').once('value').then(s=>start(s.val())).catch(()=>{au.signOut();$('lerr').textContent='Bukan akun admin (UID belum dipasang di rules).';});}
+function rate(l){l=Math.max(0,Math.min(25,Math.floor(+l||0)));return l<=0?.5:5*Math.pow(2,l-1);}
+const pth=(k,f)=>'nexoria/users/'+k+(f==='bc'?'/balap/coins':f==='lv'?'/incomeLv':'/coins');
+function ban(k,min,why,auto){const until=min<0?9999999999999:now()+min*60000;return db.ref('nexoria/bans/'+k).set({until,reason:why||'',by:auto?'auto':'admin',at:now(),n:(U[k]&&U[k].n)||k});}
+function flag(k,f,d,from,to){const e={t:now(),u:k,f,d,from,to,act:'ditandai'};
+ if(+S.ab!==0){ban(k,+S.ab,'Otomatis: lonjakan tidak wajar',true);e.act='diblokir';}
+ if(S.rv){db.ref(pth(k,f)).set(from);e.act+=' + dikembalikan';}
+ db.ref('nexoria/admin/logs').push(e);try{navigator.vibrate&&navigator.vibrate(300);}catch(x){}}
+function tr(k,o,f,p,c){if(p===undefined||c<=p)return;const t=Date.now(),h=o.h[f];h.push({t,d:c-p,from:p});
+ while(h.length&&t-h[0].t>S.win*1000)h.shift();
+ const sum=h.reduce((a,x)=>a+x.d,0),lim=f==='coins'?Math.max(+S.min,rate(o.inc)*S.win*2.5+20000):+S.bal;
+ if(sum>lim){const from=h[0].from;h.length=0;flag(k,f,sum,from,c);}}
+function upd(sn){const k=sn.key,v=sn.val();if(!v||typeof v!=='object')return;
+ const o=U[k]||(U[k]={h:{coins:[],bc:[]}}),inc=+v.incomeLv||0,c=+v.coins||0,bc=+(v.balap&&v.balap.coins)||0;
+ o.n=v.name||k;o.ll=+v.lastLogin||0;
+ if(ready&&S.on){tr(k,o,'coins',o.c,c);tr(k,o,'bc',o.bc,bc);if(o.inc!==undefined&&inc>o.inc+1)flag(k,'lv',inc-o.inc,o.inc,inc);}
+ o.c=c;o.bc=bc;o.inc=inc;sched();}
+function start(s){S=Object.assign(S,s||{});$('login').hidden=true;$('app').hidden=false;fill();
+ db.ref('nexoria/admin/settings').on('value',sn=>{S=Object.assign(S,sn.val()||{});fill();});
+ db.ref('nexoria/admin/logs').orderByChild('t').startAt(now()-864e5).on('child_added',sn=>{LOGS.push(Object.assign({id:sn.key},sn.val()));sched();});
+ db.ref('nexoria/bans').on('value',sn=>{BANS=sn.val()||{};sched();});
+ db.ref('nexoria/codes').on('value',sn=>{CODES=sn.val()||{};sched();},()=>{});
+ const ur=db.ref('nexoria/users');
+ ur.once('value').then(s=>{s.forEach(c=>{upd(c);});ready=true;ur.on('child_changed',upd);ur.on('child_added',upd);});
+ const wl=()=>{try{navigator.wakeLock&&navigator.wakeLock.request('screen').catch(()=>{});}catch(e){}};wl();document.addEventListener('visibilitychange',()=>{if(!document.hidden)wl();});
+ setInterval(sched,15000);}
+function fill(){$('sOn').checked=!!S.on;$('sMin').value=S.min;$('sWin').value=S.win;$('sBal').value=S.bal;$('sAb').value=String(S.ab);$('sRv').checked=!!S.rv;}
+function sched(){clearTimeout(timer);timer=setTimeout(render,300);}
+const left=u=>u>=9e12?'permanen':Math.max(0,Math.ceil((u-now())/60000))+' mnt lagi';
+const tm=t=>new Date(t).toLocaleString('id-ID',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit',second:'2-digit'});
+function render(){
+ const n=Object.keys(U).length,nb=Object.keys(BANS).filter(k=>BANS[k]&&BANS[k].until>now()).length;
+ $('stat').textContent=(S.on?'🟢 Pantau aktif':'⚪ Pantau mati')+' · '+n+' akun · '+nb+' diblokir · '+LOGS.length+' kejadian 24 jam';
+ $('p-mon').innerHTML=LOGS.slice().sort((a,b)=>b.t-a.t).slice(0,60).map(e=>'<div class="row"><b>'+esc(e.u)+'</b> <span class="bad">+'+nf(e.d)+'</span> '+(e.f==='bc'?'koin balap':e.f==='lv'?'level penghasilan':'koin')+'<br><small>'+tm(e.t)+' · '+nf(e.from)+' → '+nf(e.to)+' · '+esc(e.act)+'</small><div class="a"><button data-a="ban" data-u="'+esc(e.u)+'">Blokir</button><button data-a="rev" data-u="'+esc(e.u)+'" data-f="'+esc(e.f)+'" data-v="'+esc(e.from)+'">Kembalikan</button></div></div>').join('')||'<div class="st">Belum ada kejadian mencurigakan.</div>';
+ const q=($('q').value||'').toLowerCase();
+ $('ul').innerHTML=Object.keys(U).filter(k=>!q||k.includes(q)).sort((a,b)=>U[b].c-U[a].c).slice(0,50).map(k=>{const o=U[k],b=BANS[k]&&BANS[k].until>now();
+  return '<div class="row"><b>'+esc(o.n)+'</b> '+(b?'<span class="bad">🚫 '+left(BANS[k].until)+'</span>':'')+'<br><small>💵 '+nf(o.c)+' · balap '+nf(o.bc)+' · Lv '+o.inc+(o.ll?' · masuk '+tm(o.ll):'')+'</small><div class="a">'+(b?'<button data-a="unban" data-u="'+esc(k)+'">Buka blokir</button>':'<button data-a="ban" data-u="'+esc(k)+'">Blokir</button>')+'<button data-a="setc" data-u="'+esc(k)+'">Ubah koin</button></div></div>';}).join('');
+ $('p-ban').innerHTML=Object.keys(BANS).filter(k=>BANS[k]&&BANS[k].until>now()).map(k=>'<div class="row"><b>'+esc(BANS[k].n||k)+'</b> · '+left(BANS[k].until)+'<br><small>'+esc(BANS[k].by||'')+' · '+esc(BANS[k].reason||'-')+'</small><div class="a"><button data-a="unban" data-u="'+esc(k)+'">Buka blokir</button></div></div>').join('')||'<div class="st">Tidak ada akun diblokir.</div>';
+ $('cl').innerHTML=Object.keys(CODES).map(k=>'<div class="row"><b>'+esc(k)+'</b> · 💵 '+nf(CODES[k])+'<div class="a"><button class="bad" data-a="delc" data-u="'+esc(k)+'">Hapus</button></div></div>').join('')||'<div class="st">Belum ada kode.</div>';}
+document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tabs button').forEach(x=>x.classList.toggle('on',x===b));['mon','usr','ban','cod','set'].forEach(t=>$('p-'+t).hidden=t!==b.dataset.t);});
+$('q').oninput=sched;
+document.addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(!b)return;const a=b.dataset.a,u=b.dataset.u;
+ if(a==='ban')ban(u,+$('dur').value,$('why').value.trim());
+ else if(a==='unban')db.ref('nexoria/bans/'+u).remove();
+ else if(a==='rev')db.ref(pth(u,b.dataset.f)).set(+b.dataset.v);
+ else if(a==='setc'){const v=prompt('Koin baru untuk '+u+':');if(v!==null&&v.trim()!==''&&+v>=0)db.ref(pth(u,'coins')).set(+v);}
+ else if(a==='addc'){const c=$('cc').value.trim().toUpperCase().replace(/[^A-Z0-9]/g,''),m=+$('ca').value;if(c&&m>0){db.ref('nexoria/codes/'+c).set(m);$('cc').value='';$('ca').value='';}}
+ else if(a==='delc')db.ref('nexoria/codes/'+u).remove();
+ else if(a==='imp')db.ref('nexoria/codes').update({NEXO2026:5000,TAHERSAE:5000,NEXTUPTD:5000,RAHASIA1:15000});
+ else if(a==='save')db.ref('nexoria/admin/settings').set({on:$('sOn').checked,min:+$('sMin').value||50000,win:+$('sWin').value||5,bal:+$('sBal').value||200000,ab:+$('sAb').value,rv:$('sRv').checked});
+ else if(a==='out')au.signOut().then(()=>location.reload());});
+})();
+</script></body></html>
