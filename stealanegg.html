@@ -564,14 +564,14 @@ const REG=[
  {n:'Galaxy',em:'🌌',req:1e32,gf:.97,big:5,pct:.02,gb:'#0a0620',gc:['#160c3a','#2a1a66','#06031a'],wall:0x1a1040,depth:34,nests:[]},
  {n:'Konoha',em:'🍥',req:1e40,gf:.99,big:4,pct:.015,gb:'#3a6b3a',gc:['#2e5c2e','#4a8a4a','#255025'],wall:0xcc4a2a,depth:34,nests:[]},
  {n:'Kristal',em:'💎',req:1e50,gf:.99,big:4,pct:.03,gb:'#1b1040',gc:['#2c1a66','#4a2a99','#7ef0ff'],wall:0x3a2a88,depth:34,nests:[]},
- {n:'Nirwana',em:'🪐',req:1e56,gf:.99,big:4,pct:.03,gb:'#120a2a',gc:['#1c1040','#3a1a7a','#ff9bff'],wall:0x5a2a9a,depth:34,nests:[]}
+ {n:'Nirwana',em:'🪷',req:1e56,gf:.99,big:4,pct:.03,gb:'#f6ecff',gc:['#ffeaf6','#e9defc','#fff2c8'],wall:0xe6cdf7,depth:34,nests:[]}
 ];
 /* batas wilayah dihitung otomatis dari depth (bnd0=dekat gerbang, bnd1=jauh); cz = titik tengah */
 const REGEXT=[.10,.15,.20,.25,.30,.35,.40,.45,.50,.55,.60];   /* perpanjangan tiap wilayah: Danau 10%, Laut 15%, Salju 20%, dst (+5%) */
 const REGTR={'Danau':0,'Laut':1,'Salju':2,'Gurun':3,'Neraka':4,'Surga':5,'Kuil Monster':7,'Galaxy':8,'Konoha':9,'Kristal':10,'Nirwana':13};   /* tingkat kelangkaan tiap wilayah (warna teks) */
 {let ob=GATEZ;REG.forEach((R,i)=>{R.ob0=ob;ob-=R.depth;R.ext=REGEXT[i]||0;R.depth=Math.round(R.depth*(1+R.ext)*10)/10;R.tr=REGTR[R.n]||0;});}
 /* tema warna wilayah: [isi, garis/cahaya] — Danau hijau, Laut biru, Salju cyan, Gurun kuning, Neraka merah, Surga putih-kuning, Kuil Monster hitam-hijau, Galaxy ungu, Konoha oren-kuning */
-const REGTHEME={'Danau':['#4cd964','#0e4a1c'],'Laut':['#3d8bff','#0a2a66'],'Salju':['#7ef9ff','#0a4a55'],'Gurun':['#ffd93d','#5a4200'],'Neraka':['#ff3b3b','#4a0000'],'Surga':['#fffbe0','#e0a800'],'Kuil Monster':['#0a0a0a','#2eff6a'],'Galaxy':['#b07dff','#2a0a5a'],'Konoha':['#ffb300','#b53d00'],'Kristal':['#8ff3ff','#4a1a8a'],'Nirwana':['#ffb3ff','#3a1a7a']};
+const REGTHEME={'Danau':['#4cd964','#0e4a1c'],'Laut':['#3d8bff','#0a2a66'],'Salju':['#7ef9ff','#0a4a55'],'Gurun':['#ffd93d','#5a4200'],'Neraka':['#ff3b3b','#4a0000'],'Surga':['#fffbe0','#e0a800'],'Kuil Monster':['#0a0a0a','#2eff6a'],'Galaxy':['#b07dff','#2a0a5a'],'Konoha':['#ffb300','#b53d00'],'Kristal':['#8ff3ff','#4a1a8a'],'Nirwana':['#fff1b8','#7a2a8a']};
 const regTh=R=>REGTHEME[R.n]||['#ffffff','#000000'];
 const regCol=R=>regTh(R)[0],regStroke=R=>regTh(R)[1];
 const regHTML=(R,up)=>{const th=regTh(R),gl=R.n==='Kuil Monster'?'#2eff6a':(R.n==='Surga'?'#ffd54a':th[0]);return'<span style="color:'+th[0]+';text-shadow:0 0 5px '+gl+'bb,0 0 11px '+gl+'66;filter:drop-shadow(0 1px 1px rgba(0,0,0,.55))">'+esc(up?R.n.toUpperCase():R.n)+'</span>';};
@@ -607,6 +607,9 @@ const TREAD=[
  {n:'Semesta',r:2e33,p:2.25e71,c:0xc08bff},       /* 2Ud/d, 300Tv */
  {n:'Takdir',r:1e34,p:1.5e72,c:0xffd94a}         /* 10Ud/d, 2Max */
 ];
+/* Diskon treadmill setelah Galaxy (Kristal s/d Takdir): harga turun 40% (ubah TREAD_DISC: .6 = bayar 60%) */
+const TREAD_DISC=.6;
+{const gi=TREAD.findIndex(t=>t.n==='Galaxy');for(let i=gi+1;i<TREAD.length;i++)TREAD[i].p=TREAD[i].p*TREAD_DISC;}
 const pw=st=>Math.min(30,6+1.6*Math.log10(st+1));   // kecepatan lari dunia dari stat kecepatan
 
 /* ===== status pemain (dideklarasikan di awal) ===== */
@@ -660,10 +663,11 @@ const BATON=[
  {n:'Pentung Ledakan Bom',r:9,d:7,f:22,m:6,c:0xff3300,boom:1},
  {n:'Blackhole',r:12,d:5,f:28,m:8,c:0x8a4dff,hole:1},
  {n:'Sharinggan',r:10,d:0,f:0,m:2,c:0xdd1a1a,genjutsu:1,cd:25,gjDur:15},
- {n:'Pentung Kristal',r:11,d:7,f:24,m:7,c:0x8ff3ff}
+ {n:'Pentung Kristal',r:11,d:7,f:24,m:7,c:0x8ff3ff},
+ {n:'Pentung Nirwana',r:12,d:8,f:26,m:8,c:0xffd6ff}   /* hadiah Index Nirwana (dulu hilang -> Index error & kosong) */
 ];
 let batLv=0;const dscv=new Set();
-const batDesc=l=>{const b=BATON[l];if(b.genjutsu)return b.m+' target · jarak '+b.r+' · Genjutsu (tak bisa gerak) '+b.gjDur+'d · cooldown '+b.cd+'d';return b.m+' target · jarak '+b.r+(b.hole?' · tersedot lalu terpental ragdoll ':' · ragdoll ')+b.d+'d';};
+const batDesc=l=>{const b=BATON[l]||BATON[BATON.length-1];if(b.genjutsu)return b.m+' target · jarak '+b.r+' · Genjutsu (tak bisa gerak) '+b.gjDur+'d · cooldown '+b.cd+'d';return b.m+' target · jarak '+b.r+(b.hole?' · tersedot lalu terpental ragdoll ':' · ragdoll ')+b.d+'d';};
 const mkBaton=()=>({id:'baton',kind:'baton'});
 const spOf=it=>SP[it.reg][it.sp];
 const tierOf=it=>spOf(it).t;
@@ -987,10 +991,51 @@ function stageWorld(){
   for(let k=0;k<3;k++){const p=freePos(7,4.5);planet(p[0],p[1],rnd(.7,1.1));}
   for(let k=0;k<5;k++){const p=freePos(7,4);crystal(p[0],p[1],rnd(.6,1));}
   for(let k=0;k<30;k++){const p=freePos(7,2);mk(scene,G.sph,BM(0xffffff),p[0],.08,p[1],.06);}
-  {seed=31;   /* Nirwana: planet, kristal & bintang kecil */
-    for(let k=0;k<4;k++){const p=freePos(10,4.5);planet(p[0],p[1],rnd(.8,1.3));}
-    for(let k=0;k<6;k++){const p=freePos(10,4.5);crystal(p[0],p[1],rnd(.7,1.2));}
-    for(let k=0;k<30;k++){const p=freePos(10,2);mk(scene,G.sph,BM(0xffffff),p[0],.08,p[1],.06);}
+  {seed=37;   /* NIRWANA — Taman Langit: kolam teratai, pilar cahaya, cakra halo, pilar marmer, mandala emas, kelopak melayang, gerbang halo */
+    const NW=REG[10],cx=0,cz=NW.cz,TAU2=Math.PI*2;
+    const glass=(c,o)=>new THREE.MeshBasicMaterial({color:c,transparent:true,opacity:o,depthWrite:false});
+    /* mandala emas di tengah wilayah */
+    [[1.6,0xffd96a],[2.6,0xff9bd8],[3.8,0xffe9a8],[5.0,0xc9a8ff]].forEach((q,i)=>{const r=mk(scene,G.rng,glass(q[1],.9),cx,.06+i*.004,cz,q[0],q[0],1);r.rotation.x=-Math.PI/2;});
+    for(let k=0;k<8;k++){const a=k*TAU2/8,pet=mk(scene,G.cone4,glass(k%2?0xffb3e6:0xffe08a,.75),cx+Math.cos(a)*3.2,.07,cz+Math.sin(a)*3.2,.55,1.5,.55);pet.rotation.x=-Math.PI/2;pet.rotation.z=a+Math.PI/2;}
+    disc(cx,cz,.9,glass(0xfff7d0,.9),.08);
+    /* teratai bercahaya */
+    const lotus=(x,z,s,c1,c2)=>{const gp=new THREE.Group();gp.position.set(x,0,z);scene.add(gp);
+      for(let ring=0;ring<2;ring++)for(let k=0;k<8;k++){const pv=new THREE.Group();pv.rotation.y=k*TAU2/8+ring*.4;gp.add(pv);
+        const pt=mk(pv,G.cone,M(ring?c2:c1,{emissive:(ring?c2:c1)&0x553355}),(.34-ring*.12)*s,(.42+ring*.22)*s,0,(.2-ring*.04)*s,(.85+ring*.3)*s,.1*s);pt.rotation.z=-.5+ring*.35;}
+      mk(gp,G.sph,BM(0xfff2a8),0,.5*s,0,.17*s);return gp;};
+    /* kolam cahaya + teratai */
+    [[-8,-7.5],[8.5,8],[-6.5,12.5]].forEach((q,i)=>{const px=q[0],pz=cz+q[1];
+      disc(px,pz,2.6+i*.2,glass(i===1?0xbfe9ff:0xd9c8ff,.55),.045);
+      const rg=mk(scene,G.rng,BM(0xffd96a),px,.07,pz,2.7+i*.2,2.7+i*.2,1);rg.rotation.x=-Math.PI/2;
+      for(let k=0;k<3;k++){const a=k*2.1+i,rr=1.1+k*.35;const l=lotus(px+Math.cos(a)*rr,pz+Math.sin(a)*rr,.55+sr()*.25,k%2?0xff9bd0:0xffffff,0xffd0f0);nwAnim.push([l,0,sr()*6]);}});
+    /* pilar cahaya dari langit */
+    for(let k=0;k<5;k++){const p=freePos(10,4.5),m=glass(k%2?0xffe9a0:0xffc8f0,.16);const b=mk(scene,G.cyl,m,p[0],8,p[1],.9,16,.9);nwAnim.push([b,1,sr()*6,m]);
+      const r=mk(scene,G.rng,BM(k%2?0xffd96a:0xff9bd8),p[0],.07,p[1],1.5,1.5,1);r.rotation.x=-Math.PI/2;}
+    /* cakra halo melayang (cincin emas berputar + manik mengorbit) */
+    for(let k=0;k<4;k++){const p=freePos(10,4.5),g=new THREE.Group(),by=3.2+sr()*1.2;g.position.set(p[0],by,p[1]);scene.add(g);
+      mk(g,G.tor,BM(0xffd96a),0,0,0,1.5,1.5,1.5);const r2=mk(g,G.tor,BM(0xff9bd8),0,0,0,1.1,1.1,1.1);r2.rotation.x=Math.PI/2;
+      mk(g,G.sph,BM(0xffffff),0,0,0,.26);
+      for(let b=0;b<4;b++){const a=b*Math.PI/2;mk(g,G.sph,BM(b%2?0xffb3ff:0xfff2a8),Math.cos(a)*1.5,Math.sin(a)*1.5,0,.12);}
+      nwAnim.push([g,2,sr()*6,null,by]);}
+    /* pilar marmer + orb melayang */
+    for(let k=0;k<5;k++){const p=freePos(10,4.5),h=2.6+sr()*1.4;
+      mk(scene,G.box,M(0xd8b86a),p[0],.15,p[1],1.0,.3,1.0);
+      mk(scene,G.cyl,M(0xfaf3ff),p[0],.3+h/2,p[1],.34,h,.34);
+      mk(scene,G.box,M(0xd8b86a),p[0],.3+h+.1,p[1],.9,.2,.9);
+      const o=mk(scene,G.sph,BM(k%2?0xffd6ff:0xfff2b0),p[0],.3+h+1,p[1],.34);nwAnim.push([o,3,sr()*6,null,.3+h+1]);}
+    /* kelopak & debu cahaya melayang naik */
+    {const N=110,pos=new Float32Array(N*3),col=new Float32Array(N*3),cc=[[1,.9,.98],[1,.88,.55],[.9,.8,1]];nwPts={N,pos,base:new Float32Array(N*3),sp:new Float32Array(N)};
+      for(let i=0;i<N;i++){const x=(sr()-.5)*28,z=NW.bnd0-sr()*NW.depth,y=sr()*9;pos[i*3]=x;pos[i*3+1]=y;pos[i*3+2]=z;nwPts.base[i*3]=x;nwPts.sp[i]=.25+sr()*.5;const c=cc[i%3];col[i*3]=c[0];col[i*3+1]=c[1];col[i*3+2]=c[2];}
+      const gg=new THREE.BufferGeometry();gg.setAttribute('position',new THREE.BufferAttribute(pos,3));gg.setAttribute('color',new THREE.BufferAttribute(col,3));
+      nwPts.pts=new THREE.Points(gg,new THREE.PointsMaterial({size:.32,vertexColors:true,transparent:true,opacity:.9,depthWrite:false,fog:false}));nwPts.pts.frustumCulled=false;scene.add(nwPts.pts);}
+    /* gerbang halo Nirwana */
+    {const tz=NW.bnd0-3;
+      [-3.9,3.9].forEach(x=>{mk(scene,G.box,M(0xd8b86a),x,.2,tz,1.3,.4,1.3);mk(scene,G.cyl,M(0xfaf3ff),x,3.2,tz,.45,6,.45);mk(scene,G.box,M(0xd8b86a),x,6.3,tz,1.1,.25,1.1);mk(scene,G.sph,BM(0xfff2a8),x,6.9,tz,.4);});
+      [[3.4,0xffd96a,1],[2.6,0xff9bd8,-1.4],[1.8,0xffffff,2]].forEach((q,i)=>{const g=new THREE.Group();g.position.set(0,4.3,tz+i*.05);scene.add(g);
+        mk(g,G.tor,BM(q[1]),0,0,0,q[0],q[0],q[0]);for(let b=0;b<6;b++){const a=b*TAU2/6;mk(g,G.sph,BM(q[1]),Math.cos(a)*q[0],Math.sin(a)*q[0],0,.17);}
+        nwAnim.push([g,4,q[2]]);});
+      mk(scene,G.sph,BM(0xfffbe0),0,4.3,tz,.5);
+    }
   }
   {  /* Kristal: gugusan kristal bercahaya, serpihan melayang, gerbang portal */
     seed=29;const KR=REG[9];
@@ -1091,7 +1136,7 @@ function auraSet(parent,specs){const AT=auraTexture(),layers=[];specs.forEach(L=
 function auraTick(layers,dt,t){layers.forEach((L,i)=>{L.m.rotation.y+=dt*L.r;L.m.scale.set(1,L.sy*(1+.07*Math.sin(t*2.2+i*1.7)),1);});}
 function risers(parent,n,cols,rad,hgt,spd,size){const a=[];for(let k=0;k<n;k++){const m=new THREE.Mesh(G.sph,new THREE.MeshBasicMaterial({color:cols[k%cols.length],transparent:true,opacity:0,depthWrite:false}));m.scale.setScalar(size);parent.add(m);a.push({m,an:k/n*TAU,r:rad*(.5+(k%4)*.2),v:spd*(.7+(k%5)*.12),ph:k*.37});}
   return(t,dir)=>{a.forEach(o=>{let u=(t*o.v+o.ph)%1;if(dir<0)u=1-u;const an=o.an+t*.7;o.m.position.set(Math.cos(an)*o.r,.2+u*hgt,Math.sin(an)*o.r*1.5);o.m.material.opacity=Math.sin(u*Math.PI)*.9;o.m.scale.setScalar(size*(1-u*.35)*2);});};}
-const krFl=[];
+const krFl=[];const nwAnim=[];let nwPts=null;   /* animasi Nirwana */
 function miniDragon(P){
   const g=new THREE.Group(),dr=new THREE.Group();g.add(dr);
   const mt=(c,o,ad)=>new THREE.MeshBasicMaterial({color:c,transparent:o<1,opacity:o,depthWrite:false,blending:ad?THREE.AdditiveBlending:THREE.NormalBlending,side:THREE.DoubleSide});
@@ -1202,7 +1247,16 @@ function updateUltra(dt,t){
   const sx=Math.round(p.x/2)*2,sz=Math.round(p.z/2)*2;
   sun.position.set(sx+30,50,sz+20);sun.target.position.set(sx,0,sz);sun.target.updateMatrixWorld();
 }
-function updateKristal(t){for(let i=0;i<krFl.length;i++){const q=krFl[i],m=q[0];if(q[2]>=0){m.position.y=q[1]+Math.sin(t*1.4+q[2])*.25;m.rotation.y=t*.6+q[2];}else{m.rotation.z=t*.5;m.scale.setScalar(3.4*(1+.04*Math.sin(t*2)));}}}
+function updateKristal(t){for(let i=0;i<krFl.length;i++){const q=krFl[i],m=q[0];if(q[2]>=0){m.position.y=q[1]+Math.sin(t*1.4+q[2])*.25;m.rotation.y=t*.6+q[2];}else{m.rotation.z=t*.5;m.scale.setScalar(3.4*(1+.04*Math.sin(t*2)));}}updateNirwana(t);}
+function updateNirwana(t){
+  for(let i=0;i<nwAnim.length;i++){const q=nwAnim[i],o=q[0],k=q[1],ph=q[2];
+    if(k===0){o.position.y=.03*Math.sin(t*1.2+ph);o.rotation.y=t*.15+ph;}
+    else if(k===1)q[3].opacity=.12+.07*Math.sin(t*1.6+ph);
+    else if(k===2){o.rotation.y=t*.5+ph;o.rotation.x=Math.sin(t*.4+ph)*.35;o.position.y=q[4]+Math.sin(t*1.1+ph)*.25;}
+    else if(k===3){o.position.y=q[4]+Math.sin(t*1.5+ph)*.22;}
+    else if(k===4){o.rotation.z=t*.45*ph;}}
+  if(nwPts&&nwPts.pts.visible){const P=nwPts,a=P.pos;for(let i=0;i<P.N;i++){a[i*3+1]=(i*.37+t*P.sp[i])%9;a[i*3]=P.base[i*3]+Math.sin(t*.7+i)*.6;}P.pts.geometry.attributes.position.needsUpdate=true;}
+}
 function applyTreadVis(T,lv){
   if(T.lvl===lv)return;T.lvl=lv;T.aura=null;T.holes=null;T.fxs=null;
   const R=TREAD[lv],col=R.c;
@@ -2762,7 +2816,7 @@ function setHeldKey(av,key){
   }else if(key[0]==='b'){
     const lv=clamp(+key.slice(1)||0,0,BATON.length-1),col=BATON[lv].c,g=new THREE.Group();
     if(BATON[lv].hole){mk(g,G.sph,BM(0x000000),0,-.6,0,.15);mk(g,G.tor,BM(0xb07dff),0,-.6,0,.27,.27,.27).rotation.x=Math.PI/2.4;mk(g,G.cyl,M(0x2a1a0a),0,-.05,0,.06,.16,.06);}
-    else{mk(g,G.cyl,M(col),0,-.45,0,.05,.9,.05);mk(g,G.sph,lv>=3?BM(col):M(col),0,-.92,0,.09);mk(g,G.cyl,M(0x2a1a0a),0,-.05,0,.06,.16,.06);}
+    else{mk(g,G.cyl,M(col),0,-.45,0,.05,.9,.05);mk(g,G.sph,lv>=3?BM(col):M(col),0,-.92,0,.09);mk(g,G.cyl,M(0x2a1a0a),0,-.05,0,.06,.16,.06);if(lv>=11)mk(g,G.tor,BM(0xffe9a8),0,-.92,0,.22,.22,.22);}
     g.rotation.x=-1.9;             /* pentung diacungkan ke atas-depan (bukan tongkat jalan) */
     av.hand.add(g);av.held=g;
   }
@@ -4036,17 +4090,19 @@ function renderBook(){
   let total=0,got=0,h='';
   REG.forEach((R,ri)=>{
     if(ri>=KON_I&&!konohaOn)return;
+    try{
     const L=SP[ri],g=L.filter((s,si)=>dscv.has(ri+'_'+si)).length,done=g===L.length;
     total+=L.length;got+=g;
     h+='<div class="sub">'+regHTML(R)+' · '+g+'/'+L.length+(done?' ✅':'')+'</div>';
-    h+='<div class="rw">🎁 Hadiah lengkap: 🦯 '+BATON[ri+1].n+' — '+batDesc(ri+1)+(done?' (sudah didapat)':'')+'</div><div class="grid">';
+    h+='<div class="rw">🎁 Hadiah lengkap: 🦯 '+(BATON[ri+1]||BATON[BATON.length-1]).n+' — '+batDesc(ri+1)+(done?' (sudah didapat)':'')+'</div><div class="grid">';
     L.forEach((s,si)=>{
       const has=dscv.has(ri+'_'+si);
       h+='<div class="cell"><div class="ic"><div class="'+(has?'an':'egg')+'" style="'+(has?'':eggBg(s.t))+'">'+(has?s.ic:'')+'</div></div><div>'+(has?esc(s.n):'???')+'</div><div class="tr t'+s.t+'">'+TIERS[s.t].n+'</div><div style="opacity:.8">🎲 '+s.w+'% · 🏷️ '+fmt(s.lo)+(s.hi>s.lo?'–'+fmt(s.hi):'')+'</div></div>';
     });
     h+='</div>';
+    }catch(e){console.warn('Index wilayah gagal',ri,e);}
   });
-  $('bookCap').textContent=got+'/'+total+' tercatat · '+BATON[batLv].n;
+  $('bookCap').textContent=got+'/'+total+' tercatat · '+(BATON[batLv]||BATON[BATON.length-1]).n;
   $('bookBody').innerHTML=h;
 }
 
