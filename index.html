@@ -9,7 +9,14 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;800;900&family=Sora:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;800;900&family=Sora:wght@400;500;600;700;800&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;800;900&family=Sora:wght@400;500;600;700;800&display=swap" rel="stylesheet"></noscript>
+<link rel="preconnect" href="https://www.gstatic.com">
+<link rel="preconnect" href="https://server-taher-default-rtdb.firebaseio.com">
+<link rel="preconnect" href="https://securetoken.googleapis.com">
+<script defer src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script defer src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script defer src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <style>
 :root{
   --bg:#050308;--void:#02010a;--card:#0f0c1e;--cardhi:#151230;--line:#8b7bff2b;--line2:#ffffff14;
@@ -172,6 +179,9 @@ footer{color:var(--mute2);font-size:12px;text-align:center;padding:14px 0 30px}
 .hr{margin-left:auto;display:flex;align-items:center;gap:8px;min-width:0}
 .hr .chip{margin-left:0}
 .coinchip{padding:5px 12px;color:var(--gold);border-color:#ffcf6b44}
+.spin{display:inline-block;width:12px;height:12px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:nxspin .7s linear infinite;vertical-align:-2px;opacity:.85}
+@keyframes nxspin{to{transform:rotate(360deg)}}
+.fs .spin{width:10px;height:10px}
 #avM{position:fixed;inset:0;z-index:60;background:#000d;display:flex;align-items:center;justify-content:center;padding:12px}
 #avM .av-card{width:min(96vw,560px);max-height:94vh;overflow:auto;border-radius:20px;background:linear-gradient(180deg,var(--cardhi),var(--card));border:1px solid var(--line);padding:16px}
 #avM h3{margin:0 0 10px;font-family:var(--font-d);font-size:17px;font-weight:800}
@@ -239,7 +249,7 @@ footer{color:var(--mute2);font-size:12px;text-align:center;padding:14px 0 30px}
   <header>
     <button id="menuBtn" aria-label="Buka menu navigasi"><span></span><span></span><span></span></button>
     <div class="brand">NEXORIA</div>
-    <div class="hr"><div class="chip coinchip" title="Koin: +0,5/d saat bermain"><span>💵</span><b id="coinV">0</b></div><div class="chip"><div class="ava" id="avaTop">N</div><b id="nameTop"></b></div></div>
+    <div class="hr"><div class="chip coinchip" title="Koin: +0,5/d saat bermain"><span>💵</span><b id="coinV"><span class="spin"></span></b></div><div class="chip"><div class="ava" id="avaTop">N</div><b id="nameTop"></b></div></div>
   </header>
 
   <div id="scrim"></div>
@@ -281,9 +291,6 @@ footer{color:var(--mute2);font-size:12px;text-align:center;padding:14px 0 30px}
 <div id="modal" hidden><div class="m-card" id="mcard"></div></div>
 <div class="status" id="status" role="status" aria-live="polite"></div>
 
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script>
 (function(){
 'use strict';
@@ -385,11 +392,15 @@ function getDB(){
   if(db)return db;
   try{
     if(typeof firebase==='undefined'||typeof firebase.database!=='function')return null;
+    if(!window.__nxLoaded&&typeof firebase.auth!=='function')return null;
     if(!firebase.apps.length)firebase.initializeApp(FB_CFG);
     db=firebase.database();
   }catch(e){db=null;}
   return db;
 }
+window.addEventListener('load',()=>{window.__nxLoaded=1;});
+const fbReady=()=>typeof firebase!=='undefined'&&typeof firebase.database==='function'&&typeof firebase.auth==='function';
+function whenDB(fn){if(fbReady()){if(getDB())fn();return;}let n=0;const t=setInterval(()=>{n++;if(fbReady()||n>160){clearInterval(t);if(getDB())fn();}},50);}
 const withTimeout=(p,ms)=>Promise.race([p,new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),ms))]);
 let stT=0;
 function status(msg,kind){const s=$('status');s.textContent=msg;s.className='status on'+(kind?' '+kind:'');clearTimeout(stT);stT=setTimeout(()=>s.classList.remove('on'),2600);}
@@ -530,7 +541,8 @@ function setUserUI(){
 }
 function showApp(){
   $('splash').hidden=true;$('app').hidden=false;
-  setUserUI();renderGames($('search').value);watchBan();watchCoins();watchHero();watchFriends();
+  setUserUI();renderGames($('search').value);paintCache();whenDB(()=>{watchBan();watchCoins();watchHero();watchFriends();});
+  setTimeout(()=>{if(!COINLOADED&&$('coinV').querySelector('.spin'))$('coinV').textContent='—';},15000);
   let rec='curitelur';try{rec=localStorage.getItem(LS_RECENT)||'curitelur';}catch(e){}
   const g=GAMES.find(x=>x.id===rec)||GAMES[1];
   closeDrawer();window.scrollTo(0,0);
@@ -747,7 +759,7 @@ function tickLoginStreak(){
 }
 
 const fmtC=n=>{n=Math.floor(+n||0);if(n<1000)return String(n);const u=['','K','M','B','T'];let i=0,v=n;while(v>=1000&&i<4){v/=1000;i++;}const f=v>=100?Math.floor(v):Math.floor(v*10)/10;return String(f)+u[i];};
-let coinRef=null,KON=false,konRef=null,COINS=0,SPON=false,spRef=null,OWN={},INC=0,DAILY={n:0,last:''},mdlRender=null;
+let COINRAW=null,COINLOADED=false,coinRef=null,KON=false,konRef=null,COINS=0,SPON=false,spRef=null,OWN={},INC=0,DAILY={n:0,last:''},mdlRender=null;
 const SP_PRICE=5000,ANIM_PRICE=5000,INC_MAX=25;
 const incRate=l=>l<=0?.5:5*Math.pow(2,l-1);   /* koin per detik: Lv0 0,5/d · Lv1 5/d · Lv2 10/d · Lv3 20/d … */
 const incCost=l=>500*Math.pow(2,l);           /* biaya naik dari level l: 500, 1K, 2K, 4K … */
@@ -757,7 +769,7 @@ function watchCoins(){
   const d=getDB();if(!d||!USER)return;
   if(coinRef)coinRef.off();
   coinRef=d.ref('nexoria/users/'+USER.toLowerCase()+'/coins');
-  coinRef.on('value',sn=>{COINS=Math.floor(+sn.val()||0);$('coinV').textContent=fmtC(sn.val());refreshUI();});
+  coinRef.on('value',sn=>{COINS=Math.floor(+sn.val()||0);COINRAW=sn.val();COINLOADED=true;$('coinV').textContent=fmtC(sn.val());saveCache();refreshUI();},()=>{if(!COINLOADED)$('coinV').textContent='—';});
   if(window._nxRefs)window._nxRefs.forEach(r=>{try{r.off();}catch(e){}});
   {const K='nexoria/users/'+USER.toLowerCase(),R=window._nxRefs=[d.ref(K+'/owned'),d.ref(K+'/incomeLv'),d.ref(K+'/daily'),d.ref(K+'/anim')];
    R[0].on('value',sn=>{OWN=sn.val()||{};SPON=!!OWN.shadowpurple;refreshUI();});
@@ -997,23 +1009,29 @@ $('navRedeem').addEventListener('click',()=>{closeDrawer();openRedeem();});
 $('navAvatar').addEventListener('click',()=>{closeDrawer();openAvatar();});
 
 /* ---------- TEMAN: online/offline + sedang main apa ---------- */
-const FR={},FP={},FRW={};let srvOff=0,fReady=false,launching=false;
+const FR={},FP={},FRW={},FPL={};let srvOff=0,fReady=false,launching=false,FLOADED=false,rfQ=0,cacheT=0;
+/* cache lokal: uang + daftar teman langsung tampil saat halaman dibuka, data server menyusul */
+function saveCache(){clearTimeout(cacheT);cacheT=setTimeout(()=>{try{if(USER)localStorage.setItem('nexoria_cache_'+USER.toLowerCase(),JSON.stringify({c:COINRAW||0,f:FR}));}catch(e){}},400);}
+function paintCache(){let c=null;try{c=JSON.parse(localStorage.getItem('nexoria_cache_'+USER.toLowerCase()));}catch(e){}
+  if(c&&typeof c==='object'){if(c.c!=null&&!COINLOADED)$('coinV').textContent=fmtC(c.c);if(c.f&&typeof c.f==='object'&&!FLOADED){for(const k in c.f)if(!(k in FR))FR[k]=String(c.f[k]||k);}}
+  renderFriendsNow();}
 const PRES_TTL=75000,PRES_TTL_NOHB=600000;   /* game dengan heartbeat: 75 dtk; game tanpa heartbeat: 10 menit sejak diluncurkan */
 const gName=id=>{const g=GAMES.find(x=>x.id===id);return id==='curitelur'?'Mencuri telur':g?'Bermain '+g.name:'Online';};
 const fHue=n=>{let x=0;for(const c of String(n))x=(x*31+c.charCodeAt(0))%360;return x;};
 function fStat(k){
-  const p=FP[k];if(!p||!p.ts)return{s:0,t:'Offline'};
+  if(!FPL[k])return{s:0,t:'',ld:1};const p=FP[k];if(!p||!p.ts)return{s:0,t:'Offline'};
   const age=Date.now()+srvOff-p.ts;
   if(age>(p.hb?PRES_TTL:PRES_TTL_NOHB))return{s:0,t:'Offline'};
   return p.g?{s:2,t:gName(p.g)}:{s:1,t:'Online'};
 }
-function renderFriends(){
+function renderFriends(){if(rfQ)return;rfQ=1;requestAnimationFrame(()=>{rfQ=0;renderFriendsNow();});}
+function renderFriendsNow(){
   const box=$('fRow');if(!box)return;
   const arr=Object.keys(FR).map(k=>({k,n:FR[k],st:fStat(k)})).sort((a,b)=>b.st.s-a.st.s||a.n.localeCompare(b.n));
   box.innerHTML=arr.map(f=>{const x=fHue(f.n),cl=f.st.s===2?'pl':f.st.s===1?'on':'';
-    return '<button class="fr '+cl+'" data-k="'+esc(f.k)+'"><div class="fc" style="background:linear-gradient(135deg,hsl('+x+' 80% 62%),hsl('+((x+60)%360)+' 80% 52%))">'+esc((f.n[0]||'?').toUpperCase())+'<i></i></div><div class="fn">'+esc(f.n)+'</div><div class="fs">'+esc(f.st.t)+'</div></button>';}).join('')
+    return '<button class="fr '+cl+'" data-k="'+esc(f.k)+'"><div class="fc" style="background:linear-gradient(135deg,hsl('+x+' 80% 62%),hsl('+((x+60)%360)+' 80% 52%))">'+esc((f.n[0]||'?').toUpperCase())+'<i></i></div><div class="fn">'+esc(f.n)+'</div><div class="fs">'+(f.st.ld?'<span class="spin"></span>':esc(f.st.t))+'</div></button>';}).join('')
     +'<button class="fr" id="fAdd" aria-label="Tambah teman"><div class="fc add">+</div><div class="fn">Tambah</div><div class="fs">teman</div></button>'
-    +(arr.length?'':'<div class="fEmpty">Belum ada teman. Ketuk + lalu masukkan username.</div>');
+    +(arr.length?'':(FLOADED?'<div class="fEmpty">Belum ada teman. Ketuk + lalu masukkan username.</div>':'<div class="fEmpty"><span class="spin"></span> Memuat teman…</div>'));
   box.querySelectorAll('.fr[data-k]').forEach(b=>b.onclick=()=>friendInfo(b.dataset.k));
   $('fAdd').onclick=addFriendUI;
 }
@@ -1033,8 +1051,10 @@ function watchFriends(){
   renderFriends();
   d.ref('.info/serverTimeOffset').on('value',s=>{srvOff=+s.val()||0;});
   const fref=d.ref('nexoria/users/'+USER.toLowerCase()+'/friends');
-  fref.on('child_added',sn=>{const k=sn.key;FR[k]=String(sn.val()||k);const r=d.ref('nexoria/presence/'+k);FRW[k]=r;r.on('value',s=>{FP[k]=s.val();renderFriends();});renderFriends();});
-  fref.on('child_removed',sn=>{const k=sn.key;if(FRW[k]){FRW[k].off();delete FRW[k];}delete FR[k];delete FP[k];renderFriends();});
+  fref.on('value',sn=>{const v=sn.val()||{};FLOADED=true;
+    for(const k of Object.keys(FR))if(!(k in v)){if(FRW[k]){FRW[k].off();delete FRW[k];}delete FR[k];delete FP[k];delete FPL[k];}
+    for(const k of Object.keys(v)){FR[k]=String(v[k]||k);if(!FRW[k]){const r=d.ref('nexoria/presence/'+k);FRW[k]=r;r.on('value',s=>{FP[k]=s.val();FPL[k]=1;renderFriends();},()=>{FPL[k]=1;renderFriends();});}}
+    renderFriends();saveCache();},()=>{FLOADED=true;renderFriends();});
   setInterval(renderFriends,20000);
   startPresence();
 }
@@ -1072,14 +1092,13 @@ function friendInfo(k){
   try{saved=(localStorage.getItem(LS_USER)||'').trim();}catch(e){}
   if(valid(saved)){
     USER=saved;showApp();
-    const d=getDB();
+    whenDB(()=>{const d=getDB();
     if(d){
       const key=USER.toLowerCase();
       withTimeout((async()=>{
         const u=await authReady();
-        const sn=await d.ref('nexoria/users/'+key).once('value');
-        let own=false;
-        if(u&&sn.exists())own=(await d.ref('nexoria/users/'+key+'/owners/'+u.uid).once('value')).exists();
+        const [sn,ow]=await Promise.all([d.ref('nexoria/users/'+key).once('value'),u?d.ref('nexoria/users/'+key+'/owners/'+u.uid).once('value'):Promise.resolve(null)]);
+        const own=!!(u&&sn.exists()&&ow&&ow.exists());
         return {sn,own,u};
       })(),15000).then(async({sn,own,u})=>{
         const kick=msg=>{try{localStorage.removeItem(LS_USER);}catch(e){}USER='';showSplash();status(msg,'err');};
@@ -1093,7 +1112,7 @@ function friendInfo(k){
         if(v.name&&v.name!==USER&&String(v.name).toLowerCase()===key){USER=v.name;try{localStorage.setItem(LS_USER,USER);}catch(e){}setUserUI();}
         d.ref('nexoria/users/'+key+'/lastLogin').set(Date.now()).catch(()=>{});tickLoginStreak();
       }).catch(()=>{});
-    }
+    }});
   }else showSplash();
 })();
 })();
