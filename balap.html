@@ -1732,13 +1732,42 @@ function mkBarbell(){const g=new THREE.Group(),bar=new THREE.Mesh(new THREE.Cyli
   const c=new THREE.Mesh(new THREE.CylinderGeometry(.03,.03,.04,8),M(0xaaaaaa));c.rotation.z=Math.PI/2;c.position.x=s*.64;g.add(c);});return g;}
 function gymBar(e,q){const on=q===22||q===23;if(on){if(!e.gb){e.gb=mkBarbell();e.add(e.gb);}e.gb.visible=true;const z=e.pz||POSE0;e.gb.position.set(0,z.hh-.03,z.hz);}else if(e.gb)e.gb.visible=false;}
 function recolMesh(m,hex){const g=m.geometry,p=g.attributes.position,c=g.attributes.color,k=new THREE.Color(hex);for(let i=0;i<p.count;i++)c.setXYZ(i,k.r,k.g,k.b);c.needsUpdate=true;}
-/* otot 0-100: lengan makin besar & berisi (bisep + bahu), dada melebar; mulai 12% kaos jadi tanpa lengan */
+/* otot 0-100: lengan besar+bisep, bahu/trapezius, dada bidang (pektoral), perut SIX PACK, punggung V-taper (lats), kulit SISIK HIU + insang di rusuk. ≥12% tanpa lengan · ≥25% kaos lepas · ≥50% six pack jelas · ≥60% sisik hiu */
+function recolTor(m,hex){const p=m.geometry.attributes.position,c=m.geometry.attributes.color,k=new THREE.Color(hex);for(let i=0;i<p.count;i++)if(p.getY(i)<.6)c.setXYZ(i,k.r,k.g,k.b);c.needsUpdate=true;}
+const MPY=[0,.05,.18,.26,.36,.44,.5,.56,.6],MPR=[.15,.155,.142,.138,.155,.172,.172,.15,.085],
+ mrr=y=>{for(let i=1;i<MPY.length;i++)if(y<=MPY[i])return MPR[i-1]+(MPR[i]-MPR[i-1])*(y-MPY[i-1])/(MPY[i]-MPY[i-1]);return MPR[MPR.length-1];},
+ mfz=y=>mrr(y)*.62,
+ msf=(y,f)=>{const r=mrr(y),A=1.05*r,B=.62*r;return[A*Math.sin(f),B*Math.cos(f),Math.atan2(Math.sin(f)/A,Math.cos(f)/B)];};  /* titik di kulit badan: x, z, yaw */
+function mkMusBody(e,tor,skn){const K=new THREE.Color(skn),sh=f=>K.clone().multiplyScalar(f).getHex(),B={all:[]},s8=sgeo(8,6),s6=sgeo(6,3),bx=bxg(1,1,1),
+  mm=L=>{const m=new THREE.Mesh(bake(L),VM);tor.add(m);B.all.push(m);return m;},sp=()=>mm([[s8,skn,0,0,0,1,1,1]]);
+ B.pec=[sp(),sp()];B.trp=[sp(),sp()];B.lat=[sp(),sp()];B.obl=[sp(),sp()];
+ B.plate=mm([[bx,sh(.6),0,0,0,1,1,1]]);B.spine=mm([[bx,sh(.62),0,0,0,1,1,1]]);
+ B.abs=[];[.335,.26,.185].forEach(y=>[-1,1].forEach(sx=>{const m=sp();m.userData={y:y,sx:sx};B.abs.push(m);}));
+ const sL=[];[.1,.15,.2,.25,.3,.35,.4,.45,.5].forEach((y,j)=>[-1,1].forEach(sd=>[.95,1.25,1.55,1.85,2.15,2.45,2.75,3.02].forEach((f,i)=>{const p=msf(y,sd*(f+(j&1)*.15));sL.push([s6,((i+j)&1)?sh(.82):sh(1.04),p[0],y,p[1],.028,.022,.011,0,0,p[2]]);})));
+ B.sca=mm(sL);
+ const gL=[];[-1,1].forEach(sd=>[.27,.31,.35,.39,.43].forEach(y=>{const p=msf(y,sd*1.12);gL.push([bx,sh(.4),p[0],y,p[1],.05,.006,.014,0,sd*-.3,p[2]]);}));
+ B.gil=mm(gL);return e.mb=B;}
+function musBodyUp(e,m){const B=e.mb,cl=(v,a,b)=>Math.max(a,Math.min(b,v)),c=cl((m-8)/62,0,1),a=cl((m-22)/50,0,1),sc=m>=60;
+ B.all.forEach(x=>x.visible=true);
+ B.pec.forEach((p,i)=>{const sx=i?1:-1;p.position.set(sx*(.075+.012*c),.455,.078);p.scale.set(.055+.032*c,.048+.034*c,.036+.036*c);p.rotation.z=-sx*.08;});
+ B.trp.forEach((p,i)=>{const sx=i?1:-1;p.position.set(sx*(.075+.02*c),.6,-.004);p.scale.set(.05+.035*c,.036+.03*c,.05+.025*c);});
+ B.lat.forEach((p,i)=>{const sx=i?1:-1;p.position.set(sx*(.095+.02*c),.36,-(mfz(.36)-.004));p.scale.set(.07+.035*c,.12,.026+.02*c);p.rotation.z=sx*.3;});
+ B.spine.position.set(0,.32,-(mfz(.32)-.002));B.spine.scale.set(.008,.34,.01);
+ B.plate.position.set(0,.26,mfz(.26)-.004);B.plate.scale.set(.125,.2,.012);B.plate.visible=a>.02;
+ B.abs.forEach(p=>{const u=p.userData;p.position.set(u.sx*.034,u.y,mfz(u.y)-.01);p.scale.set(.031,.031,.012+.02*a);});
+ B.obl.forEach((p,i)=>{const sx=i?1:-1;p.position.set(sx*.088,.2,mfz(.2)-.012);p.scale.set(.028,.06,.012+.012*a);p.rotation.z=sx*.25;});
+ B.sca.visible=sc;B.gil.visible=sc;}
 function setMus(e,m){if(!e||!e.up||!e.armL)return;m=Math.max(0,Math.min(100,+m||0));const k=Math.round(m*2);if(e.mk===k)return;e.mk=k;const t=m/100,skn=(e.co&&e.co.skin)||'#e0ac82',tor=e.up.children[0];
- if(tor&&tor.isMesh)tor.scale.set(1+.2*t,1,1+.16*t);
+ if(tor&&tor.isMesh){tor.scale.set(1+.24*t,1,1+.2*t);
+  const sl=m>=25;if(sl!==!!e.shl){e.shl=sl;recolTor(tor,sl?skn:((e.co&&e.co.shirt)||'#3d8bff'));e.up.children.forEach((c,i)=>{if(i>0&&c.isMesh&&c.material===VM)c.visible=!sl;});}
+  if(sl){if(!e.mb)mkMusBody(e,tor,skn);musBodyUp(e,m);}else if(e.mb)e.mb.all.forEach(x=>x.visible=false);}
  [e.armL,e.armR].forEach(A=>{const q=A.children[0],ua=q&&q.children[0],fa=A.fa&&A.fa.children[0];if(!ua||!fa)return;
+  if(A.bx0===undefined)A.bx0=Math.abs(A.position.x);A.position.x=Math.sign(A.position.x||1)*(A.bx0+.05*t);
   ua.scale.set(1+.85*t,1,1+.85*t);fa.scale.set(1+.55*t,1,1+.55*t);
   if(m>=12&&!A.mbk){A.mbk=1;recolMesh(ua,skn);recolMesh(fa,skn);const bg=bake([[sgeo(8,6),skn,0,0,0,1,1,1]]),bi=new THREE.Mesh(bg,VM),de=new THREE.Mesh(bg,VM);bi.position.set(0,-.14,.03);de.position.set(0,-.005,0);q.add(bi);q.add(de);A.mbs=[bi,de];}
   if(A.mbs){const s=Math.max(0,(m-12)/88);A.mbs[0].scale.set(.055+.05*s,.095+.045*s,.06+.05*s);A.mbs[1].scale.set(.075+.045*s,.07+.04*s,.075+.045*s);}});}
+const MMIL=[[25,'🔥 Kaosmu lepas! Perut mulai kotak-kotak'],[50,'💪 SIX PACK terbentuk · dada makin bidang!'],[70,'🦈 Kulit sisik hiu muncul · kekar abis!']];
+function musMile(a,b){let r='';MMIL.forEach(q=>{if(a<q[0]&&b>=q[0])r=q[1];});return r;}
 
 function gymTrain2(kind,idx){if(P.m>=0||bonc||cr.st||raceSt||pray.on||CB.dead||CB.carry||PH.lock>0)return;
  if(S.gp!==gDay())return toast('\U0001F3AB Beli tiket gym dulu di meja resepsionis (2.500 \U0001F4B0)');
@@ -1747,7 +1776,7 @@ function gymTrain2(kind,idx){if(P.m>=0||bonc||cr.st||raceSt||pray.on||CB.dead||C
  else{P.x=GM.x+GSU.x;P.z=GM.z+GSU.z+.5;P.h=0;P.v=0;pray={on:1,i:0,t:0,q:24,s:[],gy:3,up:0,r:0};toast('\U0001F4AA Mulai sit up \u2014 gerakkan joystick untuk berhenti');}}
 function gymGain(g,k){g.r++;S.gr=(S.gr|0)+1;noise(.1,260);
  if(k==='tm'){const a=S.lg||0;S.lg=Math.min(100,a+.3);setLegs(av,S.lg);toast('\U0001F3C3 Kaki '+S.lg.toFixed(1)+'% \u00b7 kecepatan lari +'+Math.round(25*S.lg/100)+'%');}
- else{const a=S.hx||0;S.hx=Math.min(100,a+.5);S.ms=Math.min(100,(S.ms||0)+.08);setMus(av,S.ms);if(CB.hp>0)CB.hp=Math.min(hpMax(),CB.hp+.5);cbHud();toast('\U0001F4AA Sit up '+g.r+' \u00b7 Maks HP '+hpMax());}
+ else{const a=S.hx||0;S.hx=Math.min(100,a+.5);{const m0=S.ms||0;S.ms=Math.min(100,m0+.22);setMus(av,S.ms);const ml=musMile(m0,S.ms);if(ml)setTimeout(()=>toast(ml),120);}if(CB.hp>0)CB.hp=Math.min(hpMax(),CB.hp+.5);cbHud();toast('\U0001F4AA Sit up '+g.r+' \u00b7 Maks HP '+hpMax());}
  if(g.r%10===0)save();if(S.gr>=GMAX){toast('\U0001F62E Cukup untuk hari ini');prayStop(1);}}
 function tmAnim(e){const w=Math.sin(T*11),cw=Math.cos(T*11);e.legL.rotation.x=w;e.legR.rotation.x=-w;e.legL.kn.rotation.x=.25+1.3*Math.max(0,-cw);e.legR.kn.rotation.x=.25+1.3*Math.max(0,cw);e.armL.rotation.x=-w*.9;e.armR.rotation.x=w*.9;e.armL.fa.rotation.x=e.armR.fa.rotation.x=-1;e.up.rotation.x=.12;e.position.y=.3;}
 /* kaki makin besar & kuat (0-100) */
@@ -1764,7 +1793,7 @@ function gymTick(dt){const g=pray;g.t+=dt;
  if(g.gy===2){if(g.t<1.5)return;g.t=0;gymGain(g,'tm');return;}
  if(g.gy===3){if(g.t<1.3)return;g.t=0;g.up^=1;g.q=g.up?25:24;if(!g.up)return;gymGain(g,'su');return;}
  if(g.t<1.2)return;g.t=0;g.up^=1;g.q=g.up?23:22;if(!g.up)return;
- g.r++;S.gr=(S.gr|0)+1;const a=S.ms||0;S.ms=Math.min(100,a+GGAIN);setMus(av,S.ms);noise(.1,260);
+ g.r++;S.gr=(S.gr|0)+1;const a=S.ms||0;S.ms=Math.min(100,a+GGAIN);setMus(av,S.ms);noise(.1,260);{const ml=musMile(a,S.ms);if(ml)setTimeout(()=>toast(ml),120);}
  if(a<12&&S.ms>=12)toast('💪 Lenganmu mulai berotot! Kaos jadi tanpa lengan');
  else if(g.r%10===0){toast('💪 Set '+(g.r/10)+' selesai · Otot '+S.ms.toFixed(1)+'%');save();}
  else toast('🏋️ Rep '+(g.r%10)+'/10 · Otot '+S.ms.toFixed(1)+'%');
