@@ -2456,33 +2456,34 @@ function begalSpawn(){let sp=null;for(let k=0;k<80&&!sp;k++){const q=SW[(Math.ra
  const co={skin:'#8d5524',hair:'#111111',shirt:'#1c1c22',pants:'#25252d',shoe:'#111111'},g=person(co);g.scale.setScalar(CHS);const s4=sgeo(6,4);
  g.head.add(new THREE.Mesh(bake([[sgeo(8,6),'#111114',0,.118,.012,.119,.133,.127],[bxg(.17,.034,.01),co.skin,0,.147,.131,1,1,1],[s4,'#ffffff',-.045,.147,.139,.02,.013,.006],[s4,'#ffffff',.045,.147,.139,.02,.013,.006],[s4,'#111111',-.045,.147,.144,.008,.008,.004],[s4,'#111111',.045,.147,.144,.008,.008,.004]]),VM));
  g.armR.fa.add(new THREE.Mesh(bake([[bxg(.022,.08,.022),'#2b1a10',0,-.36,.01,1,1,1],[bxg(.012,.16,.007),'#d9dde3',0,-.48,.01,1,1,1]]),VM));
- const n={g,co,x:sp[0],z:sp[1],sp:3,w:0,wave:0,tk:0,tp:0,lvl:1,bk:0,cd:0,hide:0,ic:null,begal:1,hp:200,mhp:200,mode,vic,bs:'walk',fl:0,fdur:16,loot:1500,robbed:0,life:0,pt:0,hit:1};
+ const n={g,co,x:sp[0],z:sp[1],sp:3,w:0,wave:0,tk:0,tp:0,lvl:1,bk:0,cd:0,hide:0,ic:null,begal:1,hp:200,mhp:200,mode,vic,bs:'walk',fl:0,fdur:16,loot:1500,robbed:0,life:0,t0:Date.now(),pt:0,hit:1};
  g.position.set(n.x,0,n.z);n.ic=label('🔪 BEGAL',n.x,2.3,n.z,3,'#ff3b30',1);PED.push(n);BG.n=n;BG.warn=0;
  toast(mode==='p'?'⚠️ Ada begal berkeliaran mengincar pemain! 🔪':'🔪 Ada begal beraksi di dekat sini!');return true;}
 function begalStep(dt){if(!entered)return;const hid=raceSt>0||cr.st>0||crowdOn,n=BG.n;
  if(n){if(n.gone){const i=PED.indexOf(n);if(i>=0)PED.splice(i,1);sc.remove(n.g);rmv(n.ic);rmv(n.bar);BG.n=null;BG.t=rnd(70,140);return;}
-  if(!n.dead){const d=Math.hypot(n.x-P.x,n.z-P.z);if(hid||d>170||n.life>240){begalVanish(n);return;}
+  if(!n.dead){const d=Math.hypot(n.x-P.x,n.z-P.z);if(!n.cb&&Date.now()-n.t0>300000){begalVanish(n);return;}
    if(!n.cb&&n.bs!=='flee'&&n.mode==='p'&&!BG.warn&&d<42){BG.warn=1;toast('⚠️ Begal mengincarmu! Lawan dia atau kabur 🔪');}}
   return;}
  if(hid||CB.dead||bonc||pray.on||dlgOpen)return;if((BG.t-=dt)>0)return;if(!begalSpawn())BG.t=15;}
 function begalVanish(n){n.gone=1;n.hide=1;n.g.visible=false;if(n.ic)n.ic.visible=false;if(n.bar)n.bar.visible=false;}
-function begalAfter(n){n.pt=0;n.hit=1;if(n.robbed||n.mode==='n'){n.bs='flee';}else n.bs='walk';}
+function begalAfter(n){n.pt=0;n.hit=1;n.bs='walk';}
 function begalDead(n){if(n.rw)return;n.rw=1;if(n.lastS==='n'){toast('😵 Begal tumbang');return;}const r=Math.round(n.loot);S.coins+=r;S.bgk=(S.bgk|0)+1;save();$('coins').textContent='💰 '+S.coins;noise(.15,900);big('🔪 BEGAL TUMBANG!\n+'+r+' 💰',3200);}
-function begalHitP(n){if(CB.dead||CB.inv>0||PH.lock>0)return;const dx=P.x-n.x,dz=P.z-n.z,l=Math.hypot(dx,dz)||1,kx=dx/l*9,kz=dz/l*9;
- if(!n.robbed){n.robbed=1;const tk=Math.min(200,S.coins|0);S.coins-=tk;n.loot+=tk;save();$('coins').textContent='💰 '+S.coins;toast('🔪 Kamu dibegal! -'+tk+' 💰 · kejar & kalahkan begalnya untuk merebut hasilnya');n.bs='flee';n.fl=0;}
- phHitMe(12,kx,kz,true);}
+function begalHitP(n){if(CB.dead||CB.inv>0||PH.lock>0)return;
+ if(!n.robbed){n.robbed=1;const dx=P.x-n.x,dz=P.z-n.z,l=Math.hypot(dx,dz)||1,tk=Math.min(200,S.coins|0),dm=Math.max(0,Math.min(50,Math.floor(CB.hp)-1));S.coins-=tk;n.loot+=tk;save();$('coins').textContent='💰 '+S.coins;
+  toast('🔪 Kamu dibegal! -'+tk+' 💰 · -'+dm+' HP · begal tidak kabur, lawan dia sampai tuntas!');phHitMe(dm,dx/l*9,dz/l*9,true);if(!n.cb)cbFight(n);return;}
+ cbHurtP(10,{t:'n',n});}
 function begalStrike(n,tg){if(!tg)return;if(tg.p){if(Math.hypot(P.x-n.x,P.z-n.z)<2.4)begalHitP(n);return;}
- const v=tg;if(v.dead||v.hide||Math.hypot(v.x-n.x,v.z-n.z)>2.4)return;const dx=v.x-n.x,dz=v.z-n.z,l=Math.hypot(dx,dz)||1;phHurtN(v,10,true,dx/l,dz/l,35);const g=Math.round(rnd(250,450));n.loot+=g;n.bs='flee';n.fl=0;n.vic=null;toast('🔪 Begal merampok warga! Kalahkan begalnya untuk merebut hasilnya');}
+ const v=tg;if(v.dead||v.hide||Math.hypot(v.x-n.x,v.z-n.z)>2.4)return;const dx=v.x-n.x,dz=v.z-n.z,l=Math.hypot(dx,dz)||1;phHurtN(v,10,true,dx/l,dz/l,35);const g=Math.round(rnd(250,450));n.loot+=g;n.vic=begalVictim(n);if(!n.vic)n.mode='p';toast('🔪 Begal merampok warga! Kalahkan begalnya untuk merebut hasilnya');}
 function begalAI(n,dt){if(n.dead||n.gone)return;const g=n.g;n.life+=dt;let tg=null,sp=0;const flee=n.bs==='flee';
  if(flee){n.fl+=dt;const dx=n.x-P.x,dz=n.z-P.z,l=Math.hypot(dx,dz)||1;tg={x:n.x+dx/l*30,z:n.z+dz/l*30};sp=5.2;
   if(n.fl>=n.fdur){begalVanish(n);toast(n.robbed?'🏃 Begal kabur membawa uangmu...':'🏃 Begal kabur');return;}}
  else{if(n.mode==='n'){let v=n.vic;if(!v||v.dead||v.hide||v.cb||v.fly||v.ko>0){v=n.vic=begalVictim(n);if(!v)n.mode='p';}if(v)tg=v;}
-  if(n.mode==='p'){tg=null;if(!CB.dead&&!bonc&&(P.m<0||Math.abs(P.v)<12))tg={x:P.x,z:P.z,p:1};}
+  if(n.mode==='p'){tg=null;if(!CB.dead&&!bonc&&!(raceSt>0||cr.st>0)&&(P.m<0||Math.abs(P.v)<12))tg={x:P.x,z:P.z,p:1};}
   sp=n.mode==='n'?3.4:4.6;}
  let mv=0;
  if(tg){const dx=tg.x-n.x,dz=tg.z-n.z,d=Math.hypot(dx,dz)||1;let a=Math.atan2(dx,dz)-g.rotation.y;a=Math.atan2(Math.sin(a),Math.cos(a));g.rotation.y+=a*Math.min(1,dt*10);
   if(flee||d>1.4){const m=sp*dt;n.x+=dx/d*m;n.z+=dz/d*m;mv=1;}
-  if(!flee&&d<=1.8&&n.pt<=0){n.pt=.36;n.hit=0;noise(.05,1300);}}
+  n.cdn=(n.cdn||0)-dt;if(!flee&&d<=1.8&&n.pt<=0&&n.cdn<=0){n.pt=.36;n.hit=0;n.cdn=1.3+rnd(0,.3);noise(.05,1300);}}
  if(n.pt>0){n.pt-=dt;if(!n.hit&&n.pt<=.2){n.hit=1;begalStrike(n,tg);}}
  if(mv){const w=Math.sin(T*(flee?13:11))*.8;g.legL.rotation.x=w;g.legR.rotation.x=-w;}else g.legL.rotation.x=g.legR.rotation.x=0;
  if(n.pt>0)cbSwing(g,n.pt);else cbGuard(g);
@@ -2526,7 +2527,7 @@ function cbNpcStrike(n,hs,tg){
  if(hs){const t=n.tgt;if(!t)return;const dmg=7+(Math.random()*5|0);
   if(t.t==='n'){if(!t.n.dead&&Math.hypot(t.n.x-n.x,t.n.z-n.z)<2.2)cbHurtN(t.n,dmg,{n});}
   else{const o=RP[t.k];if(o&&Math.hypot(o.x-n.x,o.z-n.z)<2.2)cbHitR(t.k,dmg);}return;}
- if(!tg)return;const dmg=n.begal?12:n.cop?9:n.gang?5:6;
+ if(!tg)return;const dmg=n.begal?10:n.cop?9:n.gang?5:6;
  if(tg.p){if(Math.hypot(P.x-n.x,P.z-n.z)<2.2){if(n.begal)begalHitP(n);else cbHurtP(dmg,{t:'n',n});}}
  else if(tg.n&&!tg.n.dead&&Math.hypot(tg.n.x-n.x,tg.n.z-n.z)<2.2)cbHurtN(tg.n,dmg,{n});}
 function cbNpc(n,dt){if(!n.cb)return false;const g=n.g;if(n.ic)n.ic.visible=false;
