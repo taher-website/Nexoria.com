@@ -119,6 +119,8 @@ body.kbm:not(.edit) #act{pointer-events:none;left:50%;right:auto;bottom:calc(150
 body.kbm:not(.edit) #act::before{content:'E';display:inline-block;min-width:22px;text-align:center;margin-right:8px;padding:1px 6px;border-radius:6px;background:#fff;color:#111;font-weight:900}
 @media (hover:hover) and (pointer:fine){#dlg>div:last-child{counter-reset:kn}#dlg>div:last-child>button:nth-child(-n+9)::before{counter-increment:kn;content:counter(kn) ". ";opacity:.7;font-weight:900}}
 body.kbm #dlg>div:last-child{counter-reset:kn}body.kbm #dlg>div:last-child>button:nth-child(-n+9)::before{counter-increment:kn;content:counter(kn) ". ";opacity:.7;font-weight:900}
+/* ---- NOTIF (toast): tanpa background, hanya garis hitam di sekeliling tulisan seperti notif menang balapan ---- */
+#toast{background:none!important;border:0!important;box-shadow:none!important;border-radius:0!important;padding:4px 10px!important;color:var(--marka,#f4f1e6)!important;font-size:17px!important;font-weight:900!important;-webkit-text-stroke:4px #000;paint-order:stroke fill;text-shadow:0 3px 0 #000!important;line-height:1.2}
 </style></head><body>
 <canvas id="cv"></canvas>
 <button class="b h" id="chatB" aria-label="Chat global">💬</button>
@@ -893,13 +895,13 @@ const hold=(id,fn)=>{const b=$(id);b.addEventListener('pointerdown',e=>{b.setPoi
 hold('gas',v=>{gasB=v;});hold('bRun',v=>{runB=v;$('bRun').classList.toggle('on',!!v);});$('bJump').addEventListener('pointerdown',e=>{e.preventDefault();jmpQ=1;});hold('rev',v=>{revB=v;});hold('brk',v=>{if(v&&P.v>8)noise(.25,3500);brkB=v;});
 /* ===== KEYBOARD LENGKAP + MODE OTOMATIS: pakai keyboard (atau keyboard+mouse) => UI sentuh disembunyikan; sentuh layar => UI muncul lagi ===== */
 let kbm=0,kbTold=0;
-const KBG=new Set(['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright','shift',' ','e','f','x','z','r','c','q','b','i','t','h','j','l','u','n','v','m','k','p','+','=','-','_','escape','enter']);
+const KBG=new Set(['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright','shift',' ','e','f','x','z','r','c','q','b','i','t','h','j','l','u','n','v','m','k','p','+','=','-','_','backspace','enter']);
 function setKbm(v){v=v?1:0;if(v===kbm)return;kbm=v;document.body.classList.toggle('kbm',!!v);if(v&&!kbTold){kbTold=1;toast('⌨️ Mode keyboard aktif · tekan K (📒) untuk lihat semua kontrol');}}
 function kbApplyMode(){const m=S.kb|0;if(m===2)setKbm(1);else if(m===1)setKbm(0);}
 function kbCtl(){dlg('📒 Kontrol keyboard',
  '<b>GERAK</b><br><b>W / ↑</b> maju · gas &nbsp; <b>S / ↓</b> mundur · rem<br><b>A / ←</b> kiri &nbsp; <b>D / →</b> kanan<br><b>Shift</b> lari (jalan kaki)<br><b>Spasi</b> rem tangan (motor/mobil) · lompat (sepeda)<br><b>R</b> tahan = mundur (motor/mobil)<br><b>X / Z</b> gigi naik / turun<br>'+
  '<br><b>AKSI</b><br><b>E</b> aksi (naik, turun, masuk, sholat, dll)<br><b>F</b> pukul (tahan = terus memukul)<br><b>B</b> angkat / taruh tubuh<br><b>C</b> panggil motor<br><b>Q</b> berdiri / duduk (sepeda)<br>'+
- '<br><b>MENU</b><br><b>I</b> inventory 🎒 · <b>T</b> teman 👤<br><b>Enter</b> chat 💬 · <b>H</b> pulang ke NEXO 🏠<br><b>P</b> pengaturan ⚙️ · <b>K</b> daftar ini 📒<br><b>1–9</b> pilih tombol di jendela · <b>Esc</b> tutup jendela<br>'+
+ '<br><b>MENU</b><br><b>I</b> inventory 🎒 · <b>T</b> teman 👤<br><b>Enter</b> chat 💬 · <b>H</b> pulang ke NEXO 🏠<br><b>P</b> pengaturan ⚙️ · <b>K</b> daftar ini 📒<br><b>1–9</b> pilih tombol di jendela · <b>Backspace</b> tutup jendela / chat<br>'+
  '<br><b>KAMERA &amp; LAIN</b><br><b>+ / −</b> atau scroll mouse: zoom<br><b>V</b> kamera ikuti / bebas<br><b>J / L</b> putar kamera · <b>U / N</b> miringkan (mode bebas)<br>Klik-tahan lalu geser mouse: putar kamera bebas<br><b>M</b> suara ON/OFF<br><small>UI sentuh otomatis muncul lagi saat layar disentuh.</small>',
  [['🎒 Inventory',()=>$('bInv').click()],['👤 Teman',()=>$('bFr').click()],['💬 Chat',()=>{if(!CHT.on)chatToggle();setTimeout(()=>$('chatI').focus(),40);}],['📞 Panggil motor',()=>callBike()],['Tutup']]);}
 function kbBody(){if(hedOn||dlgOpen||!entered||CB.dead||bonc||pray.on||raceSt||cr.st)return;if(P.m>=0&&Math.abs(P.v)>=2)return;$('bBody').dispatchEvent(new Event('pointerdown'));}
@@ -912,13 +914,13 @@ addEventListener('keydown',e=>{
  if(e.ctrlKey||e.metaKey||e.altKey)return;
  const k=e.key.toLowerCase();key[k]=1;
  if(!entered)return;
- if(k===' '||k==='enter'||k.startsWith('arrow'))e.preventDefault();
+ if(k===' '||k==='enter'||k==='backspace'||k.startsWith('arrow'))e.preventDefault();
  const dig=k.length===1&&k>='1'&&k<='9';
  if(dig&&!dlgOpen)return;
  if(KBG.has(k)&&(S.kb|0)!==1)setKbm(1);
  if(e.repeat&&k!=='f'&&k!=='+'&&k!=='='&&k!=='-'&&k!=='_')return;
  if(dlgOpen){
-  if(k==='escape'){const x=$('dlx');if(x)x.click();}
+  if(k==='backspace'){const x=$('dlx');if(x)x.click();}
   else if(dig){const dv=$('dlg').lastElementChild,b=dv&&dv.children[+k-1];if(b&&b.tagName==='BUTTON')b.click();}
   return;}
  if(hedOn)return;
@@ -941,7 +943,7 @@ addEventListener('keydown',e=>{
   case '+':case '=':zoomBy(-1.5);break;
   case '-':case '_':zoomBy(1.5);break;
   case 'enter':if(CHT.on)$('chatI').focus();else{chatToggle();setTimeout(()=>$('chatI').focus(),40);}break;
-  case 'escape':if(CHT.on)chatToggle();else settings();break;
+  case 'backspace':if(CHT.on)chatToggle();else settings();break;
  }
 });
 addEventListener('pointerdown',e=>{if(e.pointerType!=='mouse'&&(S.kb|0)!==2)setKbm(0);},true);
@@ -2431,7 +2433,7 @@ function chatSend(){const I=$('chatI'),m=I.value.replace(/\s+/g,' ').trim().slic
  try{if(CHT.ref){const pr=CHT.ref.push(msg);if(pr&&pr.catch)pr.catch(()=>{});}}catch(e){}
  try{mpSend();}catch(e){}}
 $('chatB').onclick=chatToggle;$('chatX').onclick=chatToggle;$('chatS').onclick=chatSend;
-['keydown','keyup','keypress'].forEach(ev=>$('chatI').addEventListener(ev,e=>{e.stopPropagation();if(ev==='keydown'&&e.key==='Enter'){e.preventDefault();chatSend();}if(ev==='keydown'&&e.key==='Escape'){e.preventDefault();chatToggle();}}));
+['keydown','keyup','keypress'].forEach(ev=>$('chatI').addEventListener(ev,e=>{e.stopPropagation();if(ev==='keydown'&&e.key==='Enter'){e.preventDefault();chatSend();}if(ev==='keydown'&&e.key==='Backspace'&&!e.repeat&&!$('chatI').value){e.preventDefault();chatToggle();}}));
 
 /* ---- SENJATA: toko Pak Darmo, pakai/lepas di Inventory, damage senjata ditambahkan ke damage pukulan ---- */
 const WPN=[{n:'Tongkat Kayu',p:500,d:10,c:0x8a5a2b,t:'stick'},{n:'Pentungan Hansip',p:1200,d:14,c:0x2a2a2f,t:'baton'},{n:'Stik Baseball Kayu',p:2500,d:20,c:0xc99a5b,t:'bat'},{n:'Stik Baseball Aluminium',p:5000,d:28,c:0xb8c0cc,t:'bat'},{n:'Pipa Besi',p:8000,d:36,c:0x7d848f,t:'pipe'},{n:'Linggis Baja',p:12500,d:46,c:0x3f4650,t:'crow'},{n:'Palu Godam',p:20000,d:60,c:0x5a3a1c,t:'sledge'}];
