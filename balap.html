@@ -110,12 +110,21 @@ html,body{background:var(--asp)}
 #lt{font-size:13px;color:#9aa0aa;font-weight:600}
 #lgo{background:none;border:0;box-shadow:none;padding:0;font:700 15px var(--fd);color:#f4f1e6}
 #rot{background:var(--asp)}
+
+/* ---- MODE KEYBOARD: UI sentuh otomatis disembunyikan saat pemain pakai keyboard (sisa: status, pengaturan, 📒, pesan, speedometer) ---- */
+#bKey{display:none;background:#000b;color:#fff;border:0;border-radius:14px;box-shadow:none;padding:9px 13px;font-weight:800}
+body.kbm #bKey,body.edit #bKey{display:inline-block}
+body.kbm:not(.edit) #joy,body.kbm:not(.edit) #pad,body.kbm:not(.edit) #gear,body.kbm:not(.edit) #bRun,body.kbm:not(.edit) #bHit,body.kbm:not(.edit) #bJump,body.kbm:not(.edit) #bCall,body.kbm:not(.edit) #bStand,body.kbm:not(.edit) #zm,body.kbm:not(.edit) #bBody,body.kbm:not(.edit) #bInv,body.kbm:not(.edit) #bFr,body.kbm:not(.edit) #home,body.kbm:not(.edit) #chatB{display:none!important}
+body.kbm:not(.edit) #act{pointer-events:none;left:50%;right:auto;bottom:calc(150px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);white-space:nowrap;max-width:92vw}
+body.kbm:not(.edit) #act::before{content:'E';display:inline-block;min-width:22px;text-align:center;margin-right:8px;padding:1px 6px;border-radius:6px;background:#fff;color:#111;font-weight:900}
+@media (hover:hover) and (pointer:fine){#dlg>div:last-child{counter-reset:kn}#dlg>div:last-child>button:nth-child(-n+9)::before{counter-increment:kn;content:counter(kn) ". ";opacity:.7;font-weight:900}}
+body.kbm #dlg>div:last-child{counter-reset:kn}body.kbm #dlg>div:last-child>button:nth-child(-n+9)::before{counter-increment:kn;content:counter(kn) ". ";opacity:.7;font-weight:900}
 </style></head><body>
 <canvas id="cv"></canvas>
 <button class="b h" id="chatB" aria-label="Chat global">💬</button>
 <div class="h" id="chatP"><div id="chatH"><b>💬 Chat Global</b><button class="b" id="chatX">✕</button></div><div id="chatL"></div><button class="b" id="chatJ">⬇ Terbaru</button><div id="chatF"><input id="chatI" maxlength="120" placeholder="Ketik pesan…" autocomplete="off" enterkeyhint="send"><button class="b" id="chatS">Kirim</button></div></div>
 <button class="b h" id="home" aria-label="Ke NEXO">🏠</button>
-<div class="h" id="top"><span id="onl"></span><span id="clk"></span><span id="coins">💰 0</span><button class="b" id="bSet">⚙️</button><span id="hpb"><i></i><b>❤️ 100</b></span><span id="hgb"><i></i><b>🍖 100%</b></span></div>
+<div class="h" id="top"><span id="onl"></span><span id="clk"></span><span id="coins">💰 0</span><button class="b" id="bSet">⚙️</button><button class="b" id="bKey" aria-label="Kontrol keyboard">📒</button><span id="hpb"><i></i><b>❤️ 100</b></span><span id="hgb"><i></i><b>🍖 100%</b></span></div>
 <div class="h" id="lap"></div><div class="h" id="toast"></div><div class="h" id="big"></div>
 <div class="h" id="spd"><svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="57" fill="#0d0e12ee" stroke="#f4f1e6" stroke-width="4"/><g id="cmpT"></g><circle id="cmpR" cx="60" cy="60" r="49" fill="none" stroke="#ffd23a" stroke-width="4" stroke-linecap="round" stroke-dasharray="0 308" transform="rotate(135 60 60)"/><g id="cmpN" transform="rotate(-135 60 60)"><polygon points="60,14 56.5,62 63.5,62" fill="#ff4a3a"/></g><circle cx="60" cy="60" r="19" fill="#1b1e24" stroke="#f4f1e6" stroke-width="2.5"/><text id="cmpG" x="60" y="68" text-anchor="middle" font-size="24" font-weight="900" fill="#fff">D</text><text id="cmpS" x="60" y="98" text-anchor="middle" font-size="13" font-weight="800" fill="#cde">0</text></svg></div>
 <div class="h" id="joy"><div id="knob"></div></div>
@@ -882,8 +891,64 @@ joy.addEventListener('pointerdown',e=>{jid=e.pointerId;joy.setPointerCapture(jid
 const je=e=>{if(e.pointerId===jid){jid=null;jx=jy=0;kn.style.transform='';}};joy.addEventListener('pointerup',je);joy.addEventListener('pointercancel',je);
 const hold=(id,fn)=>{const b=$(id);b.addEventListener('pointerdown',e=>{b.setPointerCapture(e.pointerId);fn(1);});['pointerup','pointercancel'].forEach(t=>b.addEventListener(t,()=>fn(0)));};
 hold('gas',v=>{gasB=v;});hold('bRun',v=>{runB=v;$('bRun').classList.toggle('on',!!v);});$('bJump').addEventListener('pointerdown',e=>{e.preventDefault();jmpQ=1;});hold('rev',v=>{revB=v;});hold('brk',v=>{if(v&&P.v>8)noise(.25,3500);brkB=v;});
-addEventListener('keydown',e=>{key[e.key.toLowerCase()]=1;if(e.key==='e')doAct();if(e.key==='f')cbPunch();if(e.key===' '&&P.m>=0&&BK[P.m].cyc)jmpQ=1;if(e.key==='x')shift(1);if(e.key==='z')shift(-1);});
-$('gup').addEventListener('pointerdown',()=>shift(1));$('gdn').addEventListener('pointerdown',()=>shift(-1));$('bCall').onclick=()=>callBike();$('bStand').onclick=()=>{if(P.m>=0&&BK[P.m].cyc){P.stand=P.stand?0:1;$('bStand').textContent=P.stand?'💺 Duduk':'🧍 Berdiri';}};$('zin').onclick=()=>zoomBy(-1.5);$('zout').onclick=()=>zoomBy(1.5);addEventListener('keyup',e=>{key[e.key.toLowerCase()]=0;});
+/* ===== KEYBOARD LENGKAP + MODE OTOMATIS: pakai keyboard (atau keyboard+mouse) => UI sentuh disembunyikan; sentuh layar => UI muncul lagi ===== */
+let kbm=0,kbTold=0;
+const KBG=new Set(['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright','shift',' ','e','f','x','z','r','c','q','b','i','t','h','j','l','u','n','v','m','k','p','+','=','-','_','escape','enter']);
+function setKbm(v){v=v?1:0;if(v===kbm)return;kbm=v;document.body.classList.toggle('kbm',!!v);if(v&&!kbTold){kbTold=1;toast('⌨️ Mode keyboard aktif · tekan K (📒) untuk lihat semua kontrol');}}
+function kbApplyMode(){const m=S.kb|0;if(m===2)setKbm(1);else if(m===1)setKbm(0);}
+function kbCtl(){dlg('📒 Kontrol keyboard',
+ '<b>GERAK</b><br><b>W / ↑</b> maju · gas &nbsp; <b>S / ↓</b> mundur · rem<br><b>A / ←</b> kiri &nbsp; <b>D / →</b> kanan<br><b>Shift</b> lari (jalan kaki)<br><b>Spasi</b> rem tangan (motor/mobil) · lompat (sepeda)<br><b>R</b> tahan = mundur (motor/mobil)<br><b>X / Z</b> gigi naik / turun<br>'+
+ '<br><b>AKSI</b><br><b>E</b> aksi (naik, turun, masuk, sholat, dll)<br><b>F</b> pukul (tahan = terus memukul)<br><b>B</b> angkat / taruh tubuh<br><b>C</b> panggil motor<br><b>Q</b> berdiri / duduk (sepeda)<br>'+
+ '<br><b>MENU</b><br><b>I</b> inventory 🎒 · <b>T</b> teman 👤<br><b>Enter</b> chat 💬 · <b>H</b> pulang ke NEXO 🏠<br><b>P</b> pengaturan ⚙️ · <b>K</b> daftar ini 📒<br><b>1–9</b> pilih tombol di jendela · <b>Esc</b> tutup jendela<br>'+
+ '<br><b>KAMERA &amp; LAIN</b><br><b>+ / −</b> atau scroll mouse: zoom<br><b>V</b> kamera ikuti / bebas<br><b>J / L</b> putar kamera · <b>U / N</b> miringkan (mode bebas)<br>Klik-tahan lalu geser mouse: putar kamera bebas<br><b>M</b> suara ON/OFF<br><small>UI sentuh otomatis muncul lagi saat layar disentuh.</small>',
+ [['🎒 Inventory',()=>$('bInv').click()],['👤 Teman',()=>$('bFr').click()],['💬 Chat',()=>{if(!CHT.on)chatToggle();setTimeout(()=>$('chatI').focus(),40);}],['📞 Panggil motor',()=>callBike()],['Tutup']]);}
+function kbBody(){if(hedOn||dlgOpen||!entered||CB.dead||bonc||pray.on||raceSt||cr.st)return;if(P.m>=0&&Math.abs(P.v)>=2)return;$('bBody').dispatchEvent(new Event('pointerdown'));}
+function kbHome(){dlg('🏠 Kembali ke NEXO?','Progres disimpan lalu kamu keluar dari game balap.',[['Ya, pulang',()=>$('home').click()],['Batal']]);}
+function kbCam(dt){if(!S.uc||dlgOpen||hedOn)return;const r=(key.j?1:0)-(key.l?1:0),p=(key.n?1:0)-(key.u?1:0);if(r)ucy+=r*1.8*dt;if(p)ucp=clamp(ucp+p*1.2*dt,-.1,1.35);}
+$('bKey').onclick=()=>{if(!dlgOpen)kbCtl();};
+addEventListener('keydown',e=>{
+ const tg=e.target,tn=tg&&tg.tagName;
+ if(tn==='INPUT'||tn==='TEXTAREA'||tn==='SELECT'||(tg&&tg.isContentEditable))return;
+ if(e.ctrlKey||e.metaKey||e.altKey)return;
+ const k=e.key.toLowerCase();key[k]=1;
+ if(!entered)return;
+ if(k===' '||k==='enter'||k.startsWith('arrow'))e.preventDefault();
+ const dig=k.length===1&&k>='1'&&k<='9';
+ if(dig&&!dlgOpen)return;
+ if(KBG.has(k)&&(S.kb|0)!==1)setKbm(1);
+ if(e.repeat&&k!=='f'&&k!=='+'&&k!=='='&&k!=='-'&&k!=='_')return;
+ if(dlgOpen){
+  if(k==='escape'){const x=$('dlx');if(x)x.click();}
+  else if(dig){const dv=$('dlg').lastElementChild,b=dv&&dv.children[+k-1];if(b&&b.tagName==='BUTTON')b.click();}
+  return;}
+ if(hedOn)return;
+ switch(k){
+  case 'e':doAct();break;
+  case 'f':cbPunch();break;
+  case ' ':if(P.m>=0&&BK[P.m].cyc)jmpQ=1;break;
+  case 'x':shift(1);break;
+  case 'z':shift(-1);break;
+  case 'c':callBike();break;
+  case 'q':$('bStand').click();break;
+  case 'b':kbBody();break;
+  case 'i':$('bInv').click();break;
+  case 't':$('bFr').click();break;
+  case 'h':kbHome();break;
+  case 'k':kbCtl();break;
+  case 'p':settings();break;
+  case 'v':S.uc=S.uc?0:1;ucy=P.h;ucp=.35;toast(S.uc?'Kamera bebas · J/L putar · U/N miring':'Kamera mengikuti pemain');save();break;
+  case 'm':S.snd=S.snd?0:1;toast('🔊 Suara '+(S.snd?'ON':'OFF'));save();break;
+  case '+':case '=':zoomBy(-1.5);break;
+  case '-':case '_':zoomBy(1.5);break;
+  case 'enter':if(CHT.on)$('chatI').focus();else{chatToggle();setTimeout(()=>$('chatI').focus(),40);}break;
+  case 'escape':if(CHT.on)chatToggle();else settings();break;
+ }
+});
+addEventListener('pointerdown',e=>{if(e.pointerType!=='mouse'&&(S.kb|0)!==2)setKbm(0);},true);
+document.addEventListener('click',e=>{const b=e.target&&e.target.closest?e.target.closest('button'):null;if(b&&b.id!=='chatS')setTimeout(()=>{try{b.blur();}catch(x){}},0);},true);
+addEventListener('blur',()=>{for(const k in key)key[k]=0;});
+kbApplyMode();
+$('gup').addEventListener('pointerdown',()=>shift(1));$('gdn').addEventListener('pointerdown',()=>shift(-1));$('bCall').onclick=()=>callBike();$('bStand').onclick=()=>{if(P.m>=0&&BK[P.m].cyc){P.stand=P.stand?0:1;$('bStand').textContent=P.stand?'💺 Duduk':'🧍 Berdiri';}};$('zin').onclick=()=>zoomBy(-1.5);$('zout').onclick=()=>zoomBy(1.5);addEventListener('keyup',e=>{key[e.key.toLowerCase()]=0;if(e.key===' '&&e.target&&e.target.tagName==='BUTTON')e.preventDefault();});
 $('act').onclick=()=>doAct();$('home').onclick=()=>{save();cloudPush(1);location.href='index.html';};
 function doAct(){if(dlgOpen||!act)return;act.f();}
 const dl=$('dlg');
@@ -1236,7 +1301,7 @@ $('edL').addEventListener('pointermove',e=>{if(!hdr)return;const c=hg(hdr.id);c.
 ['pointerup','pointercancel'].forEach(t=>$('edL').addEventListener(t,()=>{if(!hdr)return;const e=$(hdr.id),r=e.getBoundingClientRect(),c=hg(hdr.id);let fx=0,fy=0;if(r.left<0)fx=-r.left;else if(r.right>innerWidth)fx=innerWidth-r.right;if(r.top<0)fy=-r.top;else if(r.bottom>innerHeight)fy=innerHeight-r.bottom;if(fx||fy){c.x=Math.round(c.x+fx);c.y=Math.round(c.y+fy);HUD[hdr.id]=c;hudApply();}hdr=null;hudSave();}));
 hudApply();
 function settings(){dlg('⚙️ Pengaturan','Rekor drag 200 m: <b>'+(S.best?S.best.toFixed(2)+' dtk':'-')+'</b><br>Rekor sirkuit: <b>'+S.bl.map((v,i)=>(i+1)+': '+(v?v.toFixed(1)+'s':'-')).join(' · ')+'</b><br>Grafik: Sedang = ringan, Tinggi = bayangan, Ultra = bayangan tajam + kota padat (anti-alias aktif setelah buka ulang).',[
- ['Grafik: '+QN[S.gfx],()=>{S.gfx=(S.gfx+1)%3;applyG();settings();}],['Kamera: '+(S.uc?'Bebas (Unfollow)':'Ikuti pemain'),()=>{S.uc=S.uc?0:1;ucy=P.h;ucp=.35;toast(S.uc?'Kamera bebas: geser layar untuk memutar, 🔍 untuk zoom':'Kamera mengikuti pemain');settings();}],['🔍 Zoom +',()=>{zoomBy(-2);settings();}],['🔎 Zoom −',()=>{zoomBy(2);settings();}],['Suara: '+(S.snd?'ON':'OFF'),()=>{S.snd=S.snd?0:1;settings();}],['🎛️ Atur HUD (geser/ukuran/transparan)',()=>startHudEdit()],['Tutup']]);}
+ ['Grafik: '+QN[S.gfx],()=>{S.gfx=(S.gfx+1)%3;applyG();settings();}],['Kamera: '+(S.uc?'Bebas (Unfollow)':'Ikuti pemain'),()=>{S.uc=S.uc?0:1;ucy=P.h;ucp=.35;toast(S.uc?'Kamera bebas: geser layar untuk memutar, 🔍 untuk zoom':'Kamera mengikuti pemain');settings();}],['🔍 Zoom +',()=>{zoomBy(-2);settings();}],['🔎 Zoom −',()=>{zoomBy(2);settings();}],['Suara: '+(S.snd?'ON':'OFF'),()=>{S.snd=S.snd?0:1;settings();}],['⌨️ Kontrol: '+['Otomatis','UI sentuh','Keyboard'][S.kb|0],()=>{S.kb=((S.kb|0)+1)%3;kbApplyMode();save();toast(['Kontrol otomatis: pakai keyboard = UI sentuh hilang, sentuh layar = muncul lagi','UI sentuh selalu tampil','Mode keyboard: UI sentuh selalu disembunyikan'][S.kb]);settings();}],['📒 Daftar kontrol keyboard',()=>kbCtl()],['🎛️ Atur HUD (geser/ukuran/transparan)',()=>startHudEdit()],['Tutup']]);}
 $('bSet').onclick=()=>{if(!dlgOpen)settings();};
 function findAct(){if(raceSt===1||raceSt===2||cr.st===1||cr.st===3)return null;if(pray.on)return{l:pray.gy?'✖ Berhenti latihan':pray.wd?'✖ Hentikan wudhu':pray.sit?'🧍 Berdiri':'✖ Hentikan sholat',f:()=>prayStop(0)};if(cr.st===2)return{l:'✖ Batalkan balapan',f:crCancel};if(bonc)return{l:'⬇️ Turun',f:()=>leaveBonc(0)};
  if(CB.dead||PH.lock>0)return null;
@@ -1271,9 +1336,10 @@ function push(b,r){const x=P.x,z=P.z;if(x>b[0]&&x<b[1]&&z>b[2]&&z<b[3]){const d=
  const cx=clamp(x,b[0],b[1]),cz=clamp(z,b[2],b[3]),dx=x-cx,dz=z-cz,dd=Math.hypot(dx,dz);if(dd<r&&dd>1e-6){P.x=cx+dx/dd*r;P.z=cz+dz/dd*r;return 1;}return 0;}
 function collide(){const r=P.m>=0?(BK[P.m].car?1.2:.8):.4;let hit=0;for(const b of A)hit|=push(b,r);if(P.m>=0)for(const b of HB)hit|=push(b,r);if(P.z>34)for(let k=0,nc=Math.min(city.count,CITY.length);k<nc;k++)hit|=push(CITY[k],r);P.x=clamp(P.x,-585,585);P.z=clamp(P.z,-29,692);return hit;}
 function step(dt){
+ kbCam(dt);
  const jX=(CB.dead||PH.lock>0)?0:clamp(jx+(key.d||key.arrowright?1:0)-(key.a||key.arrowleft?1:0),-1,1),jY=(CB.dead||PH.lock>0)?0:clamp(jy+(key.s||key.arrowdown?1:0)-(key.w||key.arrowup?1:0),-1,1);
  if(bonc){boncStep();}else if(P.m<0){let sp;rk+=(((runB||key.shift)&&!pray.on&&(Math.abs(jX)>.1||Math.abs(jY)>.1)?1:0)-rk)*Math.min(1,dt*5);if(pray.on){prayTick(dt,jX,jY);sp=0;P.v=0;}else if(S.uc){const mx=jX,my=-jY,l=Math.min(1,Math.hypot(mx,my));if(l>.08){const dx=Math.sin(ucy)*my-Math.cos(ucy)*mx,dz=Math.cos(ucy)*my+Math.sin(ucy)*mx;let a=Math.atan2(dx,dz)-P.h;a=Math.atan2(Math.sin(a),Math.cos(a));P.h+=a*Math.min(1,dt*10);P.v=l*4.6*(1+.95*rk)*(CB.carry?.6:1)*lgSp();}else P.v=0;sp=P.v;}else{P.h-=jX*2.4*dt;sp=-jY*4.6*(1+.95*rk)*(CB.carry?.6:1)*lgSp();P.v=sp;}{const ns=Math.max(1,Math.ceil(Math.abs(sp)*dt/.18));for(let q=0;q<ns;q++){P.x+=Math.sin(P.h)*sp*dt/ns;P.z+=Math.cos(P.h)*sp*dt/ns;collide();}}const pa=poseStep(av,pray.on?pray.q:0,dt);gymBar(av,pray.on?pray.q:0);av.position.set(P.x,pa?av.pz.dy*CHS:0,P.z);av.rotation.y=P.h;if(!pa){const sa=Math.min(1,Math.abs(sp)/4.2),kb=rk*sa;wp+=dt*(9+6.5*rk)*(sa>.02?1:0);const w=Math.sin(wp)*(.8+.45*rk)*sa,cw=Math.cos(wp);av.legL.rotation.x=w;av.legR.rotation.x=-w;av.legL.kn.rotation.x=kb*(.25+1.35*Math.max(0,-cw));av.legR.kn.rotation.x=kb*(.25+1.35*Math.max(0,cw));av.armL.rotation.x=-w*(.7+.55*rk);av.armR.rotation.x=w*(.7+.55*rk);av.armL.fa.rotation.x=av.armR.fa.rotation.x=-1.3*kb;av.rotation.x=.28*kb;av.position.y=Math.abs(Math.sin(wp))*.09*kb;}}
- else{const b=bikes[P.m],rev=(revB||key.r)?1:0,gas=(gasB||key.w||key.arrowup)?1:0,brk=(brkB||key.s||key.arrowdown)?1:0,vm=vmax(),locked=raceSt===1||cr.st===1||ARR.on||!!stp,gm=BK[P.m].gear,lim=gm?glim(P.gr,vm):vm,r0=Math.max(0,P.v)/lim;
+ else{const b=bikes[P.m],rev=(revB||key.r)?1:0,gas=(gasB||key.w||key.arrowup)?1:0,brk=(brkB||key.s||key.arrowdown||(key[' ']&&!BK[P.m].cyc))?1:0,vm=vmax(),locked=raceSt===1||cr.st===1||ARR.on||!!stp,gm=BK[P.m].gear,lim=gm?glim(P.gr,vm):vm,r0=Math.max(0,P.v)/lim;
   if(BK[P.m].cyc)cycStep(dt,b,gas,brk,rev,locked,jX);else if(BK[P.m].car)carStep(dt,b,gas,brk,rev,locked,jX,vm,lim);else{const wl=(gm&&P.gr>1)?0:(S.wl[P.m]||0);P.lg=Math.max(0,P.lg-dt*4.5);P.thr+=(gas-P.thr)*Math.min(1,dt*(7+wl*6));
   if(!locked&&P.thr>.02)P.v+=(pwr()*(gm?GK[P.gr-1]*(P.gr===1?1:.4+.6*clamp(r0*3,0,1)):1)*(1+.1*wl)+wl*3*Math.max(0,1-Math.max(0,P.v)/12))*P.thr*Math.max(0,1-Math.pow(Math.max(0,P.v)/lim,1.6))*dt;
   if(gm&&P.v>lim)P.v-=Math.min(P.v-lim,(12+(P.v-lim)*1.2)*dt);
@@ -2365,7 +2431,7 @@ function chatSend(){const I=$('chatI'),m=I.value.replace(/\s+/g,' ').trim().slic
  try{if(CHT.ref){const pr=CHT.ref.push(msg);if(pr&&pr.catch)pr.catch(()=>{});}}catch(e){}
  try{mpSend();}catch(e){}}
 $('chatB').onclick=chatToggle;$('chatX').onclick=chatToggle;$('chatS').onclick=chatSend;
-['keydown','keyup','keypress'].forEach(ev=>$('chatI').addEventListener(ev,e=>{e.stopPropagation();if(ev==='keydown'&&e.key==='Enter'){e.preventDefault();chatSend();}}));
+['keydown','keyup','keypress'].forEach(ev=>$('chatI').addEventListener(ev,e=>{e.stopPropagation();if(ev==='keydown'&&e.key==='Enter'){e.preventDefault();chatSend();}if(ev==='keydown'&&e.key==='Escape'){e.preventDefault();chatToggle();}}));
 
 /* ---- SENJATA: toko Pak Darmo, pakai/lepas di Inventory, damage senjata ditambahkan ke damage pukulan ---- */
 const WPN=[{n:'Tongkat Kayu',p:500,d:10,c:0x8a5a2b,t:'stick'},{n:'Pentungan Hansip',p:1200,d:14,c:0x2a2a2f,t:'baton'},{n:'Stik Baseball Kayu',p:2500,d:20,c:0xc99a5b,t:'bat'},{n:'Stik Baseball Aluminium',p:5000,d:28,c:0xb8c0cc,t:'bat'},{n:'Pipa Besi',p:8000,d:36,c:0x7d848f,t:'pipe'},{n:'Linggis Baja',p:12500,d:46,c:0x3f4650,t:'crow'},{n:'Palu Godam',p:20000,d:60,c:0x5a3a1c,t:'sledge'}];
@@ -2407,9 +2473,9 @@ const PH={lock:0,me:null,cd:new Map()};
 const phDmg=k=>k<25?0:k<100?Math.round((k-25)*.4):Math.min(100,Math.round(50+(k-100)*.5));
 function phStep(dt){
  bikes.forEach(b=>{if(b.lay){if(P.m===b.i)b.lay=0;else{b.g.rotation.z=b.layZ;b.g.position.y=.32;}}});
- if(PH.lock>0){PH.lock-=dt;const m=PH.me;
+ if(PH.lock>0){const m=PH.me;dt*=(m&&m.sp)||1;PH.lock-=dt;
   if(m&&m.fly){m.t+=dt;P.x+=m.vx*dt;P.z+=m.vz*dt;collide();m.vy-=22*dt;m.y+=m.vy*dt;m.vx*=Math.max(0,1-dt*.6);m.vz*=Math.max(0,1-dt*.6);if(m.y<=.2&&m.vy<0){m.y=.2;m.fly=0;noise(.3,200);}av.position.set(P.x,m.y,P.z);av.rotation.x=-CBPI/2*Math.min(1,m.t*3);}
-  else{av.position.set(P.x,.2,P.z);av.rotation.x=-CBPI/2;}
+  else{const gu=(m&&m.sp)?Math.min(1,PH.lock/.7):1;av.position.set(P.x,.2*gu,P.z);av.rotation.x=-CBPI/2*gu;}
   av.legL.rotation.x=av.legR.rotation.x=0;av.armL.rotation.x=av.armR.rotation.x=0;
   if(PH.lock<=0){PH.lock=0;PH.me=null;av.rotation.x=0;av.position.set(P.x,0,P.z);poseReset(av);CB.inv=Math.max(CB.inv,1.2);}
   return;}
@@ -2426,18 +2492,18 @@ function phStep(dt){
   tryHit(k,o.x,o.z,rt,tvx,tvz,(dmg,lh,nx,nz)=>{if(Math.abs(v)>Math.abs(rs)||(Math.abs(v)===Math.abs(rs)&&SK<k))phHitRemote(k,dmg,lh,nx,nz);});}
 }
 function phHitRemote(k,dmg,lh,nx,nz){noise(.3,160);if(!db)return;const sp=7+dmg*.1;try{db.ref('nexoria/balap/hit/'+k).push({f:SK,d:dmg,t:Date.now()+srvOff,vh:1,lh:lh?1:0,kx:+(nx*sp).toFixed(1),kz:+(nz*sp).toFixed(1)});}catch(e){}const o=RP[k];if(o)o.hbt=4;}
-function phHitMe(dmg,kx,kz,lh){if(CB.dead)return;CB.hp=Math.max(0,CB.hp-dmg);CB.reg=8;CB.hurt=.5;noise(.3,160);if(pray.on)prayStop(0);
- if(lh)phLaunchMe(kx,kz);else if(P.m>=0)P.v*=.4;if(CB.hp<=0)cbDie();cbHud();}
-function phLaunchMe(kx,kz){if(P.m>=0){const b=bikes[P.m];dismount();b.lay=1;b.layZ=(Math.random()<.5?1:-1)*1.45;}else if(bonc)leaveBonc(0);
+function phHitMe(dmg,kx,kz,lh,fast){if(CB.dead)return;CB.hp=Math.max(0,CB.hp-dmg);CB.reg=8;CB.hurt=.5;noise(.3,160);if(pray.on)prayStop(0);
+ if(lh)phLaunchMe(kx,kz,fast);else if(P.m>=0)P.v*=.4;if(CB.hp<=0)cbDie();cbHud();}
+function phLaunchMe(kx,kz,fast){if(P.m>=0){const b=bikes[P.m];dismount();b.lay=1;b.layZ=(Math.random()<.5?1:-1)*1.45;}else if(bonc)leaveBonc(0);
  if(CB.carry)cbDrop();if(dlgOpen){$('dlg').style.display='none';dlgOpen=false;}
- P.v=0;PH.me={vx:kx,vz:kz,vy:5.5,y:.3,t:0,fly:1};PH.lock=2.8;noise(.35,120);big('\U0001F4A5',700);}
-function phHurtN(n,dmg,lh,nx,nz,kmh){if(n.hp===undefined)n.hp=100;n.hp=Math.max(0,n.hp-dmg);n.hpt=4;noise(.25,170);
- if(lh){folUnride(n);n.cb=0;n.cbm='';n.tk=0;n.sit=0;n.wave=0;poseReset(n.g);cbUnpose(n.g);const sp=8+kmh*.1;n.fly={vx:nx*sp,vz:nz*sp,vy:5.5,y:.3,t:0};}
+ P.v=0;PH.me={vx:kx,vz:kz,vy:5.5,y:.3,t:0,fly:1,sp:fast?3.6:0};PH.lock=2.8;noise(.35,120);big('\U0001F4A5',700);}
+function phHurtN(n,dmg,lh,nx,nz,kmh,fast){if(n.hp===undefined)n.hp=100;n.hp=Math.max(0,n.hp-dmg);n.hpt=4;noise(.25,170);
+ if(lh){folUnride(n);n.cb=0;n.cbm='';n.tk=0;n.sit=0;n.wave=0;poseReset(n.g);cbUnpose(n.g);const sp=8+kmh*.1;n.fly={vx:nx*sp,vz:nz*sp,vy:5.5,y:.3,t:0,k:fast?3.6:1};}
  else{n.x+=nx*.4;n.z+=nz*.4;if(n.hp<=0)cbKillN(n);else if(!n.cb)cbFight(n);}}
-function phNpcAir(n,dt){const g=n.g,f=n.fly;
+function phNpcAir(n,dt){const g=n.g,f=n.fly;dt*=(f&&f.k)||n.ksp||1;
  if(f){f.t+=dt;n.x+=f.vx*dt;n.z+=f.vz*dt;f.vx*=Math.max(0,1-dt*.6);f.vz*=Math.max(0,1-dt*.6);f.vy-=22*dt;f.y+=f.vy*dt;g.rotation.x=-CBPI/2*Math.min(1,f.t*3);g.position.set(n.x,Math.max(.2,f.y),n.z);
-  if(f.y<=.2&&f.vy<0){n.fly=null;noise(.25,190);if(n.hp<=0)cbKillN(n);else n.ko=2.6;}}
- else{n.ko-=dt;g.rotation.x=-CBPI/2;g.position.set(n.x,.2,n.z);if(n.ko<=0){n.ko=0;g.rotation.x=0;g.position.set(n.x,0,n.z);poseReset(g);n.w=1;n.li=undefined;pickT(n);n.cd=2;}}}
+  if(f.y<=.2&&f.vy<0){n.fly=null;noise(.25,190);if(n.hp<=0)cbKillN(n);else{n.ko=2.6;n.ksp=f.k>1?f.k:0;}}}
+ else{n.ko-=dt;const gu=n.ksp?Math.min(1,n.ko/.7):1;g.rotation.x=-CBPI/2*gu;g.position.set(n.x,.2*gu,n.z);if(n.ko<=0){n.ko=0;n.ksp=0;g.rotation.x=0;g.position.set(n.x,0,n.z);poseReset(g);n.w=1;n.li=undefined;pickT(n);n.cd=2;}}}
 function phHurtR(q,dmg,lh,nx,nz,kmh){q.hp=(q.hp===undefined?100:q.hp)-dmg;noise(.3,170);if(!lh){q.hold=1.2;if(q.hp>0)return;}
  const b=q.b,pe=q.pe;if(!pe)return;const gp=b.g.position;b.body.remove(pe);sc.add(pe);pe.position.set(gp.x,1.1,gp.z);pe.rotation.set(0,b.g.rotation.y,0);
  const sp=8+kmh*.1;q.st=1;q.ft=0;q.vx=nx*sp;q.vz=nz*sp;q.vy=5.5;q.y=1.1;q.lz=(Math.random()<.5?1:-1)*1.45;b.g.rotation.z=q.lz;b.g.position.y=.32;q.dead=q.hp<=0?1:0;}
@@ -2525,10 +2591,10 @@ function begalAfter(n){n.pt=0;n.hit=1;n.bs='walk';}
 function begalDead(n){if(n.rw)return;n.rw=1;if(n.lastS==='n'){toast('😵 Begal tumbang');return;}const r=Math.round(n.loot);S.coins+=r;S.bgk=(S.bgk|0)+1;save();$('coins').textContent='💰 '+S.coins;noise(.15,900);big('🔪 BEGAL TUMBANG!\n+'+r+' 💰',3200);}
 function begalHitP(n){if(CB.dead||CB.inv>0||PH.lock>0)return;
  if(!n.robbed){n.robbed=1;const dx=P.x-n.x,dz=P.z-n.z,l=Math.hypot(dx,dz)||1,tk=Math.min(200,S.coins|0),dm=Math.max(0,Math.min(50,Math.floor(CB.hp)-1));S.coins-=tk;n.loot+=tk;save();$('coins').textContent='💰 '+S.coins;
-  toast('🔪 Kamu dibegal! -'+tk+' 💰 · -'+dm+' HP · begal tidak kabur, lawan dia sampai tuntas!');phHitMe(dm,dx/l*9,dz/l*9,true);if(!n.cb)cbFight(n);return;}
+  toast('🔪 Kamu dibegal! -'+tk+' 💰 · -'+dm+' HP · begal tidak kabur, lawan dia sampai tuntas!');phHitMe(dm,dx/l*9,dz/l*9,true,true);if(!n.cb)cbFight(n);return;}
  cbHurtP(10,{t:'n',n});}
 function begalStrike(n,tg){if(!tg)return;if(tg.p){if(Math.hypot(P.x-n.x,P.z-n.z)<2.4)begalHitP(n);return;}
- const v=tg;if(v.dead||v.hide||Math.hypot(v.x-n.x,v.z-n.z)>2.4)return;const dx=v.x-n.x,dz=v.z-n.z,l=Math.hypot(dx,dz)||1;phHurtN(v,10,true,dx/l,dz/l,35);const g=Math.round(rnd(250,450));n.loot+=g;n.vic=begalVictim(n);if(!n.vic)n.mode='p';toast('🔪 Begal merampok warga! Kalahkan begalnya untuk merebut hasilnya');}
+ const v=tg;if(v.dead||v.hide||Math.hypot(v.x-n.x,v.z-n.z)>2.4)return;const dx=v.x-n.x,dz=v.z-n.z,l=Math.hypot(dx,dz)||1;phHurtN(v,10,true,dx/l,dz/l,35,true);const g=Math.round(rnd(250,450));n.loot+=g;n.vic=begalVictim(n);if(!n.vic)n.mode='p';toast('🔪 Begal merampok warga! Kalahkan begalnya untuk merebut hasilnya');}
 function begalAI(n,dt){if(n.dead||n.gone)return;const g=n.g;n.life+=dt;let tg=null,sp=0;const flee=n.bs==='flee';
  if(flee){n.fl+=dt;const dx=n.x-P.x,dz=n.z-P.z,l=Math.hypot(dx,dz)||1;tg={x:n.x+dx/l*30,z:n.z+dz/l*30};sp=5.2;
   if(n.fl>=n.fdur){begalVanish(n);toast(n.robbed?'🏃 Begal kabur membawa uangmu...':'🏃 Begal kabur');return;}}
