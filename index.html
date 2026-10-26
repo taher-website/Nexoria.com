@@ -216,6 +216,55 @@ footer{color:var(--mute2);font-size:12px;text-align:center;padding:14px 0 30px}
 .av-sets{display:flex;gap:6px;margin:12px 0 8px}
 .av-sets{flex-wrap:wrap}
 .av-foot{display:flex;gap:8px;margin-top:10px;position:sticky;bottom:-16px;padding:10px 0 4px;background:linear-gradient(180deg,#0000,var(--card) 30%)}
+/* ---- keyboard: keycap 1/2/3 di kartu game + daftar pintasan (hanya perangkat dengan mouse) ---- */
+.kc{display:none;position:absolute;left:10px;bottom:10px;z-index:2;min-width:26px;height:26px;padding:0 7px;border-radius:7px;background:#fff;color:#111;font:900 14px/26px system-ui,sans-serif;text-align:center;box-shadow:0 2px 0 #0007}
+#navKeys{display:none}
+.kh{display:grid;gap:6px;margin:6px 0 14px}.kh div{display:flex;align-items:center;gap:10px;font-size:14px}.kh kbd{min-width:92px;text-align:center;padding:3px 8px;border-radius:7px;background:#ffffff1c;border:1px solid #ffffff33;font:800 12px system-ui,sans-serif}
+@media (hover:hover) and (pointer:fine){.kc{display:block}#navKeys{display:flex}}
+
+/* ---- fitur baru: foto, suka, komentar ---- */
+button.chip{color:inherit;font-family:inherit;cursor:pointer}
+div.chip{cursor:default}
+.ava.ph{background-size:cover;background-position:center}
+.pf-av{width:96px;height:96px;margin:0 auto 12px;font-size:42px}
+.card:focus-visible{outline:2px solid var(--cy)}
+.acts{display:flex;align-items:center;gap:8px;padding:0 14px 14px}
+.acts-l{display:flex;gap:6px;flex:1;min-width:0}
+.acts-l button{display:inline-flex;align-items:center;gap:6px;height:38px;padding:0 11px;border-radius:11px;border:1px solid var(--line2);background:#ffffff08;color:var(--mute);font:700 13px var(--font-b);cursor:pointer}
+.acts-l svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.acts-l .lk.on{color:#ff4d6a;border-color:#ff4d6a66}.acts-l .lk.on svg{fill:currentColor}
+.acts-l .pop svg{animation:pop .3s}
+@keyframes pop{40%{transform:scale(1.35)}}
+.acts .play{display:flex;align-items:center;justify-content:center;height:38px;padding:0 18px;border-radius:11px;background:linear-gradient(90deg,var(--ok),#1fd18a);color:#04140c;font-weight:800;font-size:14px;white-space:nowrap}
+.mdl.cm{align-items:flex-end;padding:0}
+.cm .mdl-card{width:min(100vw,520px);height:min(78vh,600px);display:flex;flex-direction:column;border-radius:20px 20px 0 0;overflow:hidden}
+@media(min-width:700px){.mdl.cm{align-items:center}.cm .mdl-card{border-radius:20px}}
+.cm-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.cm-h h3{margin:0}
+.cm-list{flex:1;overflow:auto;display:flex;flex-direction:column;gap:14px;padding:6px 2px;overscroll-behavior:contain}
+.cmi{display:flex;gap:10px}
+.cmav{flex:none;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font:900 15px var(--font-d);color:#04101c}
+.cmh{display:flex;gap:8px;align-items:baseline;font-size:13px}
+.cmh time{color:var(--mute2);font-size:11.5px}
+.cmh button{margin-left:auto;background:none;border:0;color:var(--mute2);font-size:12px;cursor:pointer}
+.cmi p{margin:2px 0 0;font-size:14px;line-height:1.45;word-break:break-word}
+.cm-form{display:flex;gap:8px;padding-top:10px;border-top:1px solid var(--line2)}
+.cm-form .search{flex:1;width:auto}
+/* ---- perbaikan: tidak bisa digeser kanan-kiri + aman saat layar miring (notch/poni) ---- */
+html,body{overflow-x:hidden;max-width:100%}
+#splash{align-items:flex-start;overflow-x:hidden;padding:max(20px,env(safe-area-inset-top)) max(20px,env(safe-area-inset-right)) max(20px,env(safe-area-inset-bottom)) max(20px,env(safe-area-inset-left))}
+.sp-card{margin:auto}
+header{padding-left:max(14px,env(safe-area-inset-left));padding-right:max(14px,env(safe-area-inset-right))}
+main{padding-left:max(14px,env(safe-area-inset-left));padding-right:max(14px,env(safe-area-inset-right))}
+#drawer{padding-left:max(14px,env(safe-area-inset-left))}
+#sndBtn{right:max(12px,env(safe-area-inset-right))!important;bottom:max(12px,env(safe-area-inset-bottom))!important}
+.brand{white-space:nowrap}
+@media (orientation:landscape) and (max-height:520px){
+  .sp-card{padding:18px 22px 16px}
+  .logo{font-size:30px}.logo-sub{margin:6px 0 12px;font-size:13px}
+  .field input,.btn{height:44px}.hint{display:none}
+  .grid{grid-template-columns:repeat(auto-fill,minmax(200px,1fr))}
+}
 </style>
 </head>
 <body>
@@ -249,7 +298,7 @@ footer{color:var(--mute2);font-size:12px;text-align:center;padding:14px 0 30px}
   <header>
     <button id="menuBtn" aria-label="Buka menu navigasi"><span></span><span></span><span></span></button>
     <div class="brand">NEXORIA</div>
-    <div class="hr"><div class="chip coinchip" title="Koin: +0,5/d saat bermain"><span>💵</span><b id="coinV"><span class="spin"></span></b></div><div class="chip"><div class="ava" id="avaTop">N</div><b id="nameTop"></b></div></div>
+    <div class="hr"><div class="chip coinchip" title="Koin: +0,5/d saat bermain"><span>💵</span><b id="coinV"><span class="spin"></span></b></div><button class="chip" id="chipMe" aria-label="Buka profil"><div class="ava" id="avaTop">N</div><b id="nameTop"></b></button></div>
   </header>
 
   <div id="scrim"></div>
@@ -263,6 +312,7 @@ footer{color:var(--mute2);font-size:12px;text-align:center;padding:14px 0 30px}
       <button id="navGift">🎁 Hadiah Harian</button>
       <button id="navRedeem">🎟️ Redeem Code</button>
       <button id="navProfile">👤 Profil</button>
+      <button id="navKeys">⌨️ Pintasan Keyboard</button>
     </div>
     <div class="d-foot"><div class="nav"><button id="navPw">🔒 Ubah Sandi</button><button class="out" id="navLogout">⛔ Logout</button></div></div>
   </aside>
@@ -495,13 +545,13 @@ function renderGames(filter){
   const grid=$('grid');
   grid.innerHTML=list.map(g=>{
     const isFav=favs.includes(g.id),isRecent=g.id===recent;
-    return '<button class="card" data-id="'+g.id+'"><div class="thumb">'
+    return '<div class="card" tabindex="0" role="group" data-id="'+g.id+'" aria-label="'+esc(g.name)+'"><div class="thumb">'
     +(g.img?'<img src="'+esc(g.img)+'" alt="'+esc(g.name)+'" loading="lazy" data-fallback="'+g.id+'">':artSVG(g))
-    +'<span class="badge">'+esc(g.tag)+'</span>'
+    +'<span class="badge">'+esc(g.tag)+'</span>'+(GAMES.indexOf(g)<9?'<span class="kc">'+(GAMES.indexOf(g)+1)+'</span>':'')
     +(isRecent?'<span class="badge recent">Terakhir</span>':'')
-    +'<span class="fav'+(isFav?' on':'')+'" data-favid="'+g.id+'" role="button" aria-label="Tandai favorit" title="Favorit">'+(isFav?'★':'☆')+'</span>'
-    +'</div>'
-    +'<div class="meta"><b>'+esc(g.name)+'</b><span>'+esc(g.desc)+'</span><div class="play">▶ Main</div></div></button>';
+    +'<span class="fav'+(isFav?' on':'')+'" data-favid="'+g.id+'" role="button" aria-label="Tandai favorit" title="Favorit">'+(isFav?'★':'☆')+'</span></div>'
+    +'<div class="meta"><b>'+esc(g.name)+'</b><span>'+esc(g.desc)+'</span></div>'
+    +'<div class="acts"><div class="acts-l">'+actsHTML(g.id)+'</div><div class="play">▶ Main</div></div></div>';
   }).join('');
   $('none').hidden=list.length>0;
   $('none').textContent=(FILTER==='fav'&&favs.length===0)?'Belum ada game favorit. Tap ☆ pada kartu untuk menambah.':'Game tidak ditemukan.';
@@ -520,7 +570,6 @@ function renderGames(filter){
       if(FILTER==='fav')renderGames($('search').value);
     });
   });
-  grid.querySelectorAll('.card').forEach(c=>c.addEventListener('click',()=>launch(c.dataset.id)));
 }
 function launch(id){
   const g=GAMES.find(x=>x.id===id);if(!g||!USER)return;
@@ -535,19 +584,19 @@ function launch(id){
 
 /* ---------- tampilan ---------- */
 function setUserUI(){
-  const ini=(USER[0]||'N').toUpperCase();
-  ['avaTop','avaSide'].forEach(i=>$(i).textContent=ini);
-  $('nameTop').textContent=USER;$('nameSide').textContent=USER;
+  try{PHOTO=localStorage.getItem(PH_K())||'';}catch(e){PHOTO='';}if(!okPhoto(PHOTO))PHOTO='';
+  $('nameTop').textContent=USER;$('nameSide').textContent=USER;paintPhoto();
 }
 function showApp(){
   $('splash').hidden=true;$('app').hidden=false;
-  setUserUI();renderGames($('search').value);paintCache();whenDB(()=>{watchBan();watchCoins();watchHero();watchFriends();});
+  setUserUI();renderGames($('search').value);paintCache();whenDB(()=>{watchBan();watchCoins();watchHero();watchFriends();watchSocial();watchPhoto();});
   setTimeout(()=>{if(!COINLOADED&&$('coinV').querySelector('.spin'))$('coinV').textContent='—';},15000);
   let rec='curitelur';try{rec=localStorage.getItem(LS_RECENT)||'curitelur';}catch(e){}
   const g=GAMES.find(x=>x.id===rec)||GAMES[1];
   closeDrawer();window.scrollTo(0,0);
 }
 function showSplash(){
+  endSession();
   $('app').hidden=true;$('splash').hidden=false;
   $('uname').value='';$('upw').value='';$('err').textContent='';$('goBtn').disabled=false;$('goBtn').textContent='MASUK';
   setTimeout(()=>{try{$('uname').focus();}catch(e){}},80);
@@ -639,9 +688,9 @@ async function changePw(){
 }
 async function showProfile(){
   const plays=totalPlays(),favs=getFavs().length;
-  modal('<h3>👤 '+esc(USER)+'</h3><p id="pinfo">Memuat data akun…</p>'
+  modal('<div class="ava pf-av" id="pfAv"></div><h3>'+esc(USER)+'</h3><p id="pinfo">Memuat data akun…</p><div class="row" style="margin-bottom:14px"><button class="btn ghost small" id="pfPick" style="flex:1">Ganti foto</button><button class="btn ghost small" id="pfDel" style="flex:1">Hapus foto</button></div>'
     +'<div class="stats"><div class="stat"><b>'+plays+'</b><span>Kali Main</span></div><div class="stat"><b>'+favs+'</b><span>Favorit</span></div></div>'
-    +'<button class="btn ghost" id="pOk">Tutup</button>',c=>{c.querySelector('#pOk').onclick=closeModal;});
+    +'<button class="btn ghost" id="pOk">Tutup</button>',c=>{c.querySelector('#pOk').onclick=closeModal;c.querySelector('#pfPick').onclick=pickPhoto;c.querySelector('#pfDel').onclick=()=>savePhoto('');paintPhoto();});
   const d=getDB();
   if(!d){$('pinfo').textContent='Tidak terhubung ke server.';return;}
   try{
@@ -732,9 +781,9 @@ function todayUTC(off){const d=new Date(Date.now()-(off||0)*86400000);return d.t
 function watchHero(){
   const d=getDB();if(!d||!USER||heroWatch)return;heroWatch=true;
   const key=USER.toLowerCase();
-  d.ref(NSE_PATH).on('value',sn=>{skinEv=sn.val()||null;if($('avM'))renderAv();});
-  d.ref('nexoria/users/'+key+'/heroUnlocked').on('value',sn=>{heroOn=!!sn.val();if($('avM'))renderAv();});
-  d.ref('nexoria/users/'+key+'/streak').on('value',sn=>{streakInfo=sn.val()||{n:0,last:''};if($('avM'))renderAv();});
+  (heroRefs[0]=d.ref(NSE_PATH)).on('value',sn=>{skinEv=sn.val()||null;if($('avM'))renderAv();});
+  (heroRefs[1]=d.ref('nexoria/users/'+key+'/heroUnlocked')).on('value',sn=>{heroOn=!!sn.val();if($('avM'))renderAv();});
+  (heroRefs[2]=d.ref('nexoria/users/'+key+'/streak')).on('value',sn=>{streakInfo=sn.val()||{n:0,last:''};if($('avM'))renderAv();});
 }
 function skinEventActive(){return !!(skinEv&&skinEv.start&&Date.now()<+skinEv.start+30*86400000);}
 function tickLoginStreak(){
@@ -1008,7 +1057,97 @@ async function redeemCode(){
 $('navRedeem').addEventListener('click',()=>{closeDrawer();openRedeem();});
 $('navAvatar').addEventListener('click',()=>{closeDrawer();openAvatar();});
 
+/* ---------- FOTO PROFIL (dari galeri, dipotong persegi 192px, disimpan sebagai JPEG kecil) ---------- */
+let PHOTO='',phRef=null;const FPH={};
+const PH_K=()=>'nx_photo_'+USER.toLowerCase();
+const okPhoto=p=>typeof p==='string'&&p.length<70000&&/^data:image\/jpeg;base64,[A-Za-z0-9+\/=]+$/.test(p);
+function setAva(el,url,name){if(!el)return;if(url){el.style.backgroundImage='url('+url+')';el.textContent='';el.classList.add('ph');}else{el.style.backgroundImage='';el.classList.remove('ph');el.textContent=(name[0]||'N').toUpperCase();}}
+function paintPhoto(){setAva($('avaTop'),PHOTO,USER);setAva($('avaSide'),PHOTO,USER);setAva($('pfAv'),PHOTO,USER);}
+function pickPhoto(){
+  const f=document.createElement('input');f.type='file';f.accept='image/*';
+  f.onchange=()=>{const file=f.files&&f.files[0];if(!file)return;const url=URL.createObjectURL(file),im=new Image();
+    im.onload=()=>{const S=192,c=document.createElement('canvas');c.width=c.height=S;const m=Math.min(im.width,im.height);
+      c.getContext('2d').drawImage(im,(im.width-m)/2,(im.height-m)/2,m,m,0,0,S,S);URL.revokeObjectURL(url);savePhoto(c.toDataURL('image/jpeg',.82));};
+    im.onerror=()=>{URL.revokeObjectURL(url);status('File itu bukan gambar yang valid','err');};im.src=url;};
+  f.click();
+}
+function savePhoto(p){
+  PHOTO=p;try{if(p)localStorage.setItem(PH_K(),p);else localStorage.removeItem(PH_K());}catch(e){}paintPhoto();
+  const d=getDB();if(!d){status('Foto tersimpan di perangkat','ok');return;}
+  const r=d.ref('nexoria/users/'+USER.toLowerCase()+'/photo');
+  (p?r.set(p):r.remove()).then(()=>status(p?'Foto profil diperbarui':'Foto profil dihapus','ok')).catch(()=>status('Foto tersimpan di perangkat, server menolak','err'));
+}
+function watchPhoto(){
+  const d=getDB();if(!d||!USER)return;if(phRef){try{phRef.off();}catch(e){}}
+  phRef=d.ref('nexoria/users/'+USER.toLowerCase()+'/photo');
+  phRef.on('value',sn=>{const v=sn.val();if(okPhoto(v)){PHOTO=v;try{localStorage.setItem(PH_K(),v);}catch(e){}paintPhoto();}},()=>{});
+}
+function loadFPh(k){const d=getDB();if(!d||FPH[k]!==undefined)return;FPH[k]=null;d.ref('nexoria/users/'+k+'/photo').once('value').then(s=>{const p=s.val();if(okPhoto(p)){FPH[k]=p;renderFriends();}}).catch(()=>{});}
+$('chipMe').addEventListener('click',showProfile);
+
+/* ---------- SUKA & KOMENTAR per game (real-time, semua pemain) ---------- */
+const SOC='nexoria/social/';
+const HEART='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5s-7.5-4.6-9.2-9.3C1.7 8 3.6 4.8 6.9 4.8c2 0 3.7 1.2 5.1 3 1.4-1.8 3.1-3 5.1-3 3.3 0 5.2 3.2 4.1 6.4-1.7 4.7-9.2 9.3-9.2 9.3z"/></svg>';
+const CHAT='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"/></svg>';
+let LIKE={},COM={},socRefs=[],cmOpen='',lastCm=0;
+function actsHTML(id){
+  const l=LIKE[id]||{},n=Object.keys(l).length,on=!!(USER&&l[USER.toLowerCase()]),c=(COM[id]||[]).length;
+  return '<button class="lk'+(on?' on':'')+'" data-like="'+id+'" aria-pressed="'+on+'" aria-label="Suka, '+n+' suka">'+HEART+'<b>'+fmtC(n)+'</b></button>'
+    +'<button data-cm="'+id+'" aria-label="Komentar, '+c+'">'+CHAT+'<b>'+(c>=100?'99+':c)+'</b></button>';
+}
+function paintSocial(id,pop){
+  const box=document.querySelector('.card[data-id="'+id+'"] .acts-l');if(!box)return;
+  box.innerHTML=actsHTML(id);if(pop){const b=box.querySelector('.lk.on');if(b)b.classList.add('pop');}
+}
+function watchSocial(){
+  const d=getDB();if(!d||!USER)return;socRefs.forEach(r=>{try{r.off();}catch(e){}});socRefs=[];
+  GAMES.forEach(g=>{
+    const lr=d.ref(SOC+'likes/'+g.id),cr=d.ref(SOC+'comments/'+g.id).limitToLast(100);
+    lr.on('value',sn=>{LIKE[g.id]=sn.val()||{};paintSocial(g.id);},()=>{});
+    cr.on('value',sn=>{const a=[];sn.forEach(c=>{a.push(Object.assign({id:c.key},c.val()));});COM[g.id]=a;paintSocial(g.id);if(cmOpen===g.id)renderCm();},()=>{});
+    socRefs.push(lr,cr);
+  });
+}
+function toggleLike(id){
+  const d=getDB();if(!d||!USER){status('Belum terhubung ke server','err');return;}
+  const me=USER.toLowerCase(),was=!!(LIKE[id]&&LIKE[id][me]),r=d.ref(SOC+'likes/'+id+'/'+me);
+  (was?r.remove():r.set(1)).catch(()=>status('Suka gagal disimpan, coba lagi','err'));
+  const b=document.querySelector('.card[data-id="'+id+'"] .lk');if(b&&!was){setTimeout(()=>paintSocial(id,true),0);}
+}
+$('grid').addEventListener('click',e=>{
+  const t=e.target,lk=t.closest('[data-like]');if(lk){toggleLike(lk.dataset.like);return;}
+  const cm=t.closest('[data-cm]');if(cm){openCm(cm.dataset.cm);return;}
+  const c=t.closest('.card');if(c)launch(c.dataset.id);
+});
+$('grid').addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target.classList&&e.target.classList.contains('card')){e.preventDefault();launch(e.target.dataset.id);}});
+function ago(ts){const s=Math.max(0,(Date.now()+srvOff-(+ts||0))/1000);if(s<45)return 'baru saja';if(s<3600)return Math.round(s/60)+' mnt';if(s<86400)return Math.round(s/3600)+' jam';return Math.round(s/86400)+' hari';}
+function openCm(id){
+  const g=GAMES.find(x=>x.id===id);if(!g||!USER)return;closeMdl();cmOpen=id;
+  const m=document.createElement('div');m.className='mdl cm';
+  m.innerHTML='<div class="mdl-card"><div class="cm-h"><h3>Komentar · '+esc(g.name)+'</h3><button class="btn ghost small" id="cmX">Tutup</button></div><div class="cm-list" id="cmList"></div><div class="cm-form"><input id="cmIn" class="search" maxlength="200" placeholder="Tulis komentar…" autocomplete="off"><button class="btn small" id="cmSend" style="margin:0">Kirim</button></div></div>';
+  document.body.appendChild(m);
+  const close=()=>{cmOpen='';closeMdl();};
+  m.addEventListener('pointerdown',e=>{if(e.target===m)close();});
+  $('cmX').onclick=close;$('cmSend').onclick=sendCm;$('cmIn').addEventListener('keydown',e=>{if(e.key==='Enter')sendCm();});
+  renderCm(true);
+}
+function renderCm(first){
+  const el=$('cmList');if(!el){cmOpen='';return;}
+  const list=COM[cmOpen]||[],me=USER.toLowerCase(),near=el.scrollHeight-el.scrollTop-el.clientHeight<80;
+  el.innerHTML=list.length?list.map(c=>'<div class="cmi"><div class="cmav" style="background:hsl('+fHue(c.u||'?')+' 80% 60%)">'+esc(((c.u||'?')[0]||'?').toUpperCase())+'</div><div style="min-width:0;flex:1"><div class="cmh"><b>'+esc(c.u||'?')+'</b><time>'+ago(c.ts)+'</time>'+(c.k===me?'<button data-del="'+esc(c.id)+'">Hapus</button>':'')+'</div><p>'+esc(c.t||'')+'</p></div></div>').join(''):'<div class="empty">Belum ada komentar. Tulis yang pertama.</div>';
+  el.querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>{const d=getDB();if(d)d.ref(SOC+'comments/'+cmOpen+'/'+b.dataset.del).remove().catch(()=>status('Gagal menghapus komentar','err'));});
+  if(first||near)el.scrollTop=el.scrollHeight;
+}
+function sendCm(){
+  const d=getDB(),inp=$('cmIn');if(!d||!inp||!cmOpen)return;
+  const t=inp.value.trim().slice(0,200);if(!t)return;
+  if(Date.now()-lastCm<3000){status('Tunggu sebentar sebelum berkomentar lagi','err');return;}
+  lastCm=Date.now();
+  d.ref(SOC+'comments/'+cmOpen).push({u:USER,k:USER.toLowerCase(),t:t,ts:firebase.database.ServerValue.TIMESTAMP}).then(()=>{inp.value='';}).catch(()=>status('Komentar gagal terkirim','err'));
+}
+
 /* ---------- TEMAN: online/offline + sedang main apa ---------- */
+let PRES_KEY='',presTimer=0,frTimer=0,visFn=null,FREF=null,heroRefs=[],srvWatch=false;
 const FR={},FP={},FRW={},FPL={};let srvOff=0,fReady=false,launching=false,FLOADED=false,rfQ=0,cacheT=0;
 /* cache lokal: uang + daftar teman langsung tampil saat halaman dibuka, data server menyusul */
 function saveCache(){clearTimeout(cacheT);cacheT=setTimeout(()=>{try{if(USER)localStorage.setItem('nexoria_cache_'+USER.toLowerCase(),JSON.stringify({c:COINRAW||0,f:FR}));}catch(e){}},400);}
@@ -1029,7 +1168,7 @@ function renderFriendsNow(){
   const box=$('fRow');if(!box)return;
   const arr=Object.keys(FR).map(k=>({k,n:FR[k],st:fStat(k)})).sort((a,b)=>b.st.s-a.st.s||a.n.localeCompare(b.n));
   box.innerHTML=arr.map(f=>{const x=fHue(f.n),cl=f.st.s===2?'pl':f.st.s===1?'on':'';
-    return '<button class="fr '+cl+'" data-k="'+esc(f.k)+'"><div class="fc" style="background:linear-gradient(135deg,hsl('+x+' 80% 62%),hsl('+((x+60)%360)+' 80% 52%))">'+esc((f.n[0]||'?').toUpperCase())+'<i></i></div><div class="fn">'+esc(f.n)+'</div><div class="fs">'+(f.st.ld?'<span class="spin"></span>':esc(f.st.t))+'</div></button>';}).join('')
+    return '<button class="fr '+cl+'" data-k="'+esc(f.k)+'"><div class="fc" style="'+(FPH[f.k]?'background:url('+FPH[f.k]+') center/cover':'background:linear-gradient(135deg,hsl('+x+' 80% 62%),hsl('+((x+60)%360)+' 80% 52%))')+'">'+(FPH[f.k]?'':esc((f.n[0]||'?').toUpperCase()))+'<i></i></div><div class="fn">'+esc(f.n)+'</div><div class="fs">'+(f.st.ld?'<span class="spin"></span>':esc(f.st.t))+'</div></button>';}).join('')
     +'<button class="fr" id="fAdd" aria-label="Tambah teman"><div class="fc add">+</div><div class="fn">Tambah</div><div class="fs">teman</div></button>'
     +(arr.length?'':(FLOADED?'<div class="fEmpty">Belum ada teman. Ketuk + lalu masukkan username.</div>':'<div class="fEmpty"><span class="spin"></span> Memuat teman…</div>'));
   box.querySelectorAll('.fr[data-k]').forEach(b=>b.onclick=()=>friendInfo(b.dataset.k));
@@ -1039,23 +1178,44 @@ function setPres(g,hb){
   const d=getDB();if(!d||!USER)return Promise.resolve();
   return d.ref('nexoria/presence/'+USER.toLowerCase()).set({n:USER,g:g||'',hb:hb?1:0,ts:firebase.database.ServerValue.TIMESTAMP}).catch(()=>{});
 }
+/* bersihkan SEMUA sesi akun lama (presence, pantauan teman/koin/hero) — dipanggil saat logout / kick / ganti akun */
+function endSession(){
+  const d=getDB();
+  try{socRefs.forEach(r=>r.off());}catch(e){}socRefs=[];LIKE={};COM={};cmOpen='';if(phRef){try{phRef.off();}catch(e){}phRef=null;}PHOTO='';
+
+  if(presTimer){clearInterval(presTimer);presTimer=0;}
+  if(frTimer){clearInterval(frTimer);frTimer=0;}
+  if(visFn){document.removeEventListener('visibilitychange',visFn);visFn=null;}
+  if(PRES_KEY&&d){const r=d.ref('nexoria/presence/'+PRES_KEY);try{r.onDisconnect().cancel();}catch(e){}r.remove().catch(()=>{});}
+  PRES_KEY='';
+  if(FREF){try{FREF.off();}catch(e){}FREF=null;}
+  for(const k in FRW){try{FRW[k].off();}catch(e){}delete FRW[k];}
+  for(const k in FR)delete FR[k];for(const k in FP)delete FP[k];for(const k in FPL)delete FPL[k];
+  fReady=false;FLOADED=false;
+  heroRefs.forEach(r=>{try{r&&r.off();}catch(e){}});heroRefs=[];heroWatch=false;heroOn=false;streakInfo={n:0,last:''};
+  if(coinRef){try{coinRef.off();}catch(e){}coinRef=null;}
+  if(window._nxRefs){window._nxRefs.forEach(r=>{try{r.off();}catch(e){}});window._nxRefs=null;}
+  if(banRef){try{banRef.off();}catch(e){}banRef=null;}
+  COINRAW=null;COINLOADED=false;COINS=0;OWN={};SPON=false;INC=0;DAILY={n:0,last:''};clearTimeout(cacheT);
+  try{const cv=$('coinV');if(cv)cv.innerHTML='<span class="spin"></span>';renderFriendsNow();}catch(e){}
+}
 function startPresence(){
   const d=getDB();if(!d||!USER)return;
-  const r=d.ref('nexoria/presence/'+USER.toLowerCase());
-  const beat=()=>{if(document.hidden||launching)return;try{r.onDisconnect().remove();}catch(e){}setPres('',1);};
-  beat();setInterval(beat,30000);
-  document.addEventListener('visibilitychange',()=>{if(!document.hidden)beat();});
+  const r=d.ref('nexoria/presence/'+USER.toLowerCase());PRES_KEY=USER.toLowerCase();
+  const beat=()=>{if(document.hidden||launching||!USER||USER.toLowerCase()!==PRES_KEY)return;try{r.onDisconnect().remove();}catch(e){}setPres('',1);};
+  beat();presTimer=setInterval(beat,30000);
+  visFn=()=>{if(!document.hidden)beat();};document.addEventListener('visibilitychange',visFn);
 }
 function watchFriends(){
   const d=getDB();if(!d||!USER||fReady)return;fReady=true;
   renderFriends();
-  d.ref('.info/serverTimeOffset').on('value',s=>{srvOff=+s.val()||0;});
-  const fref=d.ref('nexoria/users/'+USER.toLowerCase()+'/friends');
+  if(!srvWatch){srvWatch=true;d.ref('.info/serverTimeOffset').on('value',s=>{srvOff=+s.val()||0;});}
+  const fref=d.ref('nexoria/users/'+USER.toLowerCase()+'/friends');FREF=fref;
   fref.on('value',sn=>{const v=sn.val()||{};FLOADED=true;
     for(const k of Object.keys(FR))if(!(k in v)){if(FRW[k]){FRW[k].off();delete FRW[k];}delete FR[k];delete FP[k];delete FPL[k];}
-    for(const k of Object.keys(v)){FR[k]=String(v[k]||k);if(!FRW[k]){const r=d.ref('nexoria/presence/'+k);FRW[k]=r;r.on('value',s=>{FP[k]=s.val();FPL[k]=1;renderFriends();},()=>{FPL[k]=1;renderFriends();});}}
+    for(const k of Object.keys(v)){FR[k]=String(v[k]||k);loadFPh(k);if(!FRW[k]){const r=d.ref('nexoria/presence/'+k);FRW[k]=r;r.on('value',s=>{FP[k]=s.val();FPL[k]=1;renderFriends();},()=>{FPL[k]=1;renderFriends();});}}
     renderFriends();saveCache();},()=>{FLOADED=true;renderFriends();});
-  setInterval(renderFriends,20000);
+  frTimer=setInterval(renderFriends,20000);
   startPresence();
 }
 function addFriendUI(){
@@ -1085,6 +1245,42 @@ function friendInfo(k){
     c.querySelector('#fDel').onclick=()=>{const d=getDB();if(d)d.ref('nexoria/users/'+USER.toLowerCase()+'/friends/'+k).remove().catch(()=>{});closeModal();};
   });
 }
+
+/* ---------- ⌨️ KEYBOARD: 1/2/3 = game 1/2/3 · lainnya bebas · Backspace = tutup (bukan Esc) ---------- */
+const KEYHELP=[['1 · 2 · 3','Main game 1 · 2 · 3'],['← ↑ → ↓','Pilih kartu game'],['Enter','Main game terpilih / OK'],['M','Menu samping'],['A','Avatar'],['S','Shop'],['H','Hadiah harian'],['K','Redeem code'],['P','Profil'],['T','Tambah teman'],['F','Filter favorit'],['/','Cari game'],['L','Logout'],['Backspace','Tutup jendela / menu'],['?','Daftar pintasan ini']];
+function keyHelp(){modal('<h3>⌨️ Pintasan Keyboard</h3><div class="kh">'+KEYHELP.map(r=>'<div><kbd>'+esc(r[0])+'</kbd><span>'+esc(r[1])+'</span></div>').join('')+'</div><div class="row"><button class="btn" id="khOk">Tutup</button></div>',c=>{c.querySelector('#khOk').onclick=closeModal;});}
+$('navKeys').addEventListener('click',()=>{closeDrawer();keyHelp();});
+(function kbd(){
+  const typing=t=>!!t&&(t.tagName==='INPUT'||t.tagName==='TEXTAREA'||t.tagName==='SELECT'||t.isContentEditable);
+  const anyWin=()=>!$('modal').hidden||!!$('avM')||!!document.querySelector('.mdl');
+  function closeTop(){if(!$('modal').hidden){closeModal();return;}if(document.querySelector('.mdl')){closeMdl();return;}if($('avM')){closeAvatar();return;}if($('drawer').classList.contains('on'))closeDrawer();}
+  document.addEventListener('keydown',e=>{
+    if(e.ctrlKey||e.metaKey||e.altKey)return;
+    const k=e.key.toLowerCase(),t=e.target;
+    if(!$('modal').hidden&&k==='enter'&&!(t&&t.tagName==='BUTTON')){const b=$('mcard').querySelector('.btn:not(.ghost)');if(b&&!b.disabled){e.preventDefault();b.click();}return;}
+    if(typing(t))return;
+    if($('app').hidden||!USER)return;
+    if(k==='backspace'){e.preventDefault();closeTop();return;}
+    if(anyWin())return;
+    if(k.startsWith('arrow')){const cs=[...document.querySelectorAll('#grid .card')];if(!cs.length)return;e.preventDefault();let i=cs.indexOf(document.activeElement);if(i<0)i=0;else{const y0=cs[0].offsetTop,cols=cs.filter(c=>c.offsetTop===y0).length||1,dl=k==='arrowleft'?-1:k==='arrowright'?1:k==='arrowup'?-cols:cols;i=Math.max(0,Math.min(cs.length-1,i+dl));}cs[i].focus();cs[i].scrollIntoView({block:'nearest',behavior:'smooth'});return;}
+    if(e.repeat)return;
+    if(k.length===1&&k>='1'&&k<='9'){const g=GAMES[+k-1];if(g){e.preventDefault();launch(g.id);}return;}
+    const cl=id=>{const b=$(id);if(b){e.preventDefault();b.click();}};
+    switch(k){
+      case 'm':cl('menuBtn');break;
+      case 'a':cl('navAvatar');break;
+      case 's':cl('navShop');break;
+      case 'h':cl('navGift');break;
+      case 'k':cl('navRedeem');break;
+      case 'p':cl('navProfile');break;
+      case 't':cl('fAdd');break;
+      case 'f':e.preventDefault();(FILTER==='fav'?$('filAll'):$('filFav')).click();break;
+      case '/':e.preventDefault();$('search').focus();break;
+      case 'l':e.preventDefault();askConfirm('Keluar akun?','Kamu akan keluar dari '+USER+'.','Logout','Batal').then(ok=>{if(ok)$('navLogout').click();});break;
+      case '?':e.preventDefault();keyHelp();break;
+    }
+  });
+})();
 
 /* ---------- mulai: akun terdaftar langsung ke beranda ---------- */
 (function init(){

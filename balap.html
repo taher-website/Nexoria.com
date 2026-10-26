@@ -850,12 +850,58 @@ const STG=[
  box(RW,.03,.5,0xffffff,0,.03,50,1);[-(RH-.1),RH-.1].forEach(x=>box(.15,.03,230,0xffffff,x,.03,145,1));for(let k=0;k<RW;k++)for(let r=0;r<2;r++)box(1,.03,.6,(k+r)%2?0x111111:0xffffff,-RW/2+.5+k,.035,FIN-.3+r*.6,1);label('START',0,3,50,6,'#ffd23a');label('FINISH',0,7.2,FIN,8,'#ffffff');buildFinish();}],
 ['Memasang pagar & gerbang',()=>{[[-30.2,30.2,-30.4,-29.6],[-30.2,-29.6,-30,30],[29.6,30.2,-30,30],[-30.2,-4,29.6,30.4],[4,30.2,29.6,30.4]].forEach(b=>wall(b,0x8a5a2b,1.7));
  [-4.4,4.4].forEach(x=>box(.8,3.6,.8,0x444a55,x,1.8,30));box(9.6,.5,.8,0xffd23a,0,3.6,30);label('GERBANG KE KOTA',0,4.6,30,8,'#ffd23a');}],
-['Membangun 5 slot rumah',()=>{[[-22,-18],[-22,-2],[-22,14],[22,-18],[22,-2]].forEach((p,i)=>{const hx=p[0],hz=p[1],ds=hx<0?1:-1,col=[0xd9b38c,0xc98a8a,0x8fb7d9,0xa8d9a0,0xe0d28a][i],t=.3,fx=hx+ds*3,bx=hx-ds*3;
- wall([bx-t/2,bx+t/2,hz-3,hz+3],col,3);wall([hx-3,hx+3,hz-3-t/2,hz-3+t/2],col,3);wall([hx-3,hx+3,hz+3-t/2,hz+3+t/2],col,3);
- wall([fx-t/2,fx+t/2,hz-3,hz-.9],col,3);wall([fx-t/2,fx+t/2,hz+.9,hz+3],col,3);box(t,.8,1.8,col,fx,2.6,hz);
- const db=[fx-.1,fx+.1,hz-.9,hz+.9],door=wall(db,0x6b3a1a,2.2),roof=box(6.8,.3,6.8,0x7a3a2a,hx,3.15,hz);
- plane(5.7,5.7,0xc8a46a,hx,.03,hz);box(1,.5,2.2,0x3a5fa8,bx+ds*1,.25,hz-1.8);box(.8,.15,.4,0xffffff,bx+ds*1,.55,hz-2.6);label('RUMAH '+(i+1),fx+ds*.3,3.5,hz,3);
- HB.push([hx-3.2,hx+3.2,hz-3.2,hz+3.2]);HOUSES.push({i,hx,hz,fx,ds,door,db,roof,bed:[bx+ds*1,hz-1.8]});});
+['Membangun 5 slot rumah',()=>{
+ /* rumah kampung lapuk: dinding plester kusam, atap seng hitam (limasan), teras + tiang kayu, lampu gantung, jendela berdaun (referensi foto) — tiap rumah beda warna */
+ const gt=cvT(128,128,(g,w,h)=>{g.fillStyle='#d8d4ca';g.fillRect(0,0,w,h);for(let k=0;k<260;k++){g.fillStyle='rgba('+(Math.random()<.5?'60,55,45':'255,255,250')+','+(.05+Math.random()*.12).toFixed(2)+')';g.beginPath();g.arc(Math.random()*w,Math.random()*h,2+Math.random()*9,0,7);g.fill();}g.fillStyle='rgba(40,35,28,.2)';for(let k=0;k<14;k++)g.fillRect(Math.random()*w,0,1+Math.random()*3,h*(.2+Math.random()*.6));}),
+  tin=cvT(64,32,(g,w,h)=>{const gr=g.createLinearGradient(0,0,w,0);gr.addColorStop(0,'#666');gr.addColorStop(.5,'#e6e6e6');gr.addColorStop(1,'#666');g.fillStyle=gr;g.fillRect(0,0,w,h);}),
+  wd=cvT(256,256,(g,w,h)=>{g.fillStyle='#7a5632';g.fillRect(0,0,w,h);for(let k=0;k<8;k++){g.fillStyle='rgba(0,0,0,'+(.05+Math.random()*.1).toFixed(2)+')';g.fillRect(0,k*32,w,32);g.fillStyle='rgba(0,0,0,.4)';g.fillRect(0,k*32,w,2);}});
+ gt.wrapS=gt.wrapT=tin.wrapS=tin.wrapT=THREE.RepeatWrapping;gt.repeat.set(2,1);tin.repeat.set(6,1);
+ const PAL=[{w:0x9c9b92,r:0x2a2c31,d:0x5a3b22,s:0x4b5a48,b:0x3a5fa8},{w:0x93a08c,r:0x6a2f27,d:0x3e2a1c,s:0x7a3a2a,b:0x9b3a3a},{w:0x8a9db3,r:0x233149,d:0x4a3a2a,s:0x2f4a6a,b:0x2f7d6a},{w:0xb8a98c,r:0x4b3a2c,d:0x2f2a24,s:0x6a4a2a,b:0xb07a2a},{w:0xb48c7e,r:0x2d4a3b,d:0x51331f,s:0x2b4a3a,b:0x6a3a8a}],RC=['#0f5a43','#9b1c1c','#1b3d9b','#6a2a9a','#7a5a2a'];
+ [[-22,-18],[-22,-2],[-22,14],[22,-18],[22,-2]].forEach((p,i)=>{
+  const hx=p[0],hz=p[1],ds=hx<0?1:-1,q=PAL[i],t=.3,fx=hx+ds*3,bx=hx-ds*3,WX=u=>hx+ds*u,
+   wm=new THREE.MeshLambertMaterial({color:q.w,map:gt}),
+   wl=(b,h)=>{const m=new THREE.Mesh(new THREE.BoxGeometry(b[1]-b[0],h,b[3]-b[2]),wm);m.position.set((b[0]+b[1])/2,h/2,(b[2]+b[3])/2);m.castShadow=m.receiveShadow=true;sc.add(m);A.push(b);return m;},
+   lb=(w,h,d,c,u,y,v,ns)=>box(w,h,d,c,WX(u),y,hz+v,ns),
+   bulb=(u,y,v)=>{const m=new THREE.Mesh(new THREE.SphereGeometry(.12,10,8),new THREE.MeshBasicMaterial({color:0xfff0b8}));m.position.set(WX(u),y,hz+v);sc.add(m);};
+  /* dinding (collider sama seperti sebelumnya) */
+  wl([bx-t/2,bx+t/2,hz-3,hz+3],3);wl([hx-3,hx+3,hz-3-t/2,hz-3+t/2],3);wl([hx-3,hx+3,hz+3-t/2,hz+3+t/2],3);
+  wl([fx-t/2,fx+t/2,hz-3,hz-.9],3);wl([fx-t/2,fx+t/2,hz+.9,hz+3],3);
+  {const m=new THREE.Mesh(new THREE.BoxGeometry(t,.8,1.8),wm);m.position.set(fx,2.6,hz);sc.add(m);}
+  /* pintu kayu berpanel */
+  const db=[fx-.1,fx+.1,hz-.9,hz+.9],door=wall(db,q.d,2.2);
+  for(const yy of [.5,-.5])for(const zz of [-.4,.4]){const m=new THREE.Mesh(new THREE.BoxGeometry(.05,.7,.6),M(0x2a190d));m.position.set(ds*.1,yy,zz);door.add(m);}
+  {const m=new THREE.Mesh(new THREE.SphereGeometry(.06,8,6),M(0xc9a227));m.position.set(ds*.14,0,.7);door.add(m);}
+  /* pondasi beton, tiang sudut kayu */
+  lb(.2,.4,6.7,0x4f5256,-3.25,.2,0,1);lb(6.5,.4,.2,0x4f5256,0,.2,-3.25,1);lb(6.5,.4,.2,0x4f5256,0,.2,3.25,1);lb(.2,.4,2.1,0x4f5256,3.25,.2,-1.95,1);lb(.2,.4,2.1,0x4f5256,3.25,.2,1.95,1);
+  for(const cu of [-3.1,3.1])for(const cv of [-3.1,3.1])lb(.28,3.1,.28,0x3a2d22,cu,1.55,cv);
+  /* jendela berdaun: depan, belakang, kedua sisi */
+  const win=(nu,nv,u,v)=>{const ou=u+nu*.185,ov=v+nv*.185,sz=nu?[.07,1.15,1.15]:[1.15,1.15,.07],gz=nu?[.05,.9,.9]:[.9,.9,.05];
+   lb(sz[0],sz[1],sz[2],0x2e2118,ou,1.75,ov);
+   const g2=lb(gz[0],gz[1],gz[2],0x182029,ou+nu*.035,1.75,ov+nv*.035,1);g2.material=new THREE.MeshLambertMaterial({color:0x182029,emissive:0x0b0f14});
+   for(const sd of [-1,1])lb(nu?.05:.4,1.0,nu?.4:.05,q.s,ou+nu*.04+(nv?sd*.78:0),1.75,ov+nv*.04+(nu?sd*.78:0));};
+  win(1,0,3,-2);win(-1,0,-3,1);win(0,1,.8,3);win(0,-1,.8,-3);
+  /* atap limasan seng bergelombang (grup, disembunyikan saat pemain di dalam) */
+  const roof=new THREE.Group();sc.add(roof);
+  {const cone=new THREE.Mesh(new THREE.ConeGeometry(4.95,1.55,4,1,true),new THREE.MeshLambertMaterial({color:q.r,map:tin,side:THREE.DoubleSide}));cone.rotation.y=Math.PI/4;cone.position.set(hx,3.775,hz);cone.castShadow=true;roof.add(cone);
+   const rb=(w,h,d,x,y,z)=>{const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),M(0x1c1d20));m.position.set(x,y,z);roof.add(m);};
+   rb(7.1,.14,.14,hx,3,hz-3.5);rb(7.1,.14,.14,hx,3,hz+3.5);rb(.14,.14,7.1,hx-3.5,3,hz);rb(.14,.14,7.1,hx+3.5,3,hz);rb(.3,.22,.3,hx,4.55,hz);}
+  /* teras depan: lantai beton, tangga, 2 tiang kayu, balok, atap miring, lampu gantung */
+  lb(2,.22,4.4,0x696c70,4,.11,0);lb(.5,.12,2.2,0x696c70,5.25,.06,0);
+  lb(.22,2.7,.22,0x3a2d22,4.85,1.57,-2.05);lb(.22,2.7,.22,0x3a2d22,4.85,1.57,2.05);lb(.2,.2,4.5,0x3a2d22,4.85,2.93,0);
+  {const pr=lb(2.5,.1,4.8,q.r,4.15,2.78,0);pr.rotation.z=-ds*.17;}
+  lb(.03,.3,.03,0x222222,4,2.65,0,1);bulb(4,2.45,0);
+  /* lantai papan kayu */
+  {const fl=plane(5.7,5.7,0xffffff,hx,.03,hz);fl.material=new THREE.MeshLambertMaterial({map:wd});}
+  /* kasur, lemari, meja + kursi, lampu gantung dalam */
+  lb(1.04,.3,2.2,0x3a2d22,-2,.15,-1.8);lb(.94,.16,2.0,q.b,-2,.38,-1.75);lb(.7,.12,.4,0xf2efe6,-2,.52,-2.62);
+  lb(.6,2,1.1,0x4a3626,-2.55,1,2.3);lb(.02,1.9,.02,0x1c1008,-2.24,1,2.3,1);lb(.03,.12,.03,0xc9a227,-2.23,1,2.15,1);lb(.03,.12,.03,0xc9a227,-2.23,1,2.45,1);
+  lb(.6,.06,.95,0x5a4028,-.8,.78,2.3);for(const lu of [-1.05,-.55])for(const lv of [1.9,2.7])lb(.06,.75,.06,0x4a3220,lu,.375,lv);
+  lb(.4,.06,.4,0x6a4a2a,-.1,.45,2.3);lb(.06,.42,.06,0x6a4a2a,-.1,.21,2.3);
+  lb(.03,.7,.03,0x222222,0,2.65,0,1);bulb(0,2.3,0);
+  /* 1 sajadah di lantai */
+  {const rm=new THREE.Mesh(new THREE.PlaneGeometry(.86,1.5),new THREE.MeshLambertMaterial(typeof matT==='function'?{map:matT(RC[i])}:{color:0x0f5a43}));rm.rotation.set(-Math.PI/2,0,Math.PI);rm.position.set(WX(.3),.05,hz+1);sc.add(rm);}
+  label('RUMAH '+(i+1),WX(4.2),4,hz,3);
+  HB.push([hx-3.2,hx+3.2,hz-3.2,hz+3.2]);HOUSES.push({i,hx,hz,fx,ds,door,db,roof,bed:[WX(-2),hz-1.8],rug:[WX(.3),hz+1]});});
  HOUSES.forEach(h=>{if(S.house[h.i]){h.door.visible=false;A.splice(A.indexOf(h.db),1);}});}],
 ['Membangun Bengkel Bang Joko & NPC',()=>{buildBengkel();
  const pj=person({skin:'#c68642',hair:'#222222',shirt:'#e8a33a',pants:'#333344',shoe:'#222222'});pj.scale.setScalar(CHS);pj.position.set(16,0,14);pj.rotation.y=-Math.PI/2*0+1.57;JKP=pj;JKL=label('Bang Joko',16,2.5,14,2.6,'#9fe8ff');
@@ -900,7 +946,7 @@ hold('gas',v=>{gasB=v;});hold('bRun',v=>{runB=v;$('bRun').classList.toggle('on',
 /* ===== KEYBOARD LENGKAP + MODE OTOMATIS: pakai keyboard (atau keyboard+mouse) => UI sentuh disembunyikan; sentuh layar => UI muncul lagi ===== */
 let kbm=0,kbTold=0,crashQ=null,kbLast=0;function kbOn(){return(performance.now()-kbLast<10000)?1:0;}const KBPHONE=!!(window.matchMedia&&matchMedia('(pointer:coarse)').matches);
 const KBG=new Set(['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright','shift',' ','e','f','x','z','r','c','q','b','i','t','h','j','l','u','n','v','m','k','p','+','=','-','_','backspace','enter']);
-function setKbm(v){v=(v&&!KBPHONE)?1:0;if(v===kbm)return;kbm=v;document.body.classList.toggle('kbm',!!v);if(v&&!kbTold){kbTold=1;toast('⌨️ Mode keyboard aktif · tekan K (📒) untuk lihat semua kontrol');}}
+function setKbm(v){v=v?1:0;if(v===kbm)return;kbm=v;document.body.classList.toggle('kbm',!!v);if(v&&!kbTold){kbTold=1;toast('⌨️ Mode keyboard aktif · tekan K (📒) untuk lihat semua kontrol');}}
 function kbApplyMode(){const m=S.kb|0;if(m===2)setKbm(1);else if(m===1)setKbm(0);}
 function kbCtl(){dlg('📒 Kontrol keyboard',
  '<b>GERAK</b><br><b>W / ↑</b> maju · gas &nbsp; <b>S / ↓</b> mundur · rem<br><b>A / ←</b> kiri &nbsp; <b>D / →</b> kanan<br><b>Shift</b> lari (jalan kaki)<br><b>Spasi</b> rem tangan (motor/mobil) · lompat (sepeda)<br><b>R</b> tahan = mundur (motor/mobil)<br><b>X / Z</b> gigi naik / turun<br>'+
@@ -957,7 +1003,7 @@ addEventListener('keydown',e=>{
   case 'backspace':if(CHT.on)chatToggle();else settings();break;
  }
 });
-addEventListener('pointerdown',e=>{if(e.pointerType!=='mouse'&&(S.kb|0)!==2)setKbm(0);},true);
+addEventListener('pointerdown',e=>{if(e.pointerType!=='mouse'&&(S.kb|0)!==2&&performance.now()-kbLast>10000)setKbm(0);},true);
 document.addEventListener('click',e=>{const b=e.target&&e.target.closest?e.target.closest('button'):null;if(b&&b.id!=='chatS')setTimeout(()=>{try{b.blur();}catch(x){}},0);},true);
 addEventListener('blur',()=>{for(const k in key)key[k]=0;});
 kbApplyMode();
@@ -1033,13 +1079,19 @@ function prayStart(){if(P.m>=0||bonc||cr.st||raceSt||pray.on)return;const gh=gHo
  if((mt||jm)&&jmSeatTaken(P.x,P.z)){P.x=ox;P.z=oz;toast('🕌 Tempat ini sudah ditempati jamaah · pilih karpet lain');return;}
   const r=cp?cp.r:2;pray={on:1,i:0,t:0,q:jm?0:SEQS[r].a[0][0],s:SEQS[r].a,jm:jm,jr:cp?cp.r:2,key:cp?gDay()+':'+cp.n:gDay()+':sunnah'};P.h=0;P.v=0;
  }
+function prayHome(h){if(P.m>=0||bonc||cr.st||raceSt||pray.on)return;const cp=curPrayer(gHour());
+ if(!cp)return toast('🕌 Belum waktu sholat · tunggu azan berkumandang');
+ if(JACT.act===cp&&JACT.tt<AZ1)return toast('🔊 Azan sedang berkumandang, tunggu azan selesai dulu');
+ if(prayDone(cp))return toast('Sholat '+cp.n+' hari ini sudah dilakukan ✅');
+ P.x=h.rug[0];P.z=h.rug[1];P.h=0;P.v=0;
+ pray={on:1,i:0,t:0,q:SEQS[cp.r].a[0][0],s:SEQS[cp.r].a,jm:0,jr:cp.r,key:gDay()+':'+cp.n,home:1,hw:S.wd?1:0};}
 function prayPend(){const cp=curPrayer(gHour());return !!cp&&!prayDone(cp);}
 function sitRug(){if(P.m>=0||bonc||cr.st||raceSt||pray.on)return;const mt=onRug();if(mt&&jmSeatTaken(MJ.x+mt[0],MJ.z+mt[1]))return toast('🕌 Karpet ini sudah ditempati jamaah · cari karpet lain');if(mt){P.x=MJ.x+mt[0];P.z=MJ.z+mt[1];}P.h=0;P.v=0;pray={on:1,i:0,t:0,q:9,s:[],sit:1};}
 function sleepRug(){if(prayPend())return toast('Belum sholat · duduk dulu menunggu imam 🕌');if(P.m>=0||bonc||cr.st||raceSt||pray.on)return;const mt=onRug();if(mt){P.x=MJ.x+mt[0];P.z=MJ.z+mt[1];}pray={on:1,i:0,t:0,q:10,s:[[10,3]],zz:1};P.h=0;P.v=0;toast('😴 Tidur di karpet masjid · gerakkan joystick untuk bangun');}
 /* azan: dinyalakan sebelum sholat berjamaah (sintesis nada sederhana) */
 function azanPlay(){if(!AC||!S.snd)return;try{const t0=AC.currentTime+.05,nt=[[392,1.6],[440,.9],[494,2.2],[440,1],[392,1.6],[349,1],[392,2.4],[440,1.2],[494,2.6],[587,2.2],[523,1.4],[494,1.2],[440,1.6],[392,3.2],[330,2.2],[392,3.6]];let t=t0;nt.forEach(q=>{const o=AC.createOscillator(),l=AC.createOscillator(),lg=AC.createGain(),g=AC.createGain();o.type='triangle';o.frequency.value=q[0];l.frequency.value=5.2;lg.gain.value=q[0]*.012;l.connect(lg);lg.connect(o.frequency);g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.07,t+.15);g.gain.setValueAtTime(.07,t+q[1]-.25);g.gain.linearRampToValueAtTime(0,t+q[1]);o.connect(g);g.connect(AC.destination);o.start(t);l.start(t);o.stop(t+q[1]+.05);l.stop(t+q[1]+.05);t+=q[1]*.9;});}catch(e){}}
 function prayStop(done){if(!pray.on)return;if(pray.gy){pray.on=0;pray.q=0;pray.gy=0;save();return;}if(pray.sit){pray.on=0;pray.q=0;pray.sit=0;return;}const zz=pray.zz,ky=pray.key,wd=pray.wd;pray.on=0;pray.q=0;if(wd){if(done){S.wd=1;save();}return;}if(zz){if(done)sleep();else toast('Bangun dari tidur');return;}
- if(done){S.wd=0;S.pk=S.pk||[];if(ky&&!S.pk.includes(ky)){S.pk.push(ky);if(S.pk.length>40)S.pk.shift();S.coins+=500;save();toast('🤲 Selesai sholat, semoga berkah · +500 💰');}else toast('🤲 Selesai sholat (hadiah sholat ini sudah diambil)');return;}toast('Sholat dihentikan');}
+ if(done){S.wd=0;S.pk=S.pk||[];if(ky&&!S.pk.includes(ky)){S.pk.push(ky);if(S.pk.length>40)S.pk.shift();const gn=(pray.home&&!pray.hw)?150+Math.floor(Math.random()*51):500;S.coins+=gn;save();toast('🤲 Selesai sholat, semoga berkah · +'+gn+' 💰'+((pray.home&&!pray.hw)?' (tanpa wudhu)':''));}else toast('🤲 Selesai sholat (hadiah sholat ini sudah diambil)');return;}toast('Sholat dihentikan');}
 function azanStep(act,tt){if(act&&tt>=AZ0&&tt<AZ1){if(azK!==act.n){azK=act.n;toast('🔊 Azan '+act.n+' berkumandang… 🕌');azanPlay();}}else if(!act||tt<AZ0||tt>AZ1+30)azK=null;}
 function prayTick(dt,ix,iy){if(Math.abs(ix)>.4||Math.abs(iy)>.4){prayStop(0);return;}if(pray.gy){gymTick(dt);return;}if(pray.sit)return;if(pray.wd){pray.t+=dt*2.2;pray.q=wuQ(pray.t);WUON[pray.tp|0]=1;if(pray.t>=WUD)prayStop(1);return;}if(pray.jm){const a=JACT.act;if(!a||JACT.tt>=SEQS[pray.jr].tot){prayStop(1);return;}pray.q=JACT.tt<0?0:seqAt(SEQS[pray.jr],JACT.tt);return;}pray.t+=dt;if(pray.t>=pray.s[pray.i][1]){pray.t=0;pray.i++;if(pray.i>=pray.s.length){prayStop(1);return;}pray.q=pray.s[pray.i][0];}}
 /* ---- waktu dunia bersama (semua pemain siang/malam sama) ---- */
@@ -1284,7 +1336,7 @@ function startRace(){const cy=!!BK[P.m].cyc,aw=AR&&(AR.away||AR.fs!=='home'),ard
  raceSt=1;cnt=3.4;P.x=-2;P.z=46;P.h=0;P.v=0;P.s=0;npc.g.visible=true;npc.x=2;npc.z=46;npcV=0;npcT=0;plDone=0;npc.g.position.set(2,0,46);npc.g.rotation.y=0;
  toast(ardi?'🔥 Lawanmu Bg Ardi sendiri! '+(cy?'BMX':'Mio Drag')+' modifan MAX':'🏁 Lawan: anak buah Bg Ardi · Tahan gas!');}
 function endRace(win,t){raceSt=3;if(AR)AR.f=1.5;const rw=win?750:40;S.coins+=rw;if(!S.best||t<S.best)S.best=t;save();big((win?'🏆 MENANG! ':'😅 KALAH ')+t.toFixed(2)+'s\n'+(raceO.a?'vs Bg Ardi ':'vs anak buah ')+'+'+rw+' 💰',4500);setTimeout(()=>{raceSt=0;npc.g.visible=false;arRace=0;if(RZL)RZL.visible=true;},4500);}
-function buyHouse(i){if(S.coins<400)return toast('Koin kurang (400 💰)');S.coins-=400;S.house[i]=1;const h=HOUSES[i];h.door.visible=false;A.splice(A.indexOf(h.db),1);toast('🏠 Rumah '+(i+1)+' jadi milikmu! Masuk dan tidur di kasur');save();}
+function buyHouse(i){if(S.coins<400)return toast('Koin kurang (400 💰)');S.coins-=400;S.house[i]=1;const h=HOUSES[i];h.door.visible=false;A.splice(A.indexOf(h.db),1);toast('🏠 Rumah '+(i+1)+' jadi milikmu! Masuk, tidur di kasur atau sholat di sajadah');save();}
 function sleep(){S.wd=0;CB.hp=hpMax();CB.reg=0;$('fade').style.opacity=1;setTimeout(()=>{const nite=nt>.3;if(nite)setWorldTime(6.6);$('fade').style.opacity=0;toast(nite?'😴 Selamat pagi! Progres tersimpan':'😴 Progres tersimpan (masih siang)');save();},1500);}
 function shop(){const i=S.bike,c=BK[i],mk=(k,n,pr)=>{const lv=S[k][i];if(lv>=pr.length)return null;const p=pr[lv];return [n+' Lv'+(lv+1)+' ('+p+' 💰)',()=>{if(S.coins<p)return toast('Koin kurang');S.coins-=p;S[k][i]++;if(k==='mt')applyMt(i);save();shop();}];};
  const applyMt=j=>{const d=(S.mt[j]||0)*.05;bikes[j].drop(d);if(P.m===j){av.position.y=SY-d;av.userData.by=SY-d;}};
@@ -1314,7 +1366,7 @@ $('edL').addEventListener('pointermove',e=>{if(!hdr)return;const c=hg(hdr.id);c.
 ['pointerup','pointercancel'].forEach(t=>$('edL').addEventListener(t,()=>{if(!hdr)return;const e=$(hdr.id),r=e.getBoundingClientRect(),c=hg(hdr.id);let fx=0,fy=0;if(r.left<0)fx=-r.left;else if(r.right>innerWidth)fx=innerWidth-r.right;if(r.top<0)fy=-r.top;else if(r.bottom>innerHeight)fy=innerHeight-r.bottom;if(fx||fy){c.x=Math.round(c.x+fx);c.y=Math.round(c.y+fy);HUD[hdr.id]=c;hudApply();}hdr=null;hudSave();}));
 hudApply();
 function settings(){dlg('⚙️ Pengaturan','Rekor drag 200 m: <b>'+(S.best?S.best.toFixed(2)+' dtk':'-')+'</b><br>Rekor sirkuit: <b>'+S.bl.map((v,i)=>(i+1)+': '+(v?v.toFixed(1)+'s':'-')).join(' · ')+'</b><br>Grafik: Sedang = ringan, Tinggi = bayangan, Ultra = bayangan tajam + kota padat (anti-alias aktif setelah buka ulang).',[
- ['Grafik: '+QN[S.gfx],()=>{S.gfx=(S.gfx+1)%3;applyG();settings();}],['Kamera: '+(S.uc?'Bebas (Unfollow)':'Ikuti pemain'),()=>{S.uc=S.uc?0:1;ucy=P.h;ucp=.35;toast(S.uc?'Kamera bebas: geser layar untuk memutar, 🔍 untuk zoom':'Kamera mengikuti pemain');settings();}],['🔍 Zoom +',()=>{zoomBy(-2);settings();}],['🔎 Zoom −',()=>{zoomBy(2);settings();}],['Suara: '+(S.snd?'ON':'OFF'),()=>{S.snd=S.snd?0:1;settings();}],...(KBPHONE?[]:[['⌨️ Kontrol: '+['Otomatis','UI sentuh','Keyboard'][S.kb|0],()=>{S.kb=((S.kb|0)+1)%3;kbApplyMode();save();toast(['Kontrol otomatis: pakai keyboard = UI sentuh hilang, sentuh layar = muncul lagi','UI sentuh selalu tampil','Mode keyboard: UI sentuh selalu disembunyikan'][S.kb]);settings();}],['📒 Daftar kontrol keyboard',()=>kbCtl()]]),['🎛️ Atur HUD (geser/ukuran/transparan)',()=>startHudEdit()],['Tutup']]);}
+ ['Grafik: '+QN[S.gfx],()=>{S.gfx=(S.gfx+1)%3;applyG();settings();}],['Kamera: '+(S.uc?'Bebas (Unfollow)':'Ikuti pemain'),()=>{S.uc=S.uc?0:1;ucy=P.h;ucp=.35;toast(S.uc?'Kamera bebas: geser layar untuk memutar, 🔍 untuk zoom':'Kamera mengikuti pemain');settings();}],['🔍 Zoom +',()=>{zoomBy(-2);settings();}],['🔎 Zoom −',()=>{zoomBy(2);settings();}],['Suara: '+(S.snd?'ON':'OFF'),()=>{S.snd=S.snd?0:1;settings();}],...((KBPHONE&&!kbLast)?[]:[['⌨️ Kontrol: '+['Otomatis','UI sentuh','Keyboard'][S.kb|0],()=>{S.kb=((S.kb|0)+1)%3;kbApplyMode();save();toast(['Kontrol otomatis: pakai keyboard = UI sentuh hilang, sentuh layar = muncul lagi','UI sentuh selalu tampil','Mode keyboard: UI sentuh selalu disembunyikan'][S.kb]);settings();}],['📒 Daftar kontrol keyboard',()=>kbCtl()]]),['🎛️ Atur HUD (geser/ukuran/transparan)',()=>startHudEdit()],['Tutup']]);}
 $('bSet').onclick=()=>{if(!dlgOpen)settings();};
 function findAct(){if(raceSt===1||raceSt===2||cr.st===1||cr.st===3)return null;if(pray.on)return{l:pray.gy?'✖ Berhenti latihan':pray.wd?'✖ Hentikan wudhu':pray.sit?'🧍 Berdiri':'✖ Hentikan sholat',f:()=>prayStop(0)};if(cr.st===2)return{l:'✖ Batalkan balapan',f:crCancel};if(bonc)return{l:'⬇️ Turun',f:()=>leaveBonc(0)};
  if(CB.dead||PH.lock>0)return null;
@@ -1337,7 +1389,7 @@ function findAct(){if(raceSt===1||raceSt===2||cr.st===1||cr.st===3)return null;i
  PED.forEach(n=>{if(n.dead&&!n.hide&&!n.carried&&!crowdOn){const cc=cbCenter(n),dd=Math.hypot(cc[0]-P.x,cc[1]-P.z);if(dd<2.4)c(dd-.3,{l:'🫳 Angkat tubuh '+(n.nmk?n.nm:''),f:()=>cbLift(n)});}if(n.hide||crowdOn||!n.tp||n.cb)return;const d=Math.hypot(n.x-P.x,n.z-P.z);if(d<2.6)c(d,{l:n.tp===1?'💬 Ngobrol':n.tp===2?'🏁 Ajak balap':'💬 Bicara',f:()=>n.tp===1?talk(n):n.tp===2?challenge(n):talkMenu(n)});});
  for(const k in RP){const o=RP[k],d=o.d;if(!d||!o.pe||!o.pe.visible||(d.m|0)<0||d.r)continue;const dd=Math.hypot(o.x-P.x,o.z-P.z);if(dd<(o.bk&&o.bk.car?3.8:3)&&Math.abs(+d.v||0)<5&&!seatTaken(k)&&!(CBR[k]&&CBR[k].cy))c(dd,{l:'🛵 Numpang bonceng · '+String(d.n||'?').slice(0,12),f:()=>boardBonc(k)});}
  {const nb=cbNear();if(nb)c(nb.d,nb);}
- HOUSES.forEach(h=>{const dd=Math.hypot(h.fx+h.ds*1.4-P.x,h.hz-P.z);if(!S.house[h.i]&&dd<3.6)c(dd,{l:'🏠 Beli rumah '+(h.i+1)+' (400 💰)',f:()=>buyHouse(h.i)});const db=Math.hypot(h.bed[0]-P.x,h.bed[1]-P.z);if(S.house[h.i]&&db<2.6)c(db-.5,prayPend()?{l:'🕌 Sholat dulu sebelum tidur',f:()=>toast('Belum sholat '+curPrayer(gHour()).n+' · sholat dulu, baru boleh tidur 🕌')}:{l:'😴 Tidur',f:sleep});});
+ HOUSES.forEach(h=>{const dd=Math.hypot(h.fx+h.ds*1.4-P.x,h.hz-P.z);if(!S.house[h.i]&&dd<3.6)c(dd,{l:'🏠 Beli rumah '+(h.i+1)+' (400 💰)',f:()=>buyHouse(h.i)});const db=Math.hypot(h.bed[0]-P.x,h.bed[1]-P.z);if(S.house[h.i]&&db<2.6)c(db-.5,prayPend()?{l:'🕌 Sholat dulu sebelum tidur',f:()=>toast('Belum sholat '+curPrayer(gHour()).n+' · sholat dulu (sajadah di rumah / masjid), baru boleh tidur 🕌')}:{l:'😴 Tidur',f:sleep});const dr=Math.hypot(h.rug[0]-P.x,h.rug[1]-P.z);if(S.house[h.i]&&dr<.9&&!pray.on&&P.m<0){const cp=curPrayer(gHour());c(dr-.3,!cp?{l:'🕌 Sajadah · belum waktu sholat',f:()=>toast('🕌 Belum waktu sholat · tunggu azan berkumandang')}:prayDone(cp)?{l:'✅ Sholat '+cp.n+' sudah dilakukan',f:()=>toast('Sholat '+cp.n+' hari ini sudah dilakukan ✅')}:(JACT.act===cp&&JACT.tt<AZ1)?{l:'🔊 Tunggu azan selesai',f:()=>toast('🔊 Azan sedang berkumandang, tunggu azan selesai dulu')}:{l:'🕌 Sholat '+cp.n+' di rumah ('+cp.r+' rakaat) '+(S.wd?'+500💰':'+150–200💰 tanpa wudhu'),f:()=>prayHome(h)});}});
  if(onRug()){const cp=curPrayer(gHour());if(prayAvail())c(.4,{l:jamOpen()?'🤝 Gabung jamaah '+cp.n+' +500💰':'🤲 Sholat '+(cp?cp.n+' ('+cp.r+' rakaat)':'sunnah (2 rakaat)')+' +500💰',f:prayStart});else if(!S.wd&&prayAvail0())c(.45,{l:'💧 Belum wudhu · wudhu dulu di seberang jalan',f:()=>toast('💧 Tempat wudhu ada di seberang jalan depan masjid. Wudhu dulu sebelum sholat')});if(prayPend())c(.5,{l:'🧎 Duduk menunggu imam',f:sitRug});else c(.5,{l:'😴 Tidur di karpet',f:sleepRug});}
  else if(prayAvail()&&jamOpen())c(1,{l:'🤝 Gabung jamaah +500💰',f:prayStart});
  if(P.x>WU.x-WU.W/2-.6&&P.x<WU.x+WU.W/2+.6&&P.z>WU.z+.4&&P.z<WU.z+5.8)c(.8,S.wd?{l:'✅ Sudah berwudhu',f:()=>toast('Kamu masih punya wudhu · langsung saja sholat di masjid 🕌')}:{l:'💧 Berwudhu',f:wuStart});
