@@ -2775,8 +2775,10 @@ addEventListener('pagehide',()=>{S.x=P.x;S.z=P.z;S.h=P.h;S.bp=bikes.map(b=>[b.x,
 (async()=>{try{mkTicks();}catch(e){console.error(e);}try{applyG();}catch(e){console.error(e);}try{initCloud();}catch(e){console.error(e);}try{await Promise.race([cloudLoad().then(ok=>{if(ok)starterGift();}),new Promise(r=>setTimeout(r,3500))]);}catch(e){console.error(e);}
  for(let i=0;i<STG.length;i++){$('lt').textContent=STG[i][0]+'…';await new Promise(r=>setTimeout(r,40));try{STG[i][1]();}catch(e){console.error(e);}const p=(i+1)/STG.length;$('lb').firstChild.style.width=p*100+'%';$('gc').style.strokeDashoffset=251*(1-p);}
 try{applyG();if(P.m<0&&av){av.position.set(P.x,0,P.z);av.rotation.y=P.h;}}catch(e){console.error(e);}
- $('lt').textContent='Siap!';$('lgo').style.display='block';
- $('load').addEventListener('pointerdown',()=>{if(entered)return;entered=true;initAudio();goFS();$('load').remove();mpStart();cbStart();toast('Halo '+USER+'! Dekati motor lalu ketuk 🏍️ Naik');requestAnimationFrame(t=>{last=t;loop(t);});},{once:true});
+ $('lt').textContent='Siap!';{const ph=(typeof KBPHONE!=='undefined'&&KBPHONE);$('lgo').textContent=ph?'Ketuk layar untuk masuk':'Klik di mana saja atau tekan Spasi untuk masuk';}$('lgo').style.display='block';
+ const goStart=()=>{if(entered)return;entered=true;removeEventListener('keydown',kdStart,true);initAudio();goFS();$('load').remove();mpStart();cbStart();toast('Halo '+USER+'! Dekati motor lalu '+((typeof KBPHONE!=='undefined'&&KBPHONE)?'ketuk 🏍️ Naik':'tekan E (atau ketuk 🏍️ Naik)'));requestAnimationFrame(t=>{last=t;loop(t);});};
+ const kdStart=e=>{if(e.key===' '||e.key==='Enter'){e.preventDefault();e.stopPropagation();goStart();}};
+ $('load').addEventListener('pointerdown',goStart,{once:true});addEventListener('keydown',kdStart,true);
 })();
 })();
 </script></body></html>
