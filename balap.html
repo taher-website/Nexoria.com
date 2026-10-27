@@ -566,7 +566,9 @@ function makeLambo(i){
  const PH=(c,s,sp,fl)=>{const k='L'+c+'|'+(s||0)+'|'+(fl?1:0);return CARM[k]||(CARM[k]=new THREE.MeshPhongMaterial({color:c,shininess:s||60,specular:sp||0x333844,flatShading:!!fl,side:fl?THREE.DoubleSide:THREE.FrontSide}));};
  const EM=(c,e)=>{const k='LE'+c+'|'+e;return CARM[k]||(CARM[k]=new THREE.MeshPhongMaterial({color:c,emissive:e,shininess:90}));};
  const WHT=PH(0xf3f4f6,110,0xffffff,1),BLK=PH(0x0b0c0f,60,0x555a66),CF=PH(0x15171b,40,0x333844),SEAT=PH(0x111216,15,0x111111),FLOOR=PH(0x1b1d22,10,0x111111),TIRE=PH(0x141518,8,0x111111),RIM=PH(0x2b2e35,110,0xffffff),SIL=PH(0xc3c8d0,120,0xffffff),RED=EM(0xd01010,0x8a0000),REDC=PH(0xc01010,60,0xffffff),GOLD=PH(0xd4a017,80,0xffe9a0),TI=PH(0x8f98a6,110,0xffffff),DRK=PH(0x050506,30,0x222222);
- const GLS=CARM.gls||(CARM.gls=new THREE.MeshPhongMaterial({color:0x9fd0ff,transparent:true,opacity:.26,shininess:120,specular:0xffffff,depthWrite:false}));
+
+ const lm=CARM.lm||(CARM.lm=new THREE.MeshBasicMaterial({color:0xd9e2f2}));
+ const GLS=CARM.gls||(CARM.gls=new THREE.MeshPhongMaterial({color:0x1c2c3a,transparent:true,opacity:.42,shininess:120,specular:0xffffff,depthWrite:false,side:THREE.DoubleSide}));
  const GB=(w,h,d)=>{const k='b'+w+','+h+','+d;return CARM[k]||(CARM[k]=new THREE.BoxGeometry(w,h,d));};
  const GY=(r,h,n)=>{const k='c'+r+','+h+','+n;return CARM[k]||(CARM[k]=new THREE.CylinderGeometry(r,r,h,n||14));};
  const UC=CARM.uc||(CARM.uc=new THREE.CylinderGeometry(1,1,1,8)),UY=new THREE.Vector3(0,1,0);
@@ -579,16 +581,23 @@ function makeLambo(i){
   for(let s=0;s<R.length-1;s++)for(let k=0;k<n;k++){const A=R[s][k],B=R[s][(k+1)%n],C=R[s+1][(k+1)%n],D=R[s+1][k];tri(A,B,C);tri(A,C,D);}
   [0,R.length-1].forEach(e=>{const r=R[e],c=[0,0,0];r.forEach(p=>{c[0]+=p[0]/n;c[1]+=p[1]/n;c[2]+=p[2]/n;});for(let k=0;k<n;k++)tri(c,r[k],r[(k+1)%n]);});
   const ge=new THREE.BufferGeometry();ge.setAttribute('position',new THREE.Float32BufferAttribute(P,3));ge.computeVertexNormals();const m=new THREE.Mesh(ge,mat);m.castShadow=true;fr.add(m);return m;};
- /* bodi depan (kap mesin rendah miring) dan belakang (dek mesin + bahu) */
- loft([[.55,.98,.20,.38,.70,.82,.62,.84],[1.10,.99,.17,.34,.62,.72,.66,.74],[1.70,.98,.14,.30,.52,.60,.62,.63],[2.20,.93,.13,.26,.42,.47,.55,.49],[2.50,.82,.13,.22,.32,.35,.45,.36]],WHT);
- loft([[-.90,1.00,.22,.40,.78,.90,.70,.92],[-1.40,1.01,.22,.42,.82,.95,.62,.99],[-1.95,.98,.24,.44,.80,.90,.50,.93],[-2.35,.92,.28,.50,.78,.85,.40,.86],[-2.48,.86,.30,.52,.74,.80,.35,.80]],WHT);
- /* kokpit terbuka: lantai, sill/pintu, dashboard */
+ /* quad kaca/panel dari 4 titik (dua segitiga, dua sisi) */
+ const quad=(p,mat,cs)=>{const ge=new THREE.BufferGeometry();ge.setAttribute('position',new THREE.Float32BufferAttribute([].concat(p[0],p[1],p[2],p[0],p[2],p[3]),3));ge.computeVertexNormals();const m=new THREE.Mesh(ge,mat);if(cs)m.castShadow=true;fr.add(m);return m;};
+ /* bodi depan: hidung runcing, kap mesin dengan lipatan tengah, fender menonjol */
+ loft([[.55,.98,.20,.40,.80,.84,.64,.85],[1.00,1.00,.17,.36,.80,.80,.68,.76],[1.45,1.00,.15,.34,.80,.78,.64,.70],[1.90,.99,.14,.30,.62,.64,.56,.60],[2.30,.95,.13,.26,.46,.50,.44,.50],[2.52,.88,.13,.22,.36,.40,.38,.42]],WHT);
+ /* bodi belakang: dek mesin + bahu lebar */
+ loft([[-.90,1.00,.22,.40,.84,.90,.70,.92],[-1.40,1.01,.22,.42,.88,.95,.62,.99],[-1.95,.98,.24,.44,.86,.90,.50,.93],[-2.35,.92,.28,.50,.78,.85,.40,.86],[-2.48,.86,.30,.52,.74,.80,.35,.80]],WHT);
+ /* kokpit tertutup: lantai, pintu, dashboard, atap */
  add(GB(1.40,.10,1.50),FLOOR,0,.24,-.18,fr,0);
- both(s=>{add(GB(.30,.50,1.50),WHT,s*.86,.47,-.17);add(GB(.04,.12,1.40),BLK,s*1.005,.30,-.17);});
+ both(s=>{add(GB(.30,.52,1.50),WHT,s*.86,.48,-.17);add(GB(.04,.12,1.40),BLK,s*1.005,.30,-.17);add(GB(.04,.04,.16),BLK,s*1.02,.64,-.45,fr,0);});
  const db=add(GB(1.50,.12,.34),CF,0,.80,.40);db.rotation.x=-.10;add(GB(.34,.14,.10),CF,SX,.93,.36,fr,0);
- /* kaca depan miring + pilar A + rangka atas */
- {const w=add(GB(1.52,.02,.78),GLS,0,.97,.23,fr,0);w.rotation.x=.67;}
- both(s=>{tube([s*.88,.76,.52],[s*.72,1.12,-.08],.028,BLK);});tube([-.72,1.12,-.08],[.72,1.12,-.08],.026,BLK);
+ /* kaca depan miring panjang + kaca samping + kaca belakang + atap putih */
+ quad([[-.80,.84,.50],[.80,.84,.50],[.62,1.38,-.05],[-.62,1.38,-.05]],GLS);
+ both(s=>{quad([[s*.90,.74,.50],[s*.90,.74,-.98],[s*.60,1.31,-1.05],[s*.62,1.38,-.05]],GLS);});
+ quad([[-.58,1.31,-1.05],[.58,1.31,-1.05],[.50,.98,-1.78],[-.50,.98,-1.78]],GLS);
+ {const r=add(GB(1.24,.05,1.02),WHT,0,1.385,-.55);r.rotation.x=-.07;}
+ both(s=>{tube([s*.84,.84,.52],[s*.62,1.37,-.05],.034,WHT);tube([s*.62,1.36,-.05],[s*.60,1.31,-1.05],.028,BLK);tube([s*.60,1.32,-1.05],[s*.80,.97,-1.85],.055,WHT);});
+ add(GB(.80,.02,.70),DRK,0,.985,-1.55,fr,0);
  /* kursi + setir + pedal */
  [1,-1].forEach(s=>{const sx=s>0?-SX:SX;add(GB(.46,.10,.52),SEAT,sx,.26,-.30);const bk=add(GB(.46,.64,.12),SEAT,sx,.64,-.68);bk.rotation.x=-.13;add(GB(.28,.20,.09),SEAT,sx,1.04,-.76);add(GB(.07,.30,.34),SEAT,sx-.26,.40,-.36);add(GB(.07,.30,.34),SEAT,sx+.26,.40,-.36);});
  [[-.12,.045],[0,.045],[.10,.045]].forEach(p=>add(GB(.08,.02,.10),CF,SX+p[0],.30,.46,fr,0));
@@ -599,19 +608,25 @@ function makeLambo(i){
  tube([SX,.90,.27],[SX,.72,.52],.03,CF);
  /* roda: pivot (belok) > spin (putar), velg hitam 12 jari + kaliper merah */
  const fp=[],fsp=[],rsp=[];
- const wheel=(R,w,s,front)=>{const pv=new THREE.Group();pv.position.set(s*.90,R,front?1.40:-1.35);fr.add(pv);const sp=new THREE.Group();pv.add(sp);
+ const wheel=(R,w,s,front)=>{const pv=new THREE.Group();pv.position.set(s*(front?.89:.87),R,front?1.40:-1.35);fr.add(pv);const sp=new THREE.Group();pv.add(sp);
   const tr=new THREE.Mesh(GY(R,w,24),TIRE);tr.rotation.z=PI/2;tr.castShadow=true;sp.add(tr);
   const rm=new THREE.Mesh(GY(R*.72,w+.02,20),RIM);rm.rotation.z=PI/2;sp.add(rm);
   for(let k=0;k<12;k++){const a=k/12*PI*2,sk=new THREE.Mesh(GB(.03,R*.56,.06),SIL);sk.position.set(s*(w/2+.012),Math.cos(a)*R*.40,Math.sin(a)*R*.40);sk.rotation.x=a;sp.add(sk);}
   const cp=new THREE.Mesh(GY(R*.13,.05,12),GOLD);cp.rotation.z=PI/2;cp.position.x=s*(w/2+.03);sp.add(cp);
   if(front){fp.push(pv);fsp.push({sp,R});}else rsp.push({sp,R});
   const cal=new THREE.Mesh(GB(.05,.16,.12),REDC);cal.position.set(s*(w/2-.07),0,-R*.55);pv.add(cal);
-  add(GB(w+.06,.05,R*2.1),WHT,s*.90,R*2+.03,front?1.40:-1.35,fr,0);};
+  {const dk=new THREE.Mesh(new THREE.CircleGeometry(R+.07,28),DRK);dk.rotation.y=s*PI/2;dk.position.set(s*(front?1.007:1.017),R,front?1.40:-1.35);fr.add(dk);}};
  both(s=>{wheel(.36,.28,s,1);wheel(.38,.36,s,0);});
- /* aksen: splitter, intake, lampu depan Y, lambang, spion, intake samping */
- add(GB(1.70,.05,.50),BLK,0,.12,2.28);add(GB(.60,.10,.05),DRK,0,.30,2.47);both(s=>{add(GB(.46,.12,.05),DRK,s*.52,.26,2.44);add(GB(.40,.06,.06),DRK,s*.62,.55,2.16);add(GB(.20,.04,.07),DRK,s*.44,.52,2.22);});
- add(GB(.10,.08,.03),GOLD,0,.43,2.47,fr,0);
- both(s=>{add(GB(.16,.08,.12),BLK,s*1.03,.90,.36);tube([s*.94,.80,.40],[s*1.03,.90,.36],.014,BLK);add(GB(.04,.22,.70),DRK,s*1.015,.60,-1.35);add(GB(.05,.05,.8),BLK,s*.97,.33,.2,fr,0);});
+ /* aksen depan: lip splitter lebar, intake tengah + intake samping besar, tirai udara, lampu depan Y bersudut dengan lensa menyala */
+ add(GB(1.72,.035,.42),BLK,0,.10,2.50);
+ add(GB(.52,.14,.06),DRK,0,.24,2.545);add(GB(.60,.025,.07),BLK,0,.315,2.55,fr,0);
+ both(s=>{add(GB(.42,.17,.06),DRK,s*.57,.245,2.545);add(GB(.40,.02,.07),BLK,s*.57,.325,2.55,fr,0);add(GB(.07,.22,.06),DRK,s*.84,.27,2.50);
+  const bz=add(GB(.52,.075,.21),DRK,s*.64,.475,2.30);bz.rotation.y=s*.35;bz.rotation.x=.17;
+  const ln=add(GB(.45,.03,.14),lm,s*.64,.515,2.305,fr,0);ln.rotation.y=s*.35;ln.rotation.x=.17;
+  const dr=add(GB(.40,.022,.03),EM(0xffffff,0xcfe2ff),s*.60,.52,2.20,fr,0);dr.rotation.y=s*.35;dr.rotation.x=.17;
+  add(GB(.30,.012,.26),DRK,s*.24,.745,1.18,fr,0);add(GB(.05,.05,.8),BLK,s*.97,.33,.2,fr,0);});
+ add(GB(.10,.06,.03),GOLD,0,.385,2.535,fr,0);
+ both(s=>{add(GB(.16,.08,.12),BLK,s*1.03,.88,.34);tube([s*.94,.80,.40],[s*1.03,.88,.34],.014,BLK);add(GB(.05,.32,.85),DRK,s*1.015,.60,-1.45);add(GB(.025,.28,.05),BLK,s*1.018,.60,-1.20,fr,0);});
  /* belakang: lampu Y merah, diffuser, knalpot tiga, sayap SVJ */
  add(GB(1.40,.16,.45),BLK,0,.36,-2.32);
  both(s=>{add(GB(.52,.05,.04),RED,s*.50,.78,-2.47,fr,0);add(GB(.06,.20,.04),RED,s*.30,.72,-2.47,fr,0);add(GB(.04,.16,.42),DRK,s*.20,.84,-2.12);});
@@ -622,15 +637,14 @@ function makeLambo(i){
  const CG=CARM.cg||(CARM.cg=(()=>{const q=new THREE.ConeGeometry(.09,1,8,1,true);q.translate(0,.5,0);return q;})());
  const FM1=new THREE.MeshBasicMaterial({color:0xff5a00,transparent:true,opacity:.85,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide}),FM2=new THREE.MeshBasicMaterial({color:0xffe27a,transparent:true,opacity:.95,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide});
  const FL=[];EXH.forEach(x=>{[FM1,FM2].forEach((mt,k)=>{const c=new THREE.Mesh(CG,mt);c.position.set(x,.52,-2.58);c.rotation.x=-PI/2;c.visible=false;c.userData.k=k;fr.add(c);FL.push(c);});});
- const lm=CARM.lm||(CARM.lm=new THREE.MeshBasicMaterial({color:0x8a8c90}));
- both(s=>{const hl=add(GY(.07,.05,14),lm,s*.60,.56,2.26,fr,0);hl.rotation.x=PI/2;});
+ 
  const api={g,body,fork:new THREE.Group(),fs:fsp[0].sp,rs:rsp[0].sp,fr,x:0,z:0,h:0,i,car:1,sx:SX,drop:()=>{},fl:0,fk:1};body.add(api.fork);
  api.flame=k=>{api.fl=.20+.30*k;api.fk=k;};
  api.carUpd=(v,s,dt)=>{fp.forEach(p=>{p.rotation.y=-s*.5;});fsp.forEach(w=>{w.sp.rotation.x+=v*dt/w.R;});rsp.forEach(w=>{w.sp.rotation.x+=v*dt/w.R;});ws.rotation.z=s*2.4;
   if(api.fl>0){api.fl-=dt;const on=api.fl>0,ft=Math.min(1,api.fl/.14);FL.forEach(c=>{c.visible=on;if(on){const L=(.9+Math.random()*1.5)*(.45+.55*api.fk)*ft*(c.userData.k?.55:1),wd=(.8+Math.random()*.5)*(c.userData.k?.6:1);c.scale.set(wd,Math.max(.05,L),wd);}});}
   else if(FL[0].visible)FL.forEach(c=>{c.visible=false;});};
  sc.add(g);
- addHL(api,.56,2.3);{const h=api.hl;if(h.ln.parent)h.ln.parent.remove(h.ln);h.ln={material:lm};h.bm.position.set(0,.07,2.5+4.6);h.bm.scale.set(1.5,1,1.05);}
+ addHL(api,.46,2.3);{const h=api.hl;if(h.ln.parent)h.ln.parent.remove(h.ln);h.ln={material:lm};h.bm.position.set(0,.07,2.5+4.6);h.bm.scale.set(1.5,1,1.05);}
  return api;}
 
 /* ---- posisi DUDUK di mobil: badan bersandar, kaki di pedal, kedua tangan di setir ---- */
@@ -1404,7 +1418,7 @@ function matT(c){if(matTx[c])return matTx[c];return matTx[c]=cvT(128,224,(g,w,h)
  g.beginPath();g.moveTo(34,150);g.lineTo(34,92);g.quadraticCurveTo(34,40,64,24);g.quadraticCurveTo(94,40,94,92);g.lineTo(94,150);g.fillStyle='rgba(240,225,170,.22)';g.fill();g.strokeStyle='#f1e3b0';g.lineWidth=4;g.stroke();
  g.fillStyle='#e8d9a0';for(let i=0;i<5;i++){g.beginPath();g.arc(64,172+i*7,2.2,0,6.3);g.fill();}g.beginPath();g.arc(64,100,9,0,6.3);g.fill();});}
 /* ---- aksi ---- */
-function mount(i){stp=null;const b=bikes[i];if(av.pr)poseReset(av);pray.on=0;P.m=i;S.bike=i;PKD=null;mpSig='';P.x=b.x;P.z=b.z;P.h=b.h;P.v=0;P.s=0;P.rpm=1500;P.pitch=0;P.gr=1;P.lg=0;b.call=0;b.body.add(av);poseReset(av);sitPose(av,SY,-.45,b.body);av.userData.by=av.position.y;P.idle=0;P.gt=0;P.stand=0;noise(.2,900);if(BK[i].car)toast('🚗 '+BK[i].n+' · gigi 1–'+(BK[i].ng||9)+' · tombol ▲▼ (atau X / Z)');}
+function mount(i){stp=null;const b=bikes[i];if(av.pr)poseReset(av);pray.on=0;P.m=i;S.bike=i;PKD=null;mpSig='';P.x=b.x;P.z=b.z;P.h=b.h;P.v=0;P.s=0;P.rpm=1500;P.pitch=0;P.gr=1;P.lg=0;b.call=0;b.body.add(av);poseReset(av);sitPose(av,SY,-.45,b.body);av.userData.by=av.position.y;P.idle=0;P.gt=0;P.stand=0;noise(.2,900);}
 function dismount(){stp=null;const b=bikes[P.m];b.x=P.x;b.z=P.z;b.h=P.h;PKD={i:P.m};mpSig='';sc.add(av);av.rotation.set(0,P.h,0);av.head.rotation.y=0;P.look=0;const dO=BK[P.m].car?2.1:1.1;P.x=b.x-Math.cos(P.h)*dO;P.z=b.z+Math.sin(P.h)*dO;poseReset(av);P.stand=0;P.idle=0;if(FHS)fhStop();av.userData.by=undefined;P.m=-1;P.v=0;b.fork.rotation.y=0;b.body.rotation.x=0;b.body.rotation.z=0;b.body.position.set(0,0,0);hy=0;hv=0;b.g.position.y=0;b.g.rotation.z=0;}
 function startRace(){const cy=!!BK[P.m].cyc,aw=AR&&(AR.away||AR.fs!=='home'),ardi=1;if(aw)return toast('Bg Ardi sedang tidak di lokasi · balap hanya bisa melawan Bg Ardi');raceO={a:ardi?1:0,c:cy?1:0};
  setNpcBike(cy?3:(ardi?2:(Math.random()<.5?0:1)),ardi?{skin:'#e0ac82',hair:'#111111',shirt:'#d03030',pants:'#222233',shoe:'#eeeeee'}:null);
