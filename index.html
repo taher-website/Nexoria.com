@@ -26,7 +26,7 @@
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#050308}}
 :root[data-theme="dark"]{--bg:#050308}
-html,body{overscroll-behavior:none;-webkit-user-select:none;user-select:none}
+html,body{overscroll-behavior-x:none;-webkit-user-select:none;user-select:none}
 input,textarea{-webkit-user-select:text;user-select:text}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-family:var(--font-b)}
@@ -61,6 +61,10 @@ button{font-family:inherit}
 .field input{height:52px;border-radius:14px;border:1.5px solid var(--line);background:var(--void);color:var(--ink);padding:0 16px;font:inherit;font-size:17px;font-weight:600;outline:none;transition:border-color .15s,box-shadow .15s}
 .field input:focus{border-color:var(--cy);box-shadow:0 0 0 4px #39f4ff22}
 .hint{font-size:12px;color:var(--mute2);margin:2px 0 0}
+.pwhint{margin:2px 0 0;font-size:13px;font-weight:700;color:var(--gold)}
+.pwhint.shake{animation:pwShake .4s}
+@keyframes pwShake{25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+#upw.need{border-color:var(--gold)!important;box-shadow:0 0 0 2px #ffcf6b55}
 .err{min-height:18px;margin:10px 0 0;font-size:13px;font-weight:700;color:var(--bad)}
 .btn{width:100%;height:52px;margin-top:8px;border:0;border-radius:14px;font-size:16px;font-weight:800;letter-spacing:.02em;color:#04101c;
   background:linear-gradient(90deg,var(--cy),var(--vi));cursor:pointer;box-shadow:0 10px 28px #39f4ff33;transition:transform .12s,box-shadow .12s}
@@ -251,7 +255,10 @@ div.chip{cursor:default}
 .cm-form{display:flex;gap:8px;padding-top:10px;border-top:1px solid var(--line2)}
 .cm-form .search{flex:1;width:auto}
 /* ---- perbaikan: tidak bisa digeser kanan-kiri + aman saat layar miring (notch/poni) ---- */
-html,body{overflow-x:hidden;max-width:100%}
+html{overflow-x:hidden;overflow-y:auto;max-width:100%;height:auto}
+body{overflow-x:hidden;max-width:100%;height:auto;touch-action:manipulation}
+@supports (overflow:clip){body{overflow-x:clip}}
+main{padding-bottom:96px}
 #splash{align-items:flex-start;overflow-x:hidden;padding:max(20px,env(safe-area-inset-top)) max(20px,env(safe-area-inset-right)) max(20px,env(safe-area-inset-bottom)) max(20px,env(safe-area-inset-left))}
 .sp-card{margin:auto}
 header{padding-left:max(14px,env(safe-area-inset-left));padding-right:max(14px,env(safe-area-inset-right))}
@@ -284,8 +291,9 @@ main{padding-left:max(14px,env(safe-area-inset-left));padding-right:max(14px,env
       <p class="hint">3–16 karakter: huruf, angka, atau garis bawah (_).</p>
     </div>
     <div class="field" style="margin-top:12px">
-      <label for="upw">Sandi (opsional)</label>
-      <input id="upw" type="password" maxlength="999" autocomplete="off" spellcheck="false" placeholder="Kosongkan jika tidak pakai sandi">
+      <label for="upw">Password (opsional)</label>
+      <input id="upw" type="password" maxlength="999" autocomplete="off" spellcheck="false" placeholder="Kosongkan jika tidak pakai password">
+      <p class="pwhint" id="pwHint" hidden>🔒 Akun ini memiliki password. Masukkan password yang benar untuk masuk.</p>
     </div>
     <div class="err" id="err" role="alert"></div>
     <button class="btn" id="goBtn">MASUK</button>
@@ -314,7 +322,7 @@ main{padding-left:max(14px,env(safe-area-inset-left));padding-right:max(14px,env
       <button id="navProfile">👤 Profil</button>
       <button id="navKeys">⌨️ Pintasan Keyboard</button>
     </div>
-    <div class="d-foot"><div class="nav"><button id="navPw">🔒 Ubah Sandi</button><button class="out" id="navLogout">⛔ Logout</button></div></div>
+    <div class="d-foot"><div class="nav"><button id="navPw">🔒 Ubah Password</button><button class="out" id="navLogout">⛔ Logout</button></div></div>
   </aside>
 
   <main id="home">
@@ -396,7 +404,7 @@ function sha256(str){
   }
   return h.map(x=>('00000000'+(x>>>0).toString(16)).slice(-8)).join('');
 }
-/* hash sandi: digarami dengan username, diputar 2000x supaya sulit ditebak */
+/* hash password: digarami dengan username, diputar 2000x supaya sulit ditebak */
 function hashPw(key,pw){
   let x='nx1|'+key+'|'+pw;
   for(let i=0;i<2000;i++)x=sha256(x+'|'+key);
@@ -429,11 +437,26 @@ function authReady(){
   });
   return AUTHP;
 }
-/* klaim akun: berhasil kalau tanpa sandi, atau bukti (hash) cocok dengan sandi rahasia di server */
+/* klaim akun: berhasil kalau tanpa password, atau bukti (hash) cocok dengan password rahasia di server */
 async function claimOwner(key,proof){
   const d=getDB(),u=await authReady();if(!d||!u)return false;
   try{await withTimeout(d.ref('nexoria/users/'+key+'/owners/'+u.uid).set(proof),10000);return true;}
   catch(e){CLAIMERR=(e&&(e.code||e.message))||'?';return false;}
+}
+
+/* cek password di sisi aplikasi: cocokkan hash dengan hash password terakhir yang tersimpan di akun (owners).
+   true = cocok, false = pasti salah, null = tidak bisa dipastikan (aturan server yang memutuskan) */
+function pwMatches(key,typed,v){
+  if(v&&typeof v.pwv==='string'&&v.pwv.length>8)return v.pwv===hashPw(key,typed);
+  const o=v&&v.owners;if(!o||typeof o!=='object')return null;
+  const hs=Object.values(o).filter(x=>typeof x==='string'&&x.length>8);
+  if(!hs.length)return null;
+  return hs.includes(hashPw(key,typed));
+}
+function setPwHint(on,shake){
+  const h=$('pwHint'),i=$('upw');if(!h||!i)return;
+  h.hidden=!on;i.classList.toggle('need',!!on);
+  if(on&&shake){h.classList.remove('shake');void h.offsetWidth;h.classList.add('shake');}
 }
 const valid=n=>/^[A-Za-z0-9_]{3,16}$/.test(n);
 let db=null,USER='',FILTER='all';
@@ -654,9 +677,9 @@ async function changePw(){
   try{const sn=await withTimeout(uref.child('hasPw').once('value'),8000);has=sn.val()===true;}
   catch(e){status('Gagal memuat data akun','err');return;}
   const inp='style="width:100%;margin-bottom:10px" maxlength="999" autocomplete="off" type="password"';
-  modal('<h3>🔒 Ubah Sandi</h3><p>'+(has?'Akunmu memakai sandi.':'Akunmu belum memakai sandi.')+' Kosongkan sandi baru untuk '+(has?'menghapus sandi.':'tetap tanpa sandi.')+'</p>'
-    +(has?'<input id="pwOld" class="search" '+inp+' placeholder="Sandi lama">':'')
-    +'<input id="pwNew" class="search" '+inp+' placeholder="Sandi baru">'
+  modal('<h3>🔒 Ubah Password</h3><p>'+(has?'Akunmu memakai password.':'Akunmu belum memakai password.')+' Kosongkan password baru untuk '+(has?'menghapus password.':'tetap tanpa password.')+'</p>'
+    +(has?'<input id="pwOld" class="search" '+inp+' placeholder="Password lama">':'')
+    +'<input id="pwNew" class="search" '+inp+' placeholder="Password baru">'
     +'<div class="err" id="pwErr" style="min-height:18px;margin-bottom:8px"></div>'
     +'<div class="row"><button class="btn ghost" id="pwNo">Batal</button><button class="btn" id="pwOk">Simpan</button></div>',c=>{
     c.querySelector('#pwNo').onclick=closeModal;
@@ -666,19 +689,23 @@ async function changePw(){
       try{
         if(has){
           const o=c.querySelector('#pwOld').value;
-          if(!(await claimOwner(key,hashPw(key,o)))){er.textContent='Sandi lama salah.';ok.disabled=false;return;}
+          let cur={};try{cur=(await withTimeout(uref.once('value'),8000)).val()||{};}catch(e){}
+          const m=pwMatches(key,o,cur);
+          if(m===false){er.textContent='Password lama salah.';ok.disabled=false;return;}
+          const cl=await claimOwner(key,hashPw(key,o));
+          if(!cl&&m!==true){er.textContent='Password lama salah.';ok.disabled=false;return;}
         }
         const nv=c.querySelector('#pwNew').value;
         if(nv){
           const h=hashPw(key,nv);
           await withTimeout(sref.set(h),10000);
-          /* perangkat lain dicabut aksesnya, harus login ulang pakai sandi baru */
-          await withTimeout(uref.update({hasPw:true,owners:{[au.uid]:h}}),10000);
-          status('🔒 Sandi disimpan','ok');
+          /* perangkat lain dicabut aksesnya, harus login ulang pakai password baru */
+          await withTimeout(uref.update({hasPw:true,pwv:h,owners:{[au.uid]:h}}),10000);
+          status('🔒 Password disimpan','ok');
         }else{
-          await withTimeout(uref.update({hasPw:false,owners:{[au.uid]:'1'}}),10000);
+          await withTimeout(uref.update({hasPw:false,pwv:null,owners:{[au.uid]:'1'}}),10000);
           await withTimeout(sref.remove(),10000);
-          status('🔓 Sandi dihapus','ok');
+          status('🔓 Password dihapus','ok');
         }
         closeModal();
       }catch(e){er.textContent='Gagal menyimpan. Coba lagi.';ok.disabled=false;}
@@ -722,11 +749,17 @@ async function submitName(){
     let finalName=name;
     if(snap.exists()){
       const v=snap.val()||{};finalName=(v.name&&String(v.name).toLowerCase()===key)?v.name:name;
-      const typed=$('upw').value;
+      const typed=$('upw').value,hasPw=v.hasPw===true;
+      const back=m=>{err.textContent=m;btn.disabled=false;btn.textContent='MASUK';};
+      if(hasPw){
+        /* akun ini punya password: wajib diisi, tidak boleh masuk hanya dengan username */
+        setPwHint(true,true);
+        if(!typed){back('🔒 Akun ini memiliki password. Masukkan password untuk masuk.');try{$('upw').focus();}catch(e){}return;}
+        if(pwMatches(key,typed,v)===false){back('Password salah.');return;}
+      }
       step='klaim-akun';CLAIMERR='';
-      if(!(await claimOwner(key,typed?hashPw(key,typed):'1'))){
-        err.textContent=v.hasPw===true?(typed?'Sandi salah.':'Akun ini memakai sandi. Masukkan sandi untuk masuk.'):'Gagal masuk ke akun ini ('+CLAIMERR+'). Coba lagi.';
-        btn.disabled=false;btn.textContent='MASUK';return;
+      if(!(await claimOwner(key,(hasPw&&typed)?hashPw(key,typed):'1'))){
+        back(hasPw?'Password salah.':'Gagal masuk ke akun ini ('+CLAIMERR+'). Coba lagi.');return;
       }
       step='konfirmasi';
       const ok=await askConfirm('Username sudah terdaftar','"'+finalName+'" sudah ada di NEXORIA. Masuk ke akun ini?','Masuk','Batal');
@@ -736,9 +769,10 @@ async function submitName(){
     }else{
       const pw0=$('upw').value;
       const nu={name:name,createdAt:Date.now(),lastLogin:Date.now(),hasPw:!!pw0,owners:{[au.uid]:'1'}};
+      if(pw0)nu.pwv=hashPw(key,pw0);
       step='buat-akun';
       await withTimeout(ref.set(nu),10000);
-      step='simpan-sandi';
+      step='simpan-password';
       if(pw0)await withTimeout(d.ref('nexoria/secrets/'+key+'/pw').set(hashPw(key,pw0)),10000);
     }
     USER=finalName;
@@ -751,6 +785,16 @@ async function submitName(){
     btn.disabled=false;btn.textContent='MASUK';
   }
 }
+let hintT=0;
+$('uname').addEventListener('input',()=>{
+  clearTimeout(hintT);setPwHint(false);const n=$('uname').value.trim();if(!valid(n))return;
+  hintT=setTimeout(async()=>{
+    try{const d=getDB();if(!d)return;const au=await authReady();if(!au)return;
+      const sn=await withTimeout(d.ref('nexoria/users/'+n.toLowerCase()+'/hasPw').once('value'),6000);
+      if($('uname').value.trim()===n)setPwHint(sn.val()===true);
+    }catch(e){}
+  },500);
+});
 $('goBtn').addEventListener('click',submitName);
 $('uname').addEventListener('keydown',e=>{if(e.key==='Enter')submitName();});
 $('upw').addEventListener('keydown',e=>{if(e.key==='Enter')submitName();});
@@ -1302,8 +1346,8 @@ $('navKeys').addEventListener('click',()=>{closeDrawer();keyHelp();});
         const v=sn.val()||{};
         if(!u){status('Gagal autentikasi, data tidak bisa disimpan','err');return;}
         if(!own){
-          /* akun tanpa sandi: perangkat ini diklaim otomatis; akun bersandi: harus login ulang */
-          if(v.hasPw===true||!(await claimOwner(key,'1'))){kick('Silakan masuk lagi'+(v.hasPw===true?' dengan sandi':''));return;}
+          /* akun tanpa password: perangkat ini diklaim otomatis; akun berpassword: harus login ulang */
+          if(v.hasPw===true||!(await claimOwner(key,'1'))){kick('Silakan masuk lagi'+(v.hasPw===true?' dengan password':''));return;}
         }
         if(v.name&&v.name!==USER&&String(v.name).toLowerCase()===key){USER=v.name;try{localStorage.setItem(LS_USER,USER);}catch(e){}setUserUI();}
         d.ref('nexoria/users/'+key+'/lastLogin').set(Date.now()).catch(()=>{});tickLoginStreak();
@@ -1319,12 +1363,17 @@ $('navKeys').addEventListener('click',()=>{closeDrawer();keyHelp();});
   'use strict';
   const de=document.documentElement;
   const isFS=()=>!!(document.fullscreenElement||document.webkitFullscreenElement);
-  let busy=false;
+  let busy=false,moved=false,lastTouch=0,lastScroll=0;
+  /* geser/scroll bukan 'klik': jangan paksa fullscreen saat itu supaya scroll tidak terputus */
+  document.addEventListener('touchstart',()=>{moved=false;lastTouch=Date.now();},{capture:true,passive:true});
+  document.addEventListener('touchmove',()=>{moved=true;lastTouch=Date.now();},{capture:true,passive:true});
+  window.addEventListener('scroll',()=>{lastScroll=Date.now();},{passive:true});
   function lockKeys(){
     try{if(navigator.keyboard&&navigator.keyboard.lock)navigator.keyboard.lock(['Escape']).catch(()=>{});}catch(e){}
   }
   function enter(){
     if(busy||isFS()||document.hidden)return;
+    if(Date.now()-lastScroll<500||(moved&&Date.now()-lastTouch<700))return;
     const f=de.requestFullscreen||de.webkitRequestFullscreen||de.msRequestFullscreen;
     if(!f)return;
     busy=true;
